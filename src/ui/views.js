@@ -17,7 +17,10 @@ export function petHTML(vm) {
   return `
     <div class="dragbar">
       <span class="pet-name">${esc(vm.petName)}</span>
-      <button class="menu-btn nodrag" id="menuBtn" aria-label="菜单">⋯</button>
+      <div class="bar-btns">
+        <button class="menu-btn nodrag" id="collapseBtn" aria-label="收起到边上">»</button>
+        <button class="menu-btn nodrag" id="menuBtn" aria-label="菜单">⋯</button>
+      </div>
     </div>
     <div class="petstage nodrag" id="petStage">
       <div class="sprite-ground"></div>
@@ -31,6 +34,16 @@ export function petHTML(vm) {
       <div class="chip">${chip}</div>
       <div class="${barClass}"><span style="width:${vm.isMax ? 100 : vm.percent}%"></span></div>
       <div class="subline">${barText} · 累计 ${formatTokens(vm.total)}</div>
+    </div>
+  `;
+}
+
+export function peekHTML(vm) {
+  return `
+    <div class="peek" id="peek" title="点我展开">
+      ${vm.spriteUrl
+        ? `<img class="peek-sprite ${vm.mood === 'wilted' ? 'wilted' : ''}" src="${vm.spriteUrl}" alt="${esc(vm.stage.name)}" draggable="false" />`
+        : '<div class="peek-sprite" style="width:48px;height:48px;border-radius:50%;background:#e9dcc0"></div>'}
     </div>
   `;
 }

@@ -7,4 +7,5 @@ contextBridge.exposeInMainWorld('tokenSprite', {
   setAutoLaunch: (on) => ipcRenderer.invoke('autolaunch:set', on),
   getWindowPos: () => ipcRenderer.invoke('window:getPos'),
   setWindowPos: (x, y) => ipcRenderer.send('window:setPos', x, y),
+  setCollapsed: (collapsed) => ipcRenderer.send('window:setCollapsed', collapsed),
 });

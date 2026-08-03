@@ -5,7 +5,7 @@ import { computeMood, pickBubble, ACTIVE_MS, RETURN_IDLE_MS, BURST_TOKENS } from
 import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
 import { spriteUrl } from './services/sprites.js';
-import { petHTML, dexHTML, menuHTML } from './ui/views.js';
+import { petHTML, peekHTML, dexHTML, menuHTML } from './ui/views.js';
 
 const app = document.getElementById('app');
 const source = new LocalUsageSource();
@@ -84,11 +84,26 @@ function deriveVm() {
   };
 }
 
+let collapsed = false;
+
+function setCollapsed(next) {
+  collapsed = next;
+  globalThis.tokenSprite?.setCollapsed?.(next);
+  render();
+}
+
 function render() {
   const vm = deriveVm();
   displayedLevel = vm.stage.level;
+  document.body.classList.toggle('collapsed', collapsed);
+  if (collapsed) {
+    app.innerHTML = peekHTML(vm);
+    document.getElementById('peek')?.addEventListener('click', () => setCollapsed(false));
+    return;
+  }
   app.innerHTML = petHTML(vm);
   document.getElementById('menuBtn')?.addEventListener('click', openMenu);
+  document.getElementById('collapseBtn')?.addEventListener('click', () => setCollapsed(true));
 }
 
 async function sync({ celebrate = true } = {}) {
@@ -134,7 +149,7 @@ async function sync({ celebrate = true } = {}) {
     state.bestLevel = vm.stage.level;
     savePet(state);
   }
-  if (celebrate && vm.stage.level > prev) {
+  if (celebrate && vm.stage.level > prev && !collapsed) {
     render();
     showEvolve(vm.stage);
   } else {
