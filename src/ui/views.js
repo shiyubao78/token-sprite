@@ -51,7 +51,7 @@ export function dexHTML(vm) {
 
 export function menuHTML(vm) {
   const parts = vm.breakdown.length
-    ? vm.breakdown.map((b) => `<div class="src-row"><span>${esc(SRC_NAME[b.source] || b.source)}</span><b>${formatTokens(b.total)}</b></div>`).join('')
+    ? vm.breakdown.map((b) => `<div class="src-row"><span>${esc(b.label || SRC_NAME[b.source] || b.source)}</span><b>${formatTokens(b.total)}</b></div>`).join('')
     : '<div class="src-row"><span>暂无本地用量</span><b>0</b></div>';
   return `
     <button class="close nodrag" data-close aria-label="关闭">✕</button>
@@ -70,6 +70,6 @@ export function menuHTML(vm) {
       <button class="nodrag danger" id="quitBtn">退出</button>
     </div>
     ${vm.isDesktop ? `<div class="toggle-row nodrag"><span>开机自启</span><button class="toggle" id="autoBtn">…</button></div>` : ''}
-    <div class="source-note" style="margin-top:12px">正在读本地 <b>Claude Code + Codex</b> 的真实用量，自动成长，不用喂。</div>
+    <div class="source-note" style="margin-top:12px">自动检测本地装了哪些 AI 工具，<b>能读到 token 的就统计</b>，自动成长，不用喂。</div>
   `;
 }

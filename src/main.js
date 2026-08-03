@@ -43,6 +43,7 @@ function deriveVm() {
     total: grown,
     breakdown: (usage.breakdown || []).map((b) => ({
       source: b.source,
+      label: b.label,
       total: Math.max(0, b.total - (baseBy[b.source] || 0)),
     })),
     isDesktop: !!(globalThis.tokenSprite && globalThis.tokenSprite.getAutoLaunch),

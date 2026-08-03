@@ -21,12 +21,12 @@ npm start          # 编译 + 启动桌宠，出现在桌面右下角
 
 一只 macOS 桌面桌宠，用本机 AI 编程工具的**真实 token 用量**自动养大。悬浮置顶、可拖动、点击有互动。5 段进化（种子→嫩芽→幼苗→花苞→化形小精灵），token 累积成长、不用喂；超 24 小时无新消耗回落一级。
 
-## 数据来源（本地读取，不联网）
+## 数据来源（自动检测 + 本地读取，不联网）
 
-- Claude Code：`~/.claude/projects/**/*.jsonl` 里每条 assistant 消息的 `usage`。
-- Codex：`~/.codex/**/rollout-*.jsonl` 里 `token_count` 事件的 `last_token_usage`。
-- 求和 = 累计 token；取最近时间戳 = 最近活跃。本机没有的工具自动跳过。
-- 加新来源只改 `scripts/usage.mjs`。
+- `scripts/usage.mjs` 里有一张 `READERS` 登记表，每个读取器 `read()` 返回 `{total, lastActivityAt}`，**没装该工具就返回 `null` 自动跳过**。
+- 内置：Claude Code（`~/.claude/projects/**/*.jsonl` 的 `usage`）、Codex（`~/.codex/**/rollout-*.jsonl` 的 `token_count` 事件 `last_token_usage`）。
+- 求和 = 累计 token；取最近时间戳 = 最近活跃。
+- **加新工具**：往 `READERS` 加一行读取器即可（先 `detect` 有没有装、再 `read` 解析）。只能覆盖**把 token 写在本地、可解析**的工具；app/网页类（豆包/DeepSeek/Kimi 等）用量在服务端、本地无数据、无法统计。
 
 ## 关键目录
 

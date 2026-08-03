@@ -36,12 +36,18 @@ agent 会读到仓库里的运行说明，自动完成 clone → `npm install` �
 
 ## 🧩 它怎么工作
 
+**自动检测**：启动时探测你本地装了哪些 AI 工具，**能读到 token 的就统计，没装的自动跳过**。数据只在你电脑本地读取，不上传。
+
+目前内置读取器：
+
 | 工具 | 读取位置 | 统计口径 |
 |---|---|---|
 | Claude Code | `~/.claude/projects/**/*.jsonl` | 每条回复的 usage（输入+输出+缓存 token） |
 | Codex | `~/.codex/**/rollout-*.jsonl` | `token_count` 事件的 `last_token_usage` |
 
-本机没装的工具会自动跳过。数据只在你电脑本地读取和展示。
+**想加更多工具**（Gemini CLI、Kimi、其他 agent…）：在 `scripts/usage.mjs` 的 `READERS` 里加一个读取器即可（`read()` 返回累计 token 与最近活跃，没装返回 `null`）。欢迎 PR。
+
+> 注意：只能统计**把 token 写在本地、且可解析**的工具。像豆包 / DeepSeek / Kimi 这类 app 或网页版，用量在服务端、本地没有数据，无法统计。
 
 ## 🔧 自定义
 

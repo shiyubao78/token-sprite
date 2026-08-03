@@ -1,18 +1,19 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 
-// 思路：直接读本地 AI 编程工具写下的用量记录，统计"我"的累计 token。
-// 已覆盖 Claude Code 和 Codex；本机没有的工具(Cursor/Gemini 等)会自动跳过。
+// 自动检测：装了哪些 agent、且本地有可解析的 token 用量，就统计哪些。
+// 加新工具 = 往 READERS 里加一个读取器（detect 判断有没有装、read 解析用量）。
+// 前提：该工具把 token 写在本地并可解析。app/网页类(豆包/DeepSeek/Kimi 等)用量在服务端，本地无数据、无法统计。
+
+async function exists(p) {
+  try { await stat(p); return true; } catch { return false; }
+}
 
 async function walk(dir, endsWith) {
   const out = [];
   let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return out;
-  }
+  try { entries = await readdir(dir, { withFileTypes: true }); } catch { return out; }
   for (const e of entries) {
     const full = join(dir, e.name);
     if (e.isDirectory()) out.push(...(await walk(full, endsWith)));
@@ -25,62 +26,44 @@ function eachLine(text, fn) {
   for (const line of text.split('\n')) {
     if (!line) continue;
     let obj;
-    try {
-      obj = JSON.parse(line);
-    } catch {
-      continue;
-    }
+    try { obj = JSON.parse(line); } catch { continue; }
     fn(obj);
   }
 }
 
-// Claude Code：~/.claude/projects/**/*.jsonl，assistant 消息的 usage
+// ---- Claude Code：~/.claude/projects/**/*.jsonl，assistant 消息的 usage ----
 async function readClaudeCode() {
   const root = join(homedir(), '.claude', 'projects');
+  if (!(await exists(root))) return null;
   const files = await walk(root, '.jsonl');
+  if (!files.length) return null;
   const seen = new Set();
-  let total = 0;
-  let lastActivityAt = 0;
-  for (const file of files) {
-    let text;
-    try {
-      text = await readFile(file, 'utf8');
-    } catch {
-      continue;
-    }
+  let total = 0, lastActivityAt = 0;
+  for (const f of files) {
+    let text; try { text = await readFile(f, 'utf8'); } catch { continue; }
     eachLine(text, (obj) => {
       const msg = obj && obj.message;
       if (!msg || typeof msg !== 'object' || !msg.usage) return;
-      if (msg.id) {
-        if (seen.has(msg.id)) return;
-        seen.add(msg.id);
-      }
+      if (msg.id) { if (seen.has(msg.id)) return; seen.add(msg.id); }
       const u = msg.usage;
-      total +=
-        (u.input_tokens || 0) +
-        (u.output_tokens || 0) +
-        (u.cache_creation_input_tokens || 0) +
-        (u.cache_read_input_tokens || 0);
+      total += (u.input_tokens || 0) + (u.output_tokens || 0) +
+               (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0);
       const ts = obj.timestamp ? Date.parse(obj.timestamp) : NaN;
       if (Number.isFinite(ts) && ts > lastActivityAt) lastActivityAt = ts;
     });
   }
-  return { source: 'claude-code', total, lastActivityAt };
+  return { total, lastActivityAt };
 }
 
-// Codex：~/.codex/**/rollout-*.jsonl，token_count 事件的 last_token_usage.total_tokens 累加
+// ---- Codex：~/.codex/**/rollout-*.jsonl，token_count 事件的 last_token_usage ----
 async function readCodex() {
   const root = join(homedir(), '.codex');
+  if (!(await exists(root))) return null;
   const files = (await walk(root, '.jsonl')).filter((f) => f.includes('rollout-'));
-  let total = 0;
-  let lastActivityAt = 0;
-  for (const file of files) {
-    let text;
-    try {
-      text = await readFile(file, 'utf8');
-    } catch {
-      continue;
-    }
+  if (!files.length) return null;
+  let total = 0, lastActivityAt = 0;
+  for (const f of files) {
+    let text; try { text = await readFile(f, 'utf8'); } catch { continue; }
     eachLine(text, (obj) => {
       const p = obj && obj.payload;
       if (!p || p.type !== 'token_count') return;
@@ -90,13 +73,26 @@ async function readCodex() {
       if (Number.isFinite(ts) && ts > lastActivityAt) lastActivityAt = ts;
     });
   }
-  return { source: 'codex', total, lastActivityAt };
+  return { total, lastActivityAt };
 }
 
+// 读取器登记表。新增工具在这里加一行即可（read 返回 {total,lastActivityAt}，没装则返回 null）。
+export const READERS = [
+  { source: 'claude-code', label: 'Claude Code', read: readClaudeCode },
+  { source: 'codex', label: 'Codex', read: readCodex },
+];
+
 export async function computeLocalUsage() {
-  const readers = [readClaudeCode(), readCodex()];
-  const breakdown = (await Promise.all(readers)).filter((r) => r.total > 0);
-  const total = breakdown.reduce((s, r) => s + r.total, 0);
-  const lastActivityAt = breakdown.reduce((m, r) => Math.max(m, r.lastActivityAt), 0);
+  const results = await Promise.all(
+    READERS.map(async (r) => {
+      try {
+        const d = await r.read();
+        return d ? { source: r.source, label: r.label, total: d.total || 0, lastActivityAt: d.lastActivityAt || 0 } : null;
+      } catch { return null; }
+    })
+  );
+  const breakdown = results.filter((b) => b && b.total > 0);
+  const total = breakdown.reduce((s, b) => s + b.total, 0);
+  const lastActivityAt = breakdown.reduce((m, b) => Math.max(m, b.lastActivityAt), 0);
   return { total, lastActivityAt, breakdown };
 }
