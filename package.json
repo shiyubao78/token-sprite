@@ -29,7 +29,7 @@
     "directories": { "output": "release" },
     "files": ["electron/**", "dist/**", "scripts/usage.mjs", "package.json"],
     "mac": {
-      "target": ["dir"],
+      "target": [{ "target": "dir", "arch": "universal" }],
       "category": "public.app-category.developer-tools",
       "icon": "build/icon.icns",
       "identity": null

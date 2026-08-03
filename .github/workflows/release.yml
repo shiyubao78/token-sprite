@@ -15,7 +15,7 @@ jobs:
       - run: npm ci
       - run: npm run pack
       - name: Zip app
-        run: cd release/mac-arm64 && zip -ry ../../token-sprite-mac-arm64.zip *.app
+        run: cd release/mac-universal && zip -ry ../../token-sprite-mac-universal.zip *.app
       - uses: softprops/action-gh-release@v2
         with:
-          files: token-sprite-mac-arm64.zip
+          files: token-sprite-mac-universal.zip

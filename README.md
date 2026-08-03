@@ -15,10 +15,10 @@
 
 ## 🚀 快速开始
 
-需要 [Node.js](https://nodejs.org/) 20+（macOS，Apple 芯片）。
+需要 [Node.js](https://nodejs.org/) 20+（macOS，Intel / Apple 芯片通用）。
 
 ```bash
-git clone https://github.com/<your-username>/token-sprite.git
+git clone https://github.com/shiyubao78/token-sprite.git
 cd token-sprite
 npm install
 npm start
@@ -30,7 +30,7 @@ npm start
 
 因为仓库里带了 `AGENTS.md` / `CLAUDE.md`，你可以直接对 Claude Code、Codex 等 agent 说一句：
 
-> “把 github.com/&lt;your-username&gt;/token-sprite clone 下来，在我桌面跑起来。”
+> “把 github.com/shiyubao78/token-sprite clone 下来，在我桌面跑起来。”
 
 agent 会读到仓库里的运行说明，自动完成 clone → `npm install` → `npm start`。
 
@@ -51,14 +51,14 @@ agent 会读到仓库里的运行说明，自动完成 clone → `npm install` �
 ## 📦 打包成 .app
 
 ```bash
-npm run pack     # 产物在 release/mac-arm64/Token小精灵.app
+npm run pack     # 产物在 release/mac-universal/Token小精灵.app
 ```
 
-未签名、Apple 芯片版。首次打开若被拦，右键 →「打开」一次即可。打包后首次运行默认开启开机自启（菜单里可关）。
+未签名、Intel / Apple 通用版。首次打开若被拦，右键 →「打开」一次即可。打包后首次运行默认开启开机自启（菜单里可关）。
 
 ## ⚠️ 说明
 
-- 目前仅 macOS / Apple 芯片；Intel 需自行改 `universal` 打包。
+- 目前仅 macOS（Intel / Apple 芯片通用）。
 - 数字只含 Claude Code + Codex 本地日志，不代表你的全部用量。
 - 内置形象为 AI 生成图，仅作示例，可自行替换。
 
