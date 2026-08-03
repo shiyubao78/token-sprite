@@ -57,7 +57,7 @@ export function menuHTML(vm) {
     <button class="close nodrag" data-close aria-label="关闭">✕</button>
     <h2>${esc(vm.petName)} · Lv.${vm.stage.level} ${esc(vm.stage.name)}</h2>
     <div class="src-box">
-      <div class="src-total"><span>累计消耗</span><b>${formatTokens(vm.total)} token</b></div>
+      <div class="src-total"><span>安装以来消耗</span><b>${formatTokens(vm.total)} token</b></div>
       ${parts}
     </div>
     <div class="field" style="margin-top:14px">

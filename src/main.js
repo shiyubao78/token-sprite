@@ -18,10 +18,18 @@ const LINES = [
   '陪你写代码最开心', '再来一段，快进化了！', '你敲的每个 token 我都收到啦',
 ];
 
+// 安装以来的新增 token（首次运行记录的历史累计为基准，从 0 开始长）
+function growthTotal() {
+  const base = state.baseline ? state.baseline.total : usage.total;
+  return Math.max(0, usage.total - base);
+}
+
 function deriveVm() {
+  const grown = growthTotal();
   const idleMs = Date.now() - (usage.lastActivityAt || Date.now());
-  const eff = effectiveStage(usage.total, idleMs);
-  const p = progressFor(usage.total);
+  const eff = effectiveStage(grown, idleMs);
+  const p = progressFor(grown);
+  const baseBy = (state.baseline && state.baseline.bySource) || {};
   return {
     petName: state.petName,
     stage: eff.stage,
@@ -32,13 +40,16 @@ function deriveVm() {
     next: p.next,
     isMax: !p.next,
     percent: Math.round(p.fraction * 100),
-    total: usage.total,
-    breakdown: usage.breakdown || [],
+    total: grown,
+    breakdown: (usage.breakdown || []).map((b) => ({
+      source: b.source,
+      total: Math.max(0, b.total - (baseBy[b.source] || 0)),
+    })),
     isDesktop: !!(globalThis.tokenSprite && globalThis.tokenSprite.getAutoLaunch),
     spriteUrl: spriteUrl(eff.stage.art),
     dex: STAGES.map((s) => ({
       ...s,
-      unlocked: usage.total >= s.threshold,
+      unlocked: grown >= s.threshold,
       current: s.level === eff.stage.level,
       url: spriteUrl(s.art),
     })),
@@ -55,6 +66,15 @@ function render() {
 async function sync({ celebrate = true } = {}) {
   const prev = displayedLevel;
   usage = await source.getUsage();
+  // 首次运行：把当下历史累计设为基准，之后从 0 开始长
+  if (!state.baseline) {
+    state.baseline = {
+      total: usage.total,
+      bySource: Object.fromEntries((usage.breakdown || []).map((b) => [b.source, b.total])),
+      at: Date.now(),
+    };
+    savePet(state);
+  }
   const vm = deriveVm();
   if (vm.stage.level > state.bestLevel) {
     state.bestLevel = vm.stage.level;

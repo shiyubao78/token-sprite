@@ -6,6 +6,7 @@ export function defaultState() {
     createdAt: Date.now(),
     lastSeenLevel: 1,
     bestLevel: 1,
+    baseline: null, // 首次运行记录安装那刻的历史累计，之后只算新增
   };
 }
 
