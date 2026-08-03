@@ -1,0 +1,21 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run pack
+      - name: Zip app
+        run: cd release/mac-arm64 && zip -ry ../../token-sprite-mac-arm64.zip *.app
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: token-sprite-mac-arm64.zip

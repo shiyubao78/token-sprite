@@ -1,0 +1,44 @@
+import { defineConfig } from 'vite';
+
+function localUsagePlugin() {
+  return {
+    name: 'token-sprite-local-usage',
+    configureServer(server) {
+      server.middlewares.use('/api/usage', async (_req, res) => {
+        try {
+          const { computeLocalUsage } = await import('./scripts/usage.mjs');
+          const data = await computeLocalUsage();
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(data));
+        } catch (err) {
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: String(err) }));
+        }
+      });
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use('/api/usage', async (_req, res) => {
+        try {
+          const { computeLocalUsage } = await import('./scripts/usage.mjs');
+          const data = await computeLocalUsage();
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(data));
+        } catch (err) {
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: String(err) }));
+        }
+      });
+    },
+  };
+}
+
+export default defineConfig({
+  base: './',
+  plugins: [localUsagePlugin()],
+  build: {
+    outDir: 'dist',
+  },
+  test: {
+    environment: 'jsdom',
+  },
+});
