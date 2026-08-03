@@ -15,7 +15,12 @@ jobs:
       - run: npm ci
       - run: npm run pack
       - name: Zip app
-        run: cd release/mac-universal && zip -ry ../../token-sprite-mac-universal.zip *.app
+        run: |
+          APP=$(find release -maxdepth 2 -name "*.app" | head -1)
+          echo "Found app: $APP"
+          test -n "$APP"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" token-sprite-mac-universal.zip
+          ls -la token-sprite-mac-universal.zip
       - uses: softprops/action-gh-release@v2
         with:
           files: token-sprite-mac-universal.zip
