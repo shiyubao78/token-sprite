@@ -33,8 +33,22 @@
 
 **Files:**
 - Create: `assets/promo/token-sprite-poster-vertical.png`
+- Create: `assets/promo/token-sprite-poster-vertical-v2.png`
 
 - [x] 叠加项目名、主标题、四步玩法链路与隐私卖点。
 - [x] 检查全部中文逐字准确。
 - [x] 生成手机缩略图并确认主标题、发光蛋、六只剪影和进化方向仍可识别。
 - [x] 检查最终 PNG 尺寸与文件完整性，并提交版本存档。
+
+### Task 3: 极简传播版重排
+
+**Files:**
+- Reference: `assets/promo/token-sprite-poster-vertical-art.png`
+- Create: `assets/promo/token-sprite-poster-vertical-v2.png`
+- Create: `assets/promo/token-sprite-poster-vertical-v2-mobile-preview.jpg`
+
+- [x] 移除旧版项目名、工具名、四步玩法卡片和隐私卖点。
+- [x] 使用无字底图重排主标题、副标题、玩法摘要和 Agent 安装指令。
+- [x] 突出 `github.com/shiyubao78/token-sprite`，但不加入二维码。
+- [x] 检查中文、3:4 尺寸、手机缩略图和图片完整性。
+- [x] 提交新版海报存档。
