@@ -1,25 +1,15 @@
-import { RARITY, RARITIES } from '../config/rarities.js';
+import { RARITIES } from '../config/rarities.js';
 import { speciesOfRarity } from '../config/species.js';
 
-function weightedPick(items, weightOf, rng) {
-  const total = items.reduce((s, i) => s + weightOf(i), 0);
-  let r = rng() * total;
-  for (const it of items) {
-    r -= weightOf(it);
-    if (r <= 0) return it;
-  }
-  return items[items.length - 1];
-}
+export const UPGRADE_CHANCE = 0.15; // 小概率升一档
 
-// 用一张 ticketRarity 的券抽一颗蛋：0.7 概率就是本档，0.3 概率按全局权重落到别的档(惊喜)。
+// 用一张 ticketRarity 的券抽一颗蛋：大概率本档，小概率升一档(封顶传说)，绝不跳档、不降档。
 // 返回 { rarity, species }。
 export function drawEgg(ticketRarity, rng = Math.random) {
-  let rarity;
-  if (rng() < 0.7) {
-    rarity = ticketRarity;
-  } else {
-    const others = RARITIES.filter((r) => r !== ticketRarity);
-    rarity = weightedPick(others, (r) => RARITY[r].weight, rng);
+  const idx = RARITIES.indexOf(ticketRarity);
+  let rarity = idx >= 0 ? ticketRarity : 'common';
+  if (idx >= 0 && idx < RARITIES.length - 1 && rng() < UPGRADE_CHANCE) {
+    rarity = RARITIES[idx + 1];
   }
   let pool = speciesOfRarity(rarity);
   if (!pool.length) {
