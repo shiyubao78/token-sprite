@@ -52,3 +52,16 @@
 - [x] 突出 `github.com/shiyubao78/token-sprite`，但不加入二维码。
 - [x] 检查中文、3:4 尺寸、手机缩略图和图片完整性。
 - [x] 提交新版海报存档。
+
+### Task 4: 全英文电影海报版
+
+**Files:**
+- Reference: `assets/promo/token-sprite-poster-vertical-art.png`
+- Create: `assets/promo/token-sprite-poster-vertical-v3-en.png`
+- Create: `assets/promo/token-sprite-poster-vertical-v3-en-mobile-preview.jpg`
+
+- [x] 将全部中文替换为设计稿中确认的英文文案。
+- [x] 主标题使用粗体窄字与金色微发光，其他文案使用现代无衬线体。
+- [x] 保持六只剪影、发光蛋和五段进化链不变。
+- [x] 检查英文拼写、GitHub 地址、3:4 尺寸、手机缩略图和图片完整性。
+- [x] 提交全英文海报存档。
