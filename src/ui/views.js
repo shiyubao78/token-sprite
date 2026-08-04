@@ -2,33 +2,27 @@ import { formatTokens } from '../domain/format.js';
 import { RARITY } from '../config/rarities.js';
 import { SPECIES, speciesByKey } from '../config/species.js';
 import { ACHIEVEMENTS } from '../config/achievements.js';
-import { spriteUrl } from '../services/sprites.js';
+import { adultUrl } from '../services/sprites.js';
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function eggMarkup(rarity, big) {
-  const c = RARITY[rarity] ? RARITY[rarity].color : '#9aa88a';
-  return `<div class="egg ${big ? 'big' : ''}" style="--eggc:${c}"><span class="egg-q">?</span></div>`;
-}
-
 export function mainHTML(vm) {
-  let stage;
-  let info;
+  let stage, info;
   if (vm.mode === 'incubating') {
     stage = `
       <div class="petstage nodrag" id="petStage">
         <div class="sprite-ground"></div>
-        ${eggMarkup(vm.egg.rarity, true)}
+        <img class="sprite" id="sprite" src="${vm.egg.stageUrl}" alt="孵化中" draggable="false" />
         <div class="fx" id="fx"></div>
         <div class="bubble" id="bubble"></div>
       </div>`;
     info = `
       <div class="petinfo">
-        <div class="chip" style="color:${RARITY[vm.egg.rarity].color}">${vm.egg.rarityName}蛋 · 孵化中</div>
-        <div class="bar"><span style="width:${vm.egg.percent}%;background:${RARITY[vm.egg.rarity].color}"></span></div>
-        <div class="subline">${vm.egg.percent}% · 喂它 ${vm.egg.needText} 就破壳</div>
+        <div class="chip" style="color:${vm.egg.color}">${esc(vm.egg.speciesName)} · 孵化中</div>
+        <div class="bar"><span style="width:${vm.egg.percent}%;background:${vm.egg.color}"></span></div>
+        <div class="subline">${vm.egg.percent}% · 喂它 ${vm.egg.needText} 化形</div>
       </div>`;
   } else {
     stage = `
@@ -41,7 +35,7 @@ export function mainHTML(vm) {
     info = `
       <div class="petinfo">
         <div class="chip">${esc(vm.pet.name)}</div>
-        <div class="subline">${vm.eggsCount > 0 ? '孵化器有蛋 · 去挑一颗孵' : '陪着你 · 攒券抽新蛋'}</div>
+        <div class="subline">${vm.eggsCount > 0 ? '孵化器有蛋 · 去挑一颗养' : '陪着你 · 攒券抽新蛋'}</div>
       </div>`;
   }
   const badge = vm.ticketTotal > 0 ? `<span class="tk-badge" id="tkBadge">🎴 ${vm.ticketTotal}</span>` : '';
@@ -60,9 +54,8 @@ export function mainHTML(vm) {
 }
 
 export function peekHTML(vm) {
-  const inner = vm.mode === 'incubating'
-    ? eggMarkup(vm.egg.rarity, false)
-    : (vm.pet.spriteUrl ? `<img class="peek-sprite mood-${vm.pet.mood}" src="${vm.pet.spriteUrl}" alt="${esc(vm.pet.name)}" draggable="false" />` : '');
+  const url = vm.mode === 'incubating' ? vm.egg.stageUrl : vm.pet.spriteUrl;
+  const inner = url ? `<img class="peek-sprite ${vm.mode === 'pet' ? 'mood-' + vm.pet.mood : ''}" src="${url}" alt="宠物" draggable="false" />` : '';
   return `<div class="peek" id="peek" title="点我展开">${inner}</div>`;
 }
 
@@ -85,7 +78,7 @@ export function menuHTML(vm) {
       <button class="nodrag danger" id="quitBtn">退出</button>
     </div>
     ${vm.isDesktop ? `<div class="toggle-row nodrag"><span>开机自启</span><button class="toggle" id="autoBtn">…</button></div>` : ''}
-    <div class="source-note" style="margin-top:12px">自动检测本地 AI 工具用量，token 用来孵蛋、集齐图鉴。</div>
+    <div class="source-note" style="margin-top:12px">自动检测本地 AI 工具用量，token 用来孵蛋养成、集齐图鉴。</div>
   `;
 }
 
@@ -112,21 +105,20 @@ export function incubatorHTML(vm) {
   }
   const rows = vm.eggs.map((e) => `
     <div class="egg-row ${e.active ? 'active' : ''} nodrag" data-egg="${e.id}">
-      ${eggMarkup(e.rarity, false)}
-      <div class="egg-info"><div class="en">${RARITY[e.rarity].name}蛋</div><div class="es">${e.active ? `孵化中 · ${e.percent}%` : '点我开始孵'}</div></div>
-      ${e.active ? '<span class="egg-badge">在孵</span>' : ''}
+      <img class="egg-thumb" src="${e.seedUrl}" alt="${esc(e.speciesName)}" />
+      <div class="egg-info"><div class="en">${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? `孵化中 · ${e.percent}%` : '点我开始养'}</div></div>
+      ${e.active ? '<span class="egg-badge">在养</span>' : ''}
     </div>`).join('');
-  return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 选一颗孵</h2>${rows}
-    <div class="source-note" style="margin-top:8px">在孵的蛋会吃你的 token；喂够门槛就破壳。换一颗孵，进度从头算。</div>`;
+  return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 选一颗养</h2>${rows}
+    <div class="source-note" style="margin-top:8px">在养的蛋会吃你的 token，一路进化到化形。换一颗养，进度从头算。</div>`;
 }
 
 export function collectionHTML(vm) {
   const cells = SPECIES.map((s) => {
     const owned = vm.collection[s.key];
-    const url = spriteUrl(s.art);
     return `<div class="dex-cell ${owned ? 'owned nodrag' : 'locked'}" ${owned ? `data-battle="${s.key}"` : ''}>
       <div class="dex-pic" style="--rc:${RARITY[s.rarity].color}">
-        ${owned ? `<img src="${url}" alt="${esc(s.name)}" />` : '<span class="qm">?</span>'}
+        ${owned ? `<img src="${adultUrl(s.folder)}" alt="${esc(s.name)}" />` : '<span class="qm">?</span>'}
         ${owned && owned.count > 1 ? `<span class="cnt">×${owned.count}</span>` : ''}
         ${vm.activePetSpecies === s.key ? '<span class="battle">陪伴中</span>' : ''}
       </div>

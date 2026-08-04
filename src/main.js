@@ -1,11 +1,11 @@
 import './style.css';
 import { computeMood, pickBubble, ACTIVE_MS, RETURN_IDLE_MS, BURST_TOKENS } from './domain/mood.js';
-import { incubation } from './domain/incubation.js';
+import { incubation, incubationStage } from './domain/incubation.js';
 import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch } from './domain/incubator.js';
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
 import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
-import { spriteUrl } from './services/sprites.js';
+import { stageUrl, adultUrl } from './services/sprites.js';
 import { RARITY } from './config/rarities.js';
 import { SPECIES, speciesByKey } from './config/species.js';
 import { ACHIEVEMENTS } from './config/achievements.js';
@@ -53,14 +53,16 @@ function deriveVm() {
   const mood = computeMood({ idleMs, hour: new Date().getHours(), sessionMinutes: sessionMinutesNow, recentTokens: usage.recentTokens || 0, decayed: false });
 
   const eggsVm = (state.eggs || []).map((e) => {
+    const sp = speciesByKey(e.species) || SPECIES[0];
     const active = e.id === state.activeEggId;
     const pct = active ? Math.round(incubation(growth, state.incubationStart, e.rarity).fraction * 100) : 0;
-    return { id: e.id, rarity: e.rarity, active, percent: pct };
+    return { id: e.id, rarity: e.rarity, active, percent: pct, speciesName: sp.name, seedUrl: stageUrl(sp.folder, 1) };
   });
 
   let mode, egg = null, pet = null;
   const activeEgg = (state.eggs || []).find((e) => e.id === state.activeEggId);
   if (activeEgg) {
+    const sp = speciesByKey(activeEgg.species) || SPECIES[0];
     const inc = incubation(growth, state.incubationStart, activeEgg.rarity);
     mode = 'incubating';
     egg = {
@@ -69,11 +71,13 @@ function deriveVm() {
       color: RARITY[activeEgg.rarity].color,
       percent: Math.round(inc.fraction * 100),
       needText: formatNeed(inc.need),
+      speciesName: sp.name,
+      stageUrl: stageUrl(sp.folder, incubationStage(inc.fraction)),
     };
   } else {
     mode = 'pet';
     const sp = speciesByKey(state.activePetSpecies) || SPECIES[0];
-    pet = { name: sp.name, spriteUrl: spriteUrl(sp.art), mood };
+    pet = { name: sp.name, spriteUrl: adultUrl(sp.folder), mood };
   }
 
   return {
@@ -200,7 +204,7 @@ function showHatch(h) {
   const sp = speciesByKey(h.species);
   const mask = document.createElement('div');
   mask.className = 'evolve-mask nodrag';
-  const url = sp ? spriteUrl(sp.art) : null;
+  const url = sp ? adultUrl(sp.folder) : null;
   mask.innerHTML = `
     <div class="spark">✨ 破壳！</div>
     <div class="cap" style="color:${RARITY[h.rarity].color}">${RARITY[h.rarity].name}</div>
@@ -253,7 +257,7 @@ function openGacha() {
       const sp = speciesByKey(res.egg.species);
       const rc = RARITY[res.egg.rarity];
       const box = mask.querySelector('#gachaResult');
-      if (box) { box.innerHTML = `🎉 开出一颗 <b style="color:${rc.color}">${rc.name}蛋</b>！去孵化器孵它，破壳揭晓品种`; box.classList.add('pop'); }
+      if (box) { box.innerHTML = `🎉 开出 <b style="color:${rc.color}">${rc.name}</b> · ${sp ? sp.name : '神秘蛋'}！去孵化器养它化形`; box.classList.add('pop'); }
       // 刷新券数
       mask.querySelectorAll('[data-draw]').forEach((b2) => {
         const rr = b2.getAttribute('data-draw');

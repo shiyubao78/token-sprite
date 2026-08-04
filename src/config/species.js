@@ -1,18 +1,17 @@
-// 起步 6 个品种，跨 4 档稀有度。art 暂借现有形象当占位（stage-N.png），产品出图后换成
-// assets/species/<key>/adult.png。品种、稀有度、名字、图路径都集中在这里。
+// 6 个品种，每个一条 5 段进化线（1-seed 蛋 → 2-sprout → 3-growth → 4-bud → 5-adult 化形）。
+// 图在 assets/sprite/<folder>/<n>-*.png。稀有度决定孵化门槛与抽中概率。
 export const SPECIES = [
-  { key: 'mossling', name: '草木灵', rarity: 'common', art: 3, note: '最常见的森野小灵' },
-  { key: 'sprout', name: '嫩芽兽', rarity: 'common', art: 2, note: '刚破壳的一点绿' },
-  { key: 'nightfox', name: '夜行狐', rarity: 'rare', art: 4, note: '深夜出没的火花' },
-  { key: 'dawndeer', name: '晨露鹿', rarity: 'rare', art: 1, note: '沾着晨光的种子' },
-  { key: 'bloomwhale', name: '绽放鲸', rarity: 'epic', art: 5, note: '花开时浮现的光' },
-  { key: 'crownfae', name: '花冠精灵', rarity: 'legendary', art: 6, note: '传说的化形精灵' },
+  { key: 'flower', name: '萌芽精灵', rarity: 'common', folder: '00-flower-spirit', note: '草木之灵，化形为花仙子' },
+  { key: 'shell', name: '贝壳精灵', rarity: 'common', folder: '01-water-shell', note: '海洋之灵，背着海螺壳' },
+  { key: 'fire', name: '火苗精灵', rarity: 'rare', folder: '02-fire-lava', note: '岩浆之灵，化形为熔岩兽' },
+  { key: 'thunder', name: '雷精灵', rarity: 'rare', folder: '03-thunder-spirit', note: '雷电之灵，化形为雷电团子' },
+  { key: 'ice', name: '冰凤凰', rarity: 'epic', folder: '05-ice-phoenix', note: '冰晶之灵，化形为冰晶战鸟' },
+  { key: 'mech', name: '机械兽', rarity: 'legendary', folder: '04-mech-spirit', note: '科技之灵，化形为金色机械兽' },
 ];
 
 export function speciesByKey(key) {
   return SPECIES.find((s) => s.key === key) || null;
 }
-
 export function speciesOfRarity(rarity) {
   return SPECIES.filter((s) => s.rarity === rarity);
 }
