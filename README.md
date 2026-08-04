@@ -8,7 +8,7 @@
 把真实的 AI 编程用量变成一只住在桌面角落、一路破壳进化的小精灵。<br />
 Turn your real AI-coding usage into a tiny desktop companion that hatches, evolves, and grows with you.
 
-<img src="assets/readme/hatching-hero.png" width="760" alt="Token 小精灵孵化、五段进化与六只神秘精灵 / Token Sprite hatching, five-stage evolution, and six mystery creatures" />
+<img src="assets/readme/hatching-hero-wide.png" width="900" alt="Token 小精灵横版孵化主视觉、五段进化与六只神秘精灵 / Token Sprite wide hatching hero, five-stage evolution, and six mystery creatures" />
 
 ### `CODE → HATCH → EVOLVE → COLLECT`
 
