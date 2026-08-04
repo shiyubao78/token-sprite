@@ -48,3 +48,16 @@
 - [x] 确认 README 不再包含 `collection-shadows.png`。
 - [x] 检查 Markdown 代码围栏、HTML 标签和表格结构成对完整。
 - [x] 运行项目测试并提交版本存档。
+
+### Task 4: 16:9 README 横版主视觉
+
+**Files:**
+- Reference: `assets/readme/hatching-hero.png`
+- Create: `assets/readme/hatching-hero-wide.png`
+- Modify: `README.md`
+
+- [x] 以竖版主视觉为编辑目标，重新扩展为 16:9 横向构图。
+- [x] 保留中央发光蛋、六只精灵剪影、五段进化链和深蓝紫电影感，不加入文字。
+- [x] 检查横图为精确 16:9，角色不被裁断，缩略图下仍可辨识。
+- [x] 将 README 顶部图片替换为 `hatching-hero-wide.png`，显示宽度设为 `900`。
+- [x] 检查 README 本地图片引用、项目测试，并同步 GitHub。
