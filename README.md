@@ -76,9 +76,29 @@ npm start
 | Claude Code | `~/.claude/projects/**/*.jsonl` |
 | Codex | `~/.codex/**/rollout-*.jsonl` |
 
-安装那刻记一个基准，之后**从 0 开始养** —— 你写多少，它长多少。想加更多工具，在 `scripts/usage.mjs` 的 `READERS` 里加一个读取器即可（欢迎 PR）。
+安装那刻记一个基准，之后**从 0 开始养** —— 你写多少，它长多少。
 
-> 只能统计把 token 写在本地、可解析的工具；豆包 / DeepSeek / Kimi 这类用量在服务端、本地无数据。
+> 只能统计把 token **写在本地、可解析**的工具（多为 CLI）；豆包 / Cursor / Trae / DeepSeek / Kimi 这类用量在服务端、本地无数据，**任何本地工具都读不到**。
+
+### 想让它认出你的工具？加一个读取器（十行）
+
+用了别的会写本地日志的 CLI（Gemini CLI、OpenCode、Aider…）？在 `scripts/usage.mjs` 的 `READERS` 里照着加一段即可，装了就自动纳入、没装自动跳过：
+
+```js
+async function readYourTool() {
+  const root = join(homedir(), '.yourtool');
+  if (!(await exists(root))) return null;           // 没装 → 跳过
+  let total = 0, recentTokens = 0, todayTokens = 0, lastActivityAt = 0;
+  // 遍历该工具的本地日志，累加 token、记录最近/今日/时间戳……
+  return { total, recentTokens, todayTokens, lastActivityAt };
+}
+export const READERS = [
+  /* …已有的 Claude Code、Codex… */
+  { source: 'yourtool', label: 'Your Tool', read: readYourTool },
+];
+```
+
+💡 因为你多半也在用 AI agent，可以直接让它帮你写：**“看看我本地 &lt;工具&gt; 的用量日志格式，给 token-sprite 的 `scripts/usage.mjs` 加一个读取器。”** 欢迎 PR 回来惠及大家。
 
 ## 📦 打包成 .app
 
