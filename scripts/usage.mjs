@@ -97,10 +97,46 @@ async function readCodex() {
   return { total, recentTokens, todayTokens, lastActivityAt };
 }
 
+// ---- Gemini CLI（best-effort，待真机验证）：~/.gemini 下 json/jsonl 里 usageMetadata.totalTokenCount ----
+// 用 Gemini 真实字段名，找不到就返回 null，绝不误算。时间戳用文件修改时间近似。
+function collectGeminiTokens(node, out) {
+  if (Array.isArray(node)) { for (const x of node) collectGeminiTokens(x, out); return; }
+  if (node && typeof node === 'object') {
+    const um = node.usageMetadata;
+    if (um && typeof um === 'object' && Number.isFinite(um.totalTokenCount)) out.push(um.totalTokenCount);
+    for (const k in node) collectGeminiTokens(node[k], out);
+  }
+}
+async function readGeminiCli() {
+  const root = join(homedir(), '.gemini');
+  if (!(await exists(root))) return null;
+  const files = [...(await walk(root, '.json')), ...(await walk(root, '.jsonl'))];
+  if (!files.length) return null;
+  const cutoff = Date.now() - RECENT_MS;
+  const dayCutoff = startOfToday();
+  let total = 0, recentTokens = 0, todayTokens = 0, lastActivityAt = 0, found = false;
+  for (const f of files) {
+    let text, mtime;
+    try { text = await readFile(f, 'utf8'); mtime = (await stat(f)).mtimeMs; } catch { continue; }
+    const out = [];
+    try { collectGeminiTokens(JSON.parse(text), out); }
+    catch { eachLine(text, (obj) => collectGeminiTokens(obj, out)); }
+    if (!out.length) continue;
+    found = true;
+    const fileTokens = out.reduce((s, n) => s + n, 0);
+    total += fileTokens;
+    if (mtime > lastActivityAt) lastActivityAt = mtime;
+    if (mtime >= cutoff) recentTokens += fileTokens;
+    if (mtime >= dayCutoff) todayTokens += fileTokens;
+  }
+  return found ? { total, recentTokens, todayTokens, lastActivityAt } : null;
+}
+
 // 读取器登记表。新增工具在这里加一行即可（read 返回 {total,lastActivityAt}，没装则返回 null）。
 export const READERS = [
   { source: 'claude-code', label: 'Claude Code', read: readClaudeCode },
   { source: 'codex', label: 'Codex', read: readCodex },
+  { source: 'gemini-cli', label: 'Gemini CLI', read: readGeminiCli },
 ];
 
 export async function computeLocalUsage() {
