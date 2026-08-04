@@ -41,7 +41,7 @@ export function mainHTML(vm) {
     info = `
       <div class="petinfo">
         <div class="chip">${esc(vm.pet.name)}</div>
-        <div class="subline">${vm.eggsCount > 0 ? '孵化器有蛋 · 去挑一颗孵' : '出战中 · 攒券抽新蛋'}</div>
+        <div class="subline">${vm.eggsCount > 0 ? '孵化器有蛋 · 去挑一颗孵' : '陪着你 · 攒券抽新蛋'}</div>
       </div>`;
   }
   const badge = vm.ticketTotal > 0 ? `<span class="tk-badge" id="tkBadge">🎴 ${vm.ticketTotal}</span>` : '';
@@ -128,7 +128,7 @@ export function collectionHTML(vm) {
       <div class="dex-pic" style="--rc:${RARITY[s.rarity].color}">
         ${owned ? `<img src="${url}" alt="${esc(s.name)}" />` : '<span class="qm">?</span>'}
         ${owned && owned.count > 1 ? `<span class="cnt">×${owned.count}</span>` : ''}
-        ${vm.activePetSpecies === s.key ? '<span class="battle">出战</span>' : ''}
+        ${vm.activePetSpecies === s.key ? '<span class="battle">陪伴中</span>' : ''}
       </div>
       <div class="dex-nm">${owned ? esc(s.name) : '？？？'}</div>
       <div class="dex-rr" style="color:${RARITY[s.rarity].color}">${RARITY[s.rarity].name}</div>
@@ -136,7 +136,7 @@ export function collectionHTML(vm) {
   }).join('');
   return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>图鉴 · ${vm.ownedCount}/${SPECIES.length}</h2>
     <div class="dex-grid">${cells}</div>
-    <div class="source-note" style="margin-top:8px">点已获得的品种可让它出战。</div>`;
+    <div class="source-note" style="margin-top:8px">点已获得的品种，让它陪你。</div>`;
 }
 
 export function achievementsHTML(vm) {
