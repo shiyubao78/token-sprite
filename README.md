@@ -69,6 +69,24 @@ Every draw gives you an egg. Keep coding to complete all five stages and add its
 > 数值可在 `src/config/achievements.js` 与 `src/config/rarities.js` 调整。<br />
 > Balance values live in `src/config/achievements.js` and `src/config/rarities.js`.
 
+## 🖥️ 界面一览 / A Look Inside
+
+全本地、免登录，一个悬浮小窗搞定：改名、抽卡、孵化、图鉴、成就。<br />
+Fully local, no login — one floating window: rename, draw, hatch, collect, and earn achievements.
+
+<p align="center">
+<img src="assets/readme/interface-overview.png" width="900" alt="六个界面：主界面、菜单（改名/功能入口）、抽卡、孵化器、图鉴、成就 / Six panels: main, menu (rename & hub), gacha, incubator, collection, achievements" />
+</p>
+
+| 界面 / Panel | 能做什么 / What you do |
+|---|---|
+| 🏠 主界面 / Main | 桌面悬浮桌宠，实时显示孵化进度（精确到 0.01%）/ Floating pet with live hatch progress (down to 0.01%) |
+| ⚙️ 菜单 / Menu | 给精灵改名、进入各功能、开关开机自启 / Rename your sprite, open features, toggle auto-launch |
+| 🎴 抽卡 / Gacha | 用成就攒的券抽不同稀有度的蛋 / Spend achievement tickets to draw eggs of varying rarity |
+| 🥚 孵化器 / Incubator | 多颗蛋切换养，各记各的进度、不清零 / Raise multiple eggs, each keeps its own progress |
+| 📖 图鉴 / Collection | 收集 6 种精灵，点已获得的让它陪伴 / Collect 6 species; tap an owned one to make it your companion |
+| 🏆 成就 / Achievements | 达成条件得券，全用真实 token 用量判定 / Earn tickets by hitting milestones, all judged on real token usage |
+
 ## 🚀 快速开始 / Quick Start
 
 需要 [Node.js](https://nodejs.org/) 20+，支持 **macOS、Windows 与 Linux**。<br />
