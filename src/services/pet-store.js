@@ -8,9 +8,9 @@ export function defaultState() {
     greetDate: null,
     achievements: {}, // { [id]: { at } } 已达成
     tickets: { common: 0, rare: 0, epic: 0, legendary: 0 }, // 抽卡券
-    eggs: [], // 孵化器里的蛋 { id, rarity, species, at }
-    activeEggId: null, // 在孵的蛋
-    incubationStart: 0, // 该蛋开始在孵时的 growthTotal
+    eggs: [], // 孵化器里的蛋 { id, rarity, species, at, fed }。fed=这只自己的累积喂养量，切换也不清零
+    activeEggId: null, // 放在桌面上（在养）的那颗蛋，只有它吸收新增 token
+    lastGrowth: null, // 上次记账时的 growthTotal，用来算「这次新增多少」喂给在养的那只（null=未初始化/待迁移）
     collection: {}, // 图鉴 { [species]: { count, firstAt } }
     activePetSpecies: null, // 出战宠物
     activeDates: [], // 活跃日 YYYY-MM-DD

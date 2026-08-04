@@ -106,11 +106,11 @@ export function incubatorHTML(vm) {
   const rows = vm.eggs.map((e) => `
     <div class="egg-row ${e.active ? 'active' : ''} nodrag" data-egg="${e.id}">
       <img class="egg-thumb" src="${e.seedUrl}" alt="${esc(e.speciesName)}" />
-      <div class="egg-info"><div class="en">${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? `孵化中 · ${e.percent}%` : '点我开始养'}</div></div>
+      <div class="egg-info"><div class="en">${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? `在养中 · ${e.percent}%` : `已养到 ${e.percent}% · 点我接着养`}</div></div>
       ${e.active ? '<span class="egg-badge">在养</span>' : ''}
     </div>`).join('');
   return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 选一颗养</h2>${rows}
-    <div class="source-note" style="margin-top:8px">在养的蛋会吃你的 token，一路进化到化形。换一颗养，进度从头算。</div>`;
+    <div class="source-note" style="margin-top:8px">在养的蛋吃你的 token 一路进化到化形。换着养也不清零——每只各记各的进度，放桌面上就接着长。</div>`;
 }
 
 export function collectionHTML(vm) {

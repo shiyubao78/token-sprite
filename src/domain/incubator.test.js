@@ -1,22 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch } from './incubator.js';
+import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, accrue } from './incubator.js';
 
 const B = 1_000_000_000;
 function seq(vals) { let i = 0; return () => vals[i++ % vals.length]; }
 function baseState() {
   return {
     tickets: { common: 1, rare: 0, epic: 0, legendary: 0 },
-    eggs: [], activeEggId: null, incubationStart: 0, collection: {}, activePetSpecies: null,
+    eggs: [], activeEggId: null, lastGrowth: null, collection: {}, activePetSpecies: null,
   };
 }
 
 describe('drawFromTicket', () => {
-  it('消耗一张券、得一颗蛋', () => {
+  it('消耗一张券、得一颗蛋、初始喂养为 0', () => {
     const s = baseState();
     const r = drawFromTicket(s, 'common', seq([0.9, 0]));
     expect(r.egg.rarity).toBe('common');
     expect(s.tickets.common).toBe(0);
     expect(s.eggs).toHaveLength(1);
+    expect(s.eggs[0].fed).toBe(0);
   });
   it('没券返回 null', () => {
     const s = baseState();
@@ -40,12 +41,55 @@ describe('ensureStarter', () => {
   });
 });
 
-describe('settleHatch', () => {
-  it('喂够门槛破壳、进图鉴、清空在孵、设为出战', () => {
+describe('accrue（每只自己累积喂养）', () => {
+  it('只有桌面上那只(在养)吸收新增 token', () => {
     const s = baseState();
-    ensureStarter(s, 0, seq([0.9, 0])); // 一颗 common 蛋在孵，start=0
+    ensureStarter(s, 0, seq([0.9, 0]));
+    accrue(s, 0);          // 初始化记账基准
+    accrue(s, 0.3 * B);    // 新增 0.3B → 全喂给在养的这只
+    expect(s.eggs[0].fed).toBeCloseTo(0.3 * B, 0);
+  });
+
+  it('切换在养对象时，各自进度都保留、不清零', () => {
+    const s = baseState();
+    // 手动放两颗蛋
+    s.eggs = [
+      { id: 'a', rarity: 'common', species: 'flower', at: 1, fed: 0 },
+      { id: 'b', rarity: 'common', species: 'shell', at: 2, fed: 0 },
+    ];
+    s.activeEggId = 'a';
+    accrue(s, 0);
+    accrue(s, 0.2 * B);              // a 吃到 0.2B
+    setActiveEgg(s, 'b', 0.2 * B);   // 切到 b（先把增量结算给 a）
+    accrue(s, 0.5 * B);              // 新增 0.3B → 给 b
+    expect(s.eggs.find((e) => e.id === 'a').fed).toBeCloseTo(0.2 * B, 0); // a 冻结在 0.2B
+    expect(s.eggs.find((e) => e.id === 'b').fed).toBeCloseTo(0.3 * B, 0); // b 累积 0.3B
+    // 再切回 a，继续在 0.2B 基础上累积
+    setActiveEgg(s, 'a', 0.5 * B);
+    accrue(s, 0.6 * B);              // 新增 0.1B → 给 a
+    expect(s.eggs.find((e) => e.id === 'a').fed).toBeCloseTo(0.3 * B, 0);
+  });
+
+  it('迁移旧存档：把在孵蛋的历史进度换算成 fed', () => {
+    const s = baseState();
+    s.eggs = [{ id: 'a', rarity: 'common', species: 'flower', at: 1 }]; // 无 fed
+    s.activeEggId = 'a';
+    s.incubationStart = 0.1 * B; // 旧字段：从 growth=0.1B 开始在孵
+    s.lastGrowth = null;
+    accrue(s, 0.4 * B); // 当前 growth 0.4B → 已喂 0.3B
+    expect(s.eggs[0].fed).toBeCloseTo(0.3 * B, 0);
+    expect(s.lastGrowth).toBe(0.4 * B);
+  });
+});
+
+describe('settleHatch', () => {
+  it('喂够门槛破壳、进图鉴、清空在孵、设为陪伴', () => {
+    const s = baseState();
+    ensureStarter(s, 0, seq([0.9, 0])); // 一颗 common 蛋在孵
     const species = s.eggs[0].species;
-    const r = settleHatch(s, 0.6 * B); // common 门槛 0.5B → 破壳
+    accrue(s, 0);
+    accrue(s, 0.6 * B); // common 门槛 0.5B → 喂够
+    const r = settleHatch(s, 0.6 * B);
     expect(r.species).toBe(species);
     expect(s.collection[species].count).toBe(1);
     expect(s.activeEggId).toBeNull();
@@ -55,6 +99,8 @@ describe('settleHatch', () => {
   it('没喂够不破壳', () => {
     const s = baseState();
     ensureStarter(s, 0, seq([0.9, 0]));
+    accrue(s, 0);
+    accrue(s, 0.2 * B);
     expect(settleHatch(s, 0.2 * B)).toBeNull();
   });
 });

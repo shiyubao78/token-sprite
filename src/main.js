@@ -55,20 +55,21 @@ function deriveVm() {
   const eggsVm = (state.eggs || []).map((e) => {
     const sp = speciesByKey(e.species) || SPECIES[0];
     const active = e.id === state.activeEggId;
-    const pct = active ? Math.round(incubation(growth, state.incubationStart, e.rarity).fraction * 100) : 0;
-    return { id: e.id, rarity: e.rarity, active, percent: pct, speciesName: sp.name, seedUrl: stageUrl(sp.folder, 1) };
+    // 稀有度以品种为准（修旧存档存歪的 rarity）；进度用这只自己的累积喂养，非在养也保留
+    const inc = incubation(e.fed, sp.rarity);
+    return { id: e.id, rarity: sp.rarity, active, percent: Math.round(inc.fraction * 100), speciesName: sp.name, seedUrl: stageUrl(sp.folder, 1) };
   });
 
   let mode, egg = null, pet = null;
   const activeEgg = (state.eggs || []).find((e) => e.id === state.activeEggId);
   if (activeEgg) {
     const sp = speciesByKey(activeEgg.species) || SPECIES[0];
-    const inc = incubation(growth, state.incubationStart, activeEgg.rarity);
+    const inc = incubation(activeEgg.fed, sp.rarity);
     mode = 'incubating';
     egg = {
-      rarity: activeEgg.rarity,
-      rarityName: RARITY[activeEgg.rarity].name,
-      color: RARITY[activeEgg.rarity].color,
+      rarity: sp.rarity,
+      rarityName: RARITY[sp.rarity].name,
+      color: RARITY[sp.rarity].color,
       percent: Math.round(inc.fraction * 100),
       needText: formatNeed(inc.need),
       speciesName: sp.name,

@@ -4,3 +4,4 @@ release/
 .DS_Store
 build/icon.iconset/
 build/icon-1024.png
+assets/sprite/_raw/
