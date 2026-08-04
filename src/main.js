@@ -83,6 +83,7 @@ function deriveVm() {
   return {
     petName: state.petName,
     isDesktop: !!(globalThis.tokenSprite && globalThis.tokenSprite.getAutoLaunch),
+    canAutoLaunch: !!(globalThis.tokenSprite && globalThis.tokenSprite.getAutoLaunch) && globalThis.tokenSprite.platform !== 'linux',
     mode, egg, pet,
     ticketTotal: ticketTotal(),
     tickets: state.tickets || { common: 0, rare: 0, epic: 0, legendary: 0 },

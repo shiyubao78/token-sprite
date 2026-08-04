@@ -77,7 +77,7 @@ export function menuHTML(vm) {
       <button class="nodrag" id="saveBtn">保存</button>
       <button class="nodrag danger" id="quitBtn">退出</button>
     </div>
-    ${vm.isDesktop ? `<div class="toggle-row nodrag"><span>开机自启</span><button class="toggle" id="autoBtn">…</button></div>` : ''}
+    ${vm.canAutoLaunch ? `<div class="toggle-row nodrag"><span>开机自启</span><button class="toggle" id="autoBtn">…</button></div>` : ''}
     <div class="source-note" style="margin-top:12px">自动检测本地 AI 工具用量，token 用来孵蛋养成、集齐图鉴。</div>
   `;
 }

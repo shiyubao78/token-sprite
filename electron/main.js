@@ -19,6 +19,7 @@ function createWindow() {
     y: workArea.y + workArea.height - FULL.h - 24,
     frame: false,
     transparent: true,
+    backgroundColor: '#00000000',
     resizable: false,
     alwaysOnTop: true,
     skipTaskbar: true,
@@ -26,8 +27,12 @@ function createWindow() {
     fullscreenable: false,
     webPreferences: { preload: path.join(dir, 'preload.cjs') },
   });
+  // 'floating' 层级仅 macOS 生效，其它系统忽略该参数，仍是普通置顶
   win.setAlwaysOnTop(true, 'floating');
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // 跨工作区/全屏跟随：macOS 支持；Windows/Linux 部分桌面环境不支持，失败也不影响主功能
+  try {
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  } catch { /* 某些 Linux 桌面环境不支持，忽略 */ }
   if (DEV_URL) win.loadURL(DEV_URL);
   else win.loadFile(path.join(dir, '..', 'dist', 'index.html'));
   mainWin = win;
@@ -44,12 +49,19 @@ function setCollapsed(win, collapsed) {
 }
 
 app.whenReady().then(() => {
+  // 开机自启：macOS / Windows 原生支持；Linux 用 XDG autostart，个别桌面环境可能不生效
+  const autoLaunchSupported = process.platform === 'darwin' || process.platform === 'win32';
+  ipcMain.handle('autolaunch:supported', () => autoLaunchSupported);
   ipcMain.handle('usage:get', () => computeLocalUsage());
   ipcMain.on('app:quit', () => app.quit());
-  ipcMain.handle('autolaunch:get', () => app.getLoginItemSettings().openAtLogin);
+  ipcMain.handle('autolaunch:get', () => {
+    try { return app.getLoginItemSettings().openAtLogin; } catch { return false; }
+  });
   ipcMain.handle('autolaunch:set', (_e, on) => {
-    app.setLoginItemSettings({ openAtLogin: !!on });
-    return app.getLoginItemSettings().openAtLogin;
+    try {
+      app.setLoginItemSettings({ openAtLogin: !!on });
+      return app.getLoginItemSettings().openAtLogin;
+    } catch { return false; }
   });
   ipcMain.handle('window:getPos', (e) => BrowserWindow.fromWebContents(e.sender)?.getPosition() || [0, 0]);
   ipcMain.on('window:setPos', (e, x, y) => {
@@ -60,8 +72,12 @@ app.whenReady().then(() => {
     if (w) setCollapsed(w, !!collapsed);
   });
   // 打包后首次运行默认开启开机自启（用户可在菜单里关掉）
-  if (app.isPackaged && !app.getLoginItemSettings().wasOpenedAtLogin) {
-    app.setLoginItemSettings({ openAtLogin: true });
+  if (app.isPackaged && autoLaunchSupported) {
+    try {
+      if (!app.getLoginItemSettings().wasOpenedAtLogin) {
+        app.setLoginItemSettings({ openAtLogin: true });
+      }
+    } catch { /* 平台不支持则跳过 */ }
   }
   createWindow();
   app.on('activate', () => {

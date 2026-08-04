@@ -4,7 +4,7 @@
 
 ## 怎么运行（最重要）
 
-macOS + Node.js 20+。仓库根目录：
+Node.js 20+，macOS / Windows / Linux 均可。仓库根目录：
 
 ```bash
 npm install
@@ -12,12 +12,12 @@ npm start          # 编译 + 启动桌宠，出现在桌面右下角
 ```
 
 - `npm start` = `npm run build`（Vite 构建）+ `electron .`（启动桌面壳）。退出：点桌宠 `⋯` → 退出。
-- 开发热更新：`npm run dev`（终端1）+ `npm run desktop`（终端2，electron 指向 localhost:5173）。
-- 打包 `.app`：`npm run pack` → `release/mac-universal/Token小精灵.app`。测试：`npm test`。
+- 开发热更新：`npm run dev`（终端1）+ `npm run desktop`（终端2，electron 指向 localhost:5173，用 cross-env 设环境变量以兼容 Windows）。
+- 打包（在目标系统本机跑）：`npm run pack`（mac → `release/mac-universal/Token小精灵.app`）/ `pack:win`（Windows → 免安装 exe + NSIS）/ `pack:linux`（Linux → AppImage）。三系统一键出包用 `.github/workflows/build.yml`（Actions 手动触发）。测试：`npm test`。
 
 ## 这是什么
 
-macOS 桌面桌宠 + **成就抽卡 × 孵化养成 × 图鉴收集**：读本机 AI 编程工具的真实 token 用量，token 用来孵蛋、让精灵一路进化到化形、集齐图鉴。悬浮置顶、可拖动、可收起「侧边探头」。还会陪你（连写劝歇、深夜关心、久别招手）。全本地、不联网。
+桌面桌宠（macOS / Windows / Linux 通用）+ **成就抽卡 × 孵化养成 × 图鉴收集**：读本机 AI 编程工具的真实 token 用量，token 用来孵蛋、让精灵一路进化到化形、集齐图鉴。悬浮置顶、可拖动、可收起「侧边探头」。还会陪你（连写劝歇、深夜关心、久别招手）。全本地、不联网。
 
 **核心闭环**：写代码烧 token → 达成就领券 → 抽卡开不同稀有度的蛋 → 孵化器选一颗养 → token 喂它从蛋进化到化形 → 破壳进图鉴 → 切换谁陪你。
 
@@ -38,7 +38,7 @@ macOS 桌面桌宠 + **成就抽卡 × 孵化养成 × 图鉴收集**：读本�
 - `src/ui/views.js`：主视图(在孵蛋/陪伴宠物) + 抽卡/孵化器/图鉴/成就面板 + 菜单模板。
 - `src/main.js`：控制器（定时同步、成就发券、孵化结算、破壳演出、拖拽、收起、心情台词、各面板）。
 - `scripts/usage.mjs`：本地用量读取（READERS）。`vite.config.js`：开发 `/api/usage` 中间件。
-- `electron/main.js`：无边框/透明/置顶/可拖/可收起小窗，主进程 IPC 供数据、移窗、收起、开机自启。`electron/preload.cjs`：`window.tokenSprite`。
+- `electron/main.js`：无边框/透明/置顶/可拖/可收起小窗，主进程 IPC 供数据、移窗、收起、开机自启。macOS 专属的置顶层级/跨工作区调用做了跨平台降级（不支持则忽略）；开机自启仅 mac/win 提供开关（`autolaunch:supported`），Linux 隐藏。`electron/preload.cjs`：`window.tokenSprite`（含 `platform`）。
 
 ## 约定
 
@@ -48,6 +48,7 @@ macOS 桌面桌宠 + **成就抽卡 × 孵化养成 × 图鉴收集**：读本�
 
 ## 已知限制
 
-- 仅 macOS / Apple 芯片打包已验证（配置为 universal）；`.app` 未签名（首次右键→打开）。
+- 三系统均支持：mac(universal)/win(portable+nsis)/linux(AppImage)；包都未签名（mac 右键→打开、Windows SmartScreen 放行）。Windows/Linux 打包与真机运行建议用 CI 或对应系统验证。
+- Linux 的透明/置顶效果依赖桌面环境合成器；开机自启在 Linux 未提供开关。
 - 服务端用量的工具（豆包/Cursor 等）本地读不到，无法统计。
 - 内置形象为 AI 生成示例图，可替换。

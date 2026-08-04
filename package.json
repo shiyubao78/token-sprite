@@ -11,11 +11,14 @@
     "preview": "vite preview",
     "sync": "node scripts/sync.mjs",
     "electron": "electron .",
-    "desktop": "TS_DEV_URL=http://localhost:5173 electron .",
+    "desktop": "cross-env TS_DEV_URL=http://localhost:5173 electron .",
     "pack": "npm run build && electron-builder --mac dir",
+    "pack:win": "npm run build && electron-builder --win",
+    "pack:linux": "npm run build && electron-builder --linux",
     "test": "vitest run"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",
     "jsdom": "^25.0.1",
@@ -26,13 +29,49 @@
     "appId": "com.tokensprite.app",
     "productName": "Token小精灵",
     "asar": false,
-    "directories": { "output": "release" },
-    "files": ["electron/**", "dist/**", "scripts/usage.mjs", "package.json"],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**",
+      "dist/**",
+      "scripts/usage.mjs",
+      "package.json"
+    ],
     "mac": {
-      "target": [{ "target": "dir", "arch": "universal" }],
+      "target": [
+        {
+          "target": "dir",
+          "arch": "universal"
+        }
+      ],
       "category": "public.app-category.developer-tools",
       "icon": "build/icon.icns",
       "identity": null
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable"
+        },
+        {
+          "target": "nsis"
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
     }
   }
 }

@@ -4,7 +4,7 @@
 
 **用你真实烧掉的 AI 编程 token，孵化、养成、集齐一整墙小精灵。**
 
-一只养在 macOS 桌面角落的桌宠 —— 你每写一段代码，它就在悄悄进化。
+一只养在桌面角落的桌宠（macOS / Windows / Linux 通吃）—— 你每写一段代码，它就在悄悄进化。
 全程只读本地用量，**不联网、不上传**。
 
 </div>
@@ -66,7 +66,7 @@
 
 ## 🚀 快速开始
 
-需要 [Node.js](https://nodejs.org/) 20+（macOS，Intel / Apple 芯片通用）。
+需要 [Node.js](https://nodejs.org/) 20+。**macOS / Windows / Linux 都能跑**（macOS 支持 Intel / Apple 芯片通用）。
 
 ```bash
 git clone https://github.com/shiyubao78/token-sprite.git
@@ -116,13 +116,23 @@ export const READERS = [
 
 💡 因为你多半也在用 AI agent，可以直接让它帮你写：**“看看我本地 &lt;工具&gt; 的用量日志格式，给 token-sprite 的 `scripts/usage.mjs` 加一个读取器。”** 欢迎 PR 回来惠及大家。
 
-## 📦 打包成 .app
+## 📦 打包成桌面应用（三系统通用）
+
+在对应系统上跑对应命令，产物都在 `release/`：
 
 ```bash
-npm run pack     # 产物在 release/mac-universal/Token小精灵.app
+npm run pack         # macOS → release/mac-universal/Token小精灵.app
+npm run pack:win     # Windows → 免安装 .exe + NSIS 安装包
+npm run pack:linux   # Linux → AppImage（直接双击运行）
 ```
 
-未签名、Intel / Apple 通用版。首次打开若被拦，右键 →「打开」一次即可。打包后默认开启开机自启（菜单里可关）。
+> 打包只能在**目标系统本机**进行（Windows 包在 Windows 上打、Linux 包在 Linux 上打）。不想自己配环境，也可以直接用仓库自带的 GitHub Actions：在 Actions 页点 **Build desktop apps → Run workflow**，三个系统的安装包会自动打好、在产物里下载。
+
+各系统小提示：
+
+- **macOS**：未签名、Intel / Apple 通用。首次打开若被拦，右键 →「打开」一次即可。打包后默认开启开机自启（菜单里可关）。
+- **Windows**：未签名，SmartScreen 拦截时点「更多信息 → 仍要运行」。也支持开机自启。
+- **Linux**：给 AppImage 加执行权限后运行（`chmod +x *.AppImage`）。桌宠的透明/置顶效果依赖你的桌面环境（GNOME、KDE 等主流都可）；开机自启在 Linux 上不提供开关（各发行版方式不一）。
 
 ## 🔧 自定义
 

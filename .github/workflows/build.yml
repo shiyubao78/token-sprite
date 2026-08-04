@@ -1,0 +1,42 @@
+name: Build desktop apps
+
+# 手动触发或打 tag 时，在三个系统上各自打出安装包并上传为构建产物。
+# macOS 出 .app 目录、Windows 出 portable .exe + NSIS 安装包、Linux 出 AppImage。
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            pack: pack
+          - os: windows-latest
+            pack: pack:win
+          - os: ubuntu-latest
+            pack: pack:linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run ${{ matrix.pack }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: token-sprite-${{ matrix.os }}
+          path: |
+            release/*.exe
+            release/*.AppImage
+            release/**/*.app
+          if-no-files-found: warn
