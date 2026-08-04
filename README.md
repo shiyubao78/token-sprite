@@ -1,17 +1,52 @@
+<div align="center">
+
 # 🌱 Token 小精灵
 
-一只养在 macOS 桌面上的小精灵——用你**在本地 AI 编程工具里真实烧掉的 token** 自动喂养，从种子一路长成会发光的小精灵。悬浮在桌面角落，写代码时一抬头就看见它在长大。
+**用你真实烧掉的 AI 编程 token，孵化、养成、集齐一整墙小精灵。**
 
-> A desktop pet for macOS that grows from your real local AI-coding token usage (Claude Code + Codex). Everything is read **locally** — nothing is uploaded.
+一只养在 macOS 桌面角落的桌宠 —— 你每写一段代码，它就在悄悄进化。
+全程只读本地用量，**不联网、不上传**。
 
-## ✨ 一眼看懂
+</div>
 
-- 读你本机 **Claude Code** 和 **Codex** 的用量，token 越烧越多，小精灵越长越大。
-- **5 段进化**：种子 → 嫩芽 → 幼苗 → 花苞 → 化形·小精灵。
-- **累积成长、不用喂**：自动读、自动长。
-- **会蔫**：超过 24 小时没有新消耗就退一级，写代码就长回来。
-- **点一下**逗它（弹跳+星星），**按住拖**能在桌面上挪位置。
-- 全程只读本地文件，**不联网、不上传**。
+---
+
+## 🥚 孵化 = 一路进化
+
+选一颗蛋，它吃你的 token，从蛋一路长到**化形**，收进图鉴。
+
+<div align="center">
+<img src="assets/readme/evolution-flower.png" width="720" alt="蛋 → 破壳 → 成长 → 花苞 → 化形" />
+</div>
+
+## 👾 6 只精灵，破壳才揭晓是谁
+
+达成成就攒券 → 抽卡开出**不同稀有度的蛋** → 孵化养成 → 集齐图鉴。
+
+<div align="center">
+<img src="assets/readme/collection-shadows.png" width="760" alt="6 只精灵剪影 · 破壳揭晓" />
+</div>
+
+> 草木、海洋、岩浆、雷电、冰晶、机械 —— 每只都有自己的 5 段进化线。你会先抽到谁？
+
+## ✨ 它凭什么不一样
+
+- **真实劳动养出来**：读本地 **Claude Code / Codex** 的真实 token 用量，装不出、刷不了。
+- **会陪你**：连写久了劝你歇口气、深夜提醒早点睡、久别重逢招手 —— 从"被看"变"陪你"。
+- **桌宠**：悬浮置顶、可拖动，还能收成"侧边探头"不占地方。
+- **越集越上头**：成就 → 抽卡 → 孵化 → 图鉴，收集驱动。
+- **全本地私密**：数据只在你电脑本地读取。
+
+## 🎴 成就 · 稀有度
+
+| 稀有度 | 孵化门槛 | 抽中概率 |
+|---|---|---|
+| 🟢 普通 | 0.5B token | 高 |
+| 🔵 稀有 | 2B token | 中 |
+| 🟣 史诗 | 8B token | 低 |
+| 🟡 传说 | 30B token | 极低 |
+
+达成「初出茅庐 / 双修 / 昼夜不息 / 爆种 / 一周不辍 / 里程碑 / 传说之路」等成就得券 —— 全用你的真实用量判定。
 
 ## 🚀 快速开始
 
@@ -24,35 +59,26 @@ npm install
 npm start
 ```
 
-`npm start` 会自动编译并启动，小精灵出现在桌面右下角。退出：点它 `⋯` → 退出。
+`npm start` 自动编译并启动，小精灵出现在桌面右下角。
 
-## 🤖 让你的 AI agent 帮你装
+### 🤖 或者一句话让 agent 帮你装
 
-因为仓库里带了 `AGENTS.md` / `CLAUDE.md`，你可以直接对 Claude Code、Codex 等 agent 说一句：
+仓库带了 `AGENTS.md` / `CLAUDE.md`，直接对 Claude Code、Codex 说：
 
 > “把 github.com/shiyubao78/token-sprite clone 下来，在我桌面跑起来。”
 
-agent 会读到仓库里的运行说明，自动完成 clone → `npm install` → `npm start`。
-
 ## 🧩 它怎么工作
 
-**自动检测**：启动时探测你本地装了哪些 AI 工具，**能读到 token 的就统计，没装的自动跳过**。数据只在你电脑本地读取，不上传。
+**自动检测**你本地装了哪些 AI 工具，能读到 token 的就统计、没装的自动跳过：
 
-目前内置读取器：
+| 工具 | 读取位置 |
+|---|---|
+| Claude Code | `~/.claude/projects/**/*.jsonl` |
+| Codex | `~/.codex/**/rollout-*.jsonl` |
 
-| 工具 | 读取位置 | 统计口径 |
-|---|---|---|
-| Claude Code | `~/.claude/projects/**/*.jsonl` | 每条回复的 usage（输入+输出+缓存 token） |
-| Codex | `~/.codex/**/rollout-*.jsonl` | `token_count` 事件的 `last_token_usage` |
+安装那刻记一个基准，之后**从 0 开始养** —— 你写多少，它长多少。想加更多工具，在 `scripts/usage.mjs` 的 `READERS` 里加一个读取器即可（欢迎 PR）。
 
-**想加更多工具**（Gemini CLI、Kimi、其他 agent…）：在 `scripts/usage.mjs` 的 `READERS` 里加一个读取器即可（`read()` 返回累计 token 与最近活跃，没装返回 `null`）。欢迎 PR。
-
-> 注意：只能统计**把 token 写在本地、且可解析**的工具。像豆包 / DeepSeek / Kimi 这类 app 或网页版，用量在服务端、本地没有数据，无法统计。
-
-## 🔧 自定义
-
-- 进化阈值、形态名字、用哪张图：`src/config/stages.js`（`DECAY_MS` 是回落时长）。
-- 换形象：把图片放进 `assets/sprite/stage-N.png`（512×512 透明 PNG），改 `stages.js` 里的 `art` 号即可。
+> 只能统计把 token 写在本地、可解析的工具；豆包 / DeepSeek / Kimi 这类用量在服务端、本地无数据。
 
 ## 📦 打包成 .app
 
@@ -60,14 +86,14 @@ agent 会读到仓库里的运行说明，自动完成 clone → `npm install` �
 npm run pack     # 产物在 release/mac-universal/Token小精灵.app
 ```
 
-未签名、Intel / Apple 通用版。首次打开若被拦，右键 →「打开」一次即可。打包后首次运行默认开启开机自启（菜单里可关）。
+未签名、Intel / Apple 通用版。首次打开若被拦，右键 →「打开」一次即可。打包后默认开启开机自启（菜单里可关）。
 
-## ⚠️ 说明
+## 🔧 自定义
 
-- 目前仅 macOS（Intel / Apple 芯片通用）。
-- 数字只含 Claude Code + Codex 本地日志，不代表你的全部用量。
-- 内置形象为 AI 生成图，仅作示例，可自行替换。
+- 品种、稀有度、名字、图路径：`src/config/species.js`
+- 成就、门槛、抽卡概率：`src/config/achievements.js` / `src/config/rarities.js`
+- 换形象：把 5 段图放进 `assets/sprite/<品种>/`（`1-seed` … `5-adult`，512 透明 PNG）
 
 ## 📄 License
 
-MIT，见 [LICENSE](LICENSE)。
+MIT，见 [LICENSE](LICENSE)。内置形象为 AI 生成，仅作示例，可自行替换。
