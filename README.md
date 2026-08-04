@@ -163,5 +163,9 @@ Each stage uses a 512×512 transparent PNG.
 
 ## 📄 License
 
-[MIT](LICENSE)。内置形象为 AI 生成，仅作示例，可自行替换。<br />
-[MIT](LICENSE). Built-in artwork is AI-generated as an example and can be replaced.
+**非商业授权 / Noncommercial.** 本项目禁止商业使用。<br />
+- 源代码 / Source code: [PolyForm Noncommercial 1.0.0](LICENSE)
+- 美术素材 / Art assets（`assets/**`）: [CC BY-NC 4.0](assets/LICENSE.md)
+
+可自由用于个人、学习、非营利用途；使用素材需署名。内置形象为 AI 生成，仅作示例，可自行替换。<br />
+Free for personal, educational, and nonprofit use; assets require attribution. Built-in artwork is AI-generated as an example and can be replaced.
