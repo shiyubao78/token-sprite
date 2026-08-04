@@ -26,7 +26,9 @@
 
 ## 图片调整
 
-- 将用户提供的图片复制为 `assets/readme/hatching-hero.png`，README 顶部宽度设为约 760px。
+- 基于用户提供的竖版主视觉重新构图为 16:9 横版 `assets/readme/hatching-hero-wide.png`，README 顶部宽度设为约 900px。
+- 横版中央保留发光蛋，六只精灵剪影向左右展开，五段进化链横排在底部；不加文字，不做简单裁切或拉伸。
+- 保留原有深蓝紫电影感、元素轮廓、光效和悬念氛围。
 - 删除 README 对 `assets/readme/collection-shadows.png` 的引用，不删除原文件，避免不可逆操作并保留历史素材。
 - 保留 `assets/readme/evolution-flower.png`，继续说明五段进化。
 - 所有图片补充中英文 `alt` 文本。
@@ -40,7 +42,7 @@
 
 ## 验收标准
 
-- README 第一屏能看到项目名、双语价值主张和新孵化主视觉。
+- README 第一屏能看到项目名、双语价值主张和 16:9 孵化主视觉，图片不会占据数个屏幕高度。
 - README 不再引用 `collection-shadows.png`。
 - 中文读者保留原有信息密度，英文读者能独立理解玩法、卖点、安装、隐私和平台支持。
 - GitHub Markdown 中图片、表格、代码块和锚点结构正确。
