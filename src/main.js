@@ -57,7 +57,7 @@ function deriveVm() {
     const active = e.id === state.activeEggId;
     // 稀有度以品种为准（修旧存档存歪的 rarity）；进度用这只自己的累积喂养，非在养也保留
     const inc = incubation(e.fed, sp.rarity);
-    return { id: e.id, rarity: sp.rarity, active, percent: Math.round(inc.fraction * 100), speciesName: sp.name, seedUrl: stageUrl(sp.folder, 1) };
+    return { id: e.id, rarity: sp.rarity, active, percent: pct(inc.fraction), speciesName: sp.name, seedUrl: stageUrl(sp.folder, 1) };
   });
 
   let mode, egg = null, pet = null;
@@ -70,7 +70,7 @@ function deriveVm() {
       rarity: sp.rarity,
       rarityName: RARITY[sp.rarity].name,
       color: RARITY[sp.rarity].color,
-      percent: Math.round(inc.fraction * 100),
+      percent: pct(inc.fraction),
       needText: formatNeed(inc.need),
       speciesName: sp.name,
       stageUrl: stageUrl(sp.folder, incubationStage(inc.fraction)),
@@ -96,6 +96,12 @@ function deriveVm() {
     achDone: Object.keys(state.achievements || {}).length,
     activePetSpecies: state.activePetSpecies,
   };
+}
+// 孵化进度百分比：保留两位小数（精确到 0.01%），并去掉多余的 0。
+// 刚喂一点点也能看到数字在动，不会误以为「没喂进去」。
+function pct(fraction) {
+  const p = Math.min(100, Math.max(0, (fraction || 0) * 100));
+  return parseFloat(p.toFixed(2));
 }
 function formatNeed(n) {
   if (n >= 1e9) return (n / 1e9).toFixed(n % 1e9 ? 1 : 0).replace(/\.0$/, '') + 'B';

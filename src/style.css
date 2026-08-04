@@ -42,7 +42,7 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
   width: 56px; height: 104px; overflow: hidden; cursor: pointer; position: relative;
 }
 .peek-sprite {
-  position: absolute; top: 10px; right: -26px; width: 90px; height: 90px;
+  position: absolute; top: 12px; right: -22px; width: 74px; height: 74px;
   object-fit: contain; transform: rotate(-8deg);
   filter: drop-shadow(-3px 3px 6px rgba(120, 100, 60, .22));
   animation: peekbob 2.9s ease-in-out infinite;
@@ -64,17 +64,17 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .menu-btn:active { transform: scale(.92); }
 
 .petstage {
-  position: relative; height: 150px; cursor: grab;
+  position: relative; height: 118px; cursor: grab;
   display: flex; align-items: flex-end; justify-content: center;
 }
 .petstage:active { cursor: grabbing; }
 .sprite-ground {
-  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-  width: 96px; height: 16px; border-radius: 50%;
+  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+  width: 74px; height: 13px; border-radius: 50%;
   background: rgba(120, 100, 70, .16); filter: blur(3px);
 }
 .sprite {
-  position: relative; max-height: 144px; max-width: 90%;
+  position: relative; max-height: 108px; max-width: 72%;
   object-fit: contain; -webkit-user-drag: none;
   animation: float 3.6s ease-in-out infinite; transform-origin: bottom center;
   filter: drop-shadow(0 6px 10px rgba(120, 100, 60, .18));
