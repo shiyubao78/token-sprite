@@ -169,3 +169,65 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .evolve-mask .name { font-size: 20px; font-weight: 800; color: var(--accent-ink); }
 .evolve-mask .tip { font-size: 11px; color: var(--muted); margin-top: 6px; }
 @keyframes epop { from { transform: scale(.4); opacity: 0; } }
+
+/* 蛋 */
+.egg {
+  width: 96px; height: 118px; position: relative;
+  border-radius: 50% 50% 48% 48% / 58% 58% 42% 42%;
+  background:
+    radial-gradient(58% 42% at 40% 28%, rgba(255,255,255,.6), transparent 60%),
+    radial-gradient(120% 120% at 50% 32%, color-mix(in srgb, var(--eggc) 45%, #fff) 0%, var(--eggc) 68%, color-mix(in srgb, var(--eggc) 65%, #000) 100%);
+  box-shadow: inset -5px -8px 14px rgba(0,0,0,.14), 0 8px 14px rgba(90,80,50,.18);
+  display: flex; align-items: center; justify-content: center;
+  animation: eggwob 3.2s ease-in-out infinite;
+}
+.egg.big { width: 108px; height: 132px; }
+.egg-q { color: #fff; font-size: 30px; font-weight: 800; opacity: .8; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.egg.eating { animation: eggpop .5s ease; }
+@keyframes eggwob { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes eggpop { 30% { transform: scale(1.06,.94); } 60% { transform: scale(.97,1.05); } }
+
+.tk-badge { font-size: 11px; background: rgba(255,255,255,.72); color: var(--ink); padding: 2px 8px; border-radius: 999px; cursor: pointer; }
+
+.hub { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hub-btn { border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 12px 8px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+.hub-btn:active { transform: scale(.98); }
+
+.tk-row { display: flex; align-items: center; gap: 9px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.tk-dot { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 auto; }
+.tk-name { flex: 1; font-size: 13.5px; }
+.tk-n { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tk-draw { border: 1px solid var(--line); background: var(--accent); color: #fff; border-radius: 10px; padding: 5px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.tk-draw:disabled { background: #e7e0d0; color: var(--muted); cursor: default; }
+.gacha-result { text-align: center; font-size: 13px; color: var(--muted); padding: 12px 8px; min-height: 40px; }
+.gacha-result.pop { animation: eggpop .4s ease; color: var(--ink); }
+
+.egg-row { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 14px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--line); cursor: pointer; }
+.egg-row.active { border: 2px solid var(--accent); }
+.egg-row .egg { width: 40px; height: 50px; animation: none; }
+.egg-row .egg-q { font-size: 15px; }
+.egg-info { flex: 1; }
+.egg-info .en { font-size: 14px; font-weight: 600; }
+.egg-info .es { font-size: 12px; color: var(--muted); }
+.egg-badge { font-size: 11px; color: var(--accent-ink); background: var(--accent-soft, #e7f6ec); padding: 3px 9px; border-radius: 999px; }
+.empty { text-align: center; color: var(--muted); font-size: 13px; padding: 22px 0; }
+
+.dex-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.dex-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.dex-cell.owned { cursor: pointer; }
+.dex-pic { position: relative; width: 100%; aspect-ratio: 1; border-radius: 12px; background: var(--card); border: 1.5px solid color-mix(in srgb, var(--rc) 45%, var(--line)); display: flex; align-items: center; justify-content: center; }
+.dex-pic img { max-width: 82%; max-height: 82%; }
+.dex-cell.locked .dex-pic { opacity: .6; }
+.dex-pic .qm { font-size: 24px; color: var(--muted); font-weight: 800; }
+.dex-pic .cnt { position: absolute; right: 4px; bottom: 3px; font-size: 10.5px; color: var(--muted); }
+.dex-pic .battle { position: absolute; left: 3px; top: 3px; font-size: 9.5px; background: var(--accent); color: #fff; padding: 1px 5px; border-radius: 6px; }
+.dex-nm { font-size: 11.5px; font-weight: 600; }
+.dex-rr { font-size: 10px; }
+
+.ach-row { display: flex; align-items: center; gap: 9px; padding: 9px 3px; border-bottom: 1px solid var(--line); }
+.ach-row.done .an { color: var(--accent-ink); }
+.ach-ck { font-size: 15px; }
+.ach-info { flex: 1; min-width: 0; }
+.ach-info .an { font-size: 13.5px; font-weight: 600; }
+.ach-info .ad { font-size: 11.5px; color: var(--muted); }
+.ach-tk { font-size: 11px; font-weight: 600; }

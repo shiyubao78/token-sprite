@@ -29,6 +29,7 @@ function normalize(data) {
   return {
     total: Number(data.total) || 0,
     recentTokens: Number(data.recentTokens) || 0,
+    todayTokens: Number(data.todayTokens) || 0,
     lastActivityAt: Number(data.lastActivityAt) || Date.now(),
     breakdown: Array.isArray(data.breakdown) ? data.breakdown : [],
   };

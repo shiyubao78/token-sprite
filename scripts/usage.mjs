@@ -32,6 +32,11 @@ function eachLine(text, fn) {
 }
 
 const RECENT_MS = 15 * 60 * 1000; // 最近 15 分钟算“正在敲”
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
 
 // ---- Claude Code：~/.claude/projects/**/*.jsonl，assistant 消息的 usage ----
 async function readClaudeCode() {
@@ -41,7 +46,8 @@ async function readClaudeCode() {
   if (!files.length) return null;
   const seen = new Set();
   const cutoff = Date.now() - RECENT_MS;
-  let total = 0, recentTokens = 0, lastActivityAt = 0;
+  const dayCutoff = startOfToday();
+  let total = 0, recentTokens = 0, todayTokens = 0, lastActivityAt = 0;
   for (const f of files) {
     let text; try { text = await readFile(f, 'utf8'); } catch { continue; }
     eachLine(text, (obj) => {
@@ -56,10 +62,11 @@ async function readClaudeCode() {
       if (Number.isFinite(ts)) {
         if (ts > lastActivityAt) lastActivityAt = ts;
         if (ts >= cutoff) recentTokens += t;
+        if (ts >= dayCutoff) todayTokens += t;
       }
     });
   }
-  return { total, recentTokens, lastActivityAt };
+  return { total, recentTokens, todayTokens, lastActivityAt };
 }
 
 // ---- Codex：~/.codex/**/rollout-*.jsonl，token_count 事件的 last_token_usage ----
@@ -69,7 +76,8 @@ async function readCodex() {
   const files = (await walk(root, '.jsonl')).filter((f) => f.includes('rollout-'));
   if (!files.length) return null;
   const cutoff = Date.now() - RECENT_MS;
-  let total = 0, recentTokens = 0, lastActivityAt = 0;
+  const dayCutoff = startOfToday();
+  let total = 0, recentTokens = 0, todayTokens = 0, lastActivityAt = 0;
   for (const f of files) {
     let text; try { text = await readFile(f, 'utf8'); } catch { continue; }
     eachLine(text, (obj) => {
@@ -82,10 +90,11 @@ async function readCodex() {
       if (Number.isFinite(ts)) {
         if (ts > lastActivityAt) lastActivityAt = ts;
         if (ts >= cutoff) recentTokens += t;
+        if (ts >= dayCutoff) todayTokens += t;
       }
     });
   }
-  return { total, recentTokens, lastActivityAt };
+  return { total, recentTokens, todayTokens, lastActivityAt };
 }
 
 // 读取器登记表。新增工具在这里加一行即可（read 返回 {total,lastActivityAt}，没装则返回 null）。
@@ -99,13 +108,14 @@ export async function computeLocalUsage() {
     READERS.map(async (r) => {
       try {
         const d = await r.read();
-        return d ? { source: r.source, label: r.label, total: d.total || 0, recentTokens: d.recentTokens || 0, lastActivityAt: d.lastActivityAt || 0 } : null;
+        return d ? { source: r.source, label: r.label, total: d.total || 0, recentTokens: d.recentTokens || 0, todayTokens: d.todayTokens || 0, lastActivityAt: d.lastActivityAt || 0 } : null;
       } catch { return null; }
     })
   );
   const breakdown = results.filter((b) => b && b.total > 0);
   const total = breakdown.reduce((s, b) => s + b.total, 0);
   const recentTokens = breakdown.reduce((s, b) => s + b.recentTokens, 0);
+  const todayTokens = breakdown.reduce((s, b) => s + b.todayTokens, 0);
   const lastActivityAt = breakdown.reduce((m, b) => Math.max(m, b.lastActivityAt), 0);
-  return { total, recentTokens, lastActivityAt, breakdown };
+  return { total, recentTokens, todayTokens, lastActivityAt, breakdown };
 }
