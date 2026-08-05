@@ -9,3 +9,6 @@ export const RARITY = {
 };
 
 export const RARITIES = ['common', 'rare', 'epic', 'legendary'];
+
+// 合并同类蛋：每多合并一颗，额外送该稀有度的奖励 token（约各自孵化门槛的 10%，不同等级不同）。
+export const MERGE_BONUS = { common: 0.05 * B, rare: 0.2 * B, epic: 0.8 * B, legendary: 3 * B };

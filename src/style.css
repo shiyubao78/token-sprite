@@ -202,6 +202,9 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .gacha-result { text-align: center; font-size: 13px; color: var(--muted); padding: 12px 8px; min-height: 40px; }
 .gacha-result.pop { animation: eggpop .4s ease; color: var(--ink); }
 
+.merge-btn { width: 100%; margin-bottom: 10px; border: 1px solid var(--accent); background: #eaf7f0; color: var(--accent-ink); border-radius: 12px; padding: 10px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.merge-btn:active { transform: scale(.98); }
+
 .egg-row { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 14px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--line); cursor: pointer; }
 .egg-row.active { border: 2px solid var(--accent); }
 .egg-row .egg { width: 40px; height: 50px; animation: none; }

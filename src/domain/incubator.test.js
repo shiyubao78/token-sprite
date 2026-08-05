@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, accrue } from './incubator.js';
+import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, accrue, mergeDuplicates, mergeableGroups } from './incubator.js';
 import { speciesByKey } from '../config/species.js';
 
 const B = 1_000_000_000;
@@ -92,6 +92,66 @@ describe('accrue（每只自己累积喂养）', () => {
     accrue(s, 0.4 * B); // 当前 growth 0.4B → 已喂 0.3B
     expect(s.eggs[0].fed).toBeCloseTo(0.3 * B, 0);
     expect(s.lastGrowth).toBe(0.4 * B);
+  });
+});
+
+describe('mergeDuplicates 合并同类蛋', () => {
+  it('同品种多颗并成一颗：fed 累加 + 每多一颗送奖励', () => {
+    const s = baseState();
+    s.eggs = [
+      { id: 'a', species: 'shell', rarity: 'common', at: 1, fed: 0.1 * B },
+      { id: 'b', species: 'shell', rarity: 'common', at: 2, fed: 0.05 * B },
+      { id: 'c', species: 'shell', rarity: 'common', at: 3, fed: 0 },
+    ];
+    const r = mergeDuplicates(s);
+    expect(s.eggs).toHaveLength(1);
+    // 0.15B 累加 + 普通奖励 0.05B × (3-1) = 0.25B
+    expect(s.eggs[0].fed).toBeCloseTo(0.25 * B, 0);
+    expect(r.merged[0]).toMatchObject({ species: 'shell', count: 3 });
+    expect(r.totalGained).toBeCloseTo(0.1 * B, 0);
+  });
+
+  it('不同品种不合并；各自成组', () => {
+    const s = baseState();
+    s.eggs = [
+      { id: 'a', species: 'shell', rarity: 'common', at: 1, fed: 0 },
+      { id: 'b', species: 'flower', rarity: 'common', at: 2, fed: 0 },
+    ];
+    expect(mergeDuplicates(s)).toBeNull(); // 没有 ≥2 的同类
+    expect(s.eggs).toHaveLength(2);
+  });
+
+  it('保留在养的那颗当合并结果', () => {
+    const s = baseState();
+    s.eggs = [
+      { id: 'a', species: 'shell', rarity: 'common', at: 1, fed: 0 },
+      { id: 'keep', species: 'shell', rarity: 'common', at: 2, fed: 0 },
+    ];
+    s.activeEggId = 'keep';
+    mergeDuplicates(s);
+    expect(s.eggs).toHaveLength(1);
+    expect(s.eggs[0].id).toBe('keep');
+    expect(s.activeEggId).toBe('keep');
+  });
+
+  it('稀有度不同奖励不同（稀有 0.2B/颗）', () => {
+    const s = baseState();
+    s.eggs = [
+      { id: 'a', species: 'fire', rarity: 'rare', at: 1, fed: 0 },
+      { id: 'b', species: 'fire', rarity: 'rare', at: 2, fed: 0 },
+    ];
+    const r = mergeDuplicates(s);
+    expect(r.totalGained).toBeCloseTo(0.2 * B, 0);
+  });
+
+  it('mergeableGroups 数可合并的品种组', () => {
+    const s = baseState();
+    s.eggs = [
+      { id: 'a', species: 'shell', rarity: 'common', at: 1, fed: 0 },
+      { id: 'b', species: 'shell', rarity: 'common', at: 2, fed: 0 },
+      { id: 'c', species: 'fire', rarity: 'rare', at: 3, fed: 0 },
+    ];
+    expect(mergeableGroups(s)).toBe(1);
   });
 });
 

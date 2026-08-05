@@ -108,8 +108,11 @@ export function incubatorHTML(vm) {
       <img class="egg-thumb" src="${e.seedUrl}" alt="${esc(e.speciesName)}" />
       <div class="egg-info"><div class="en">${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? '在养 · ' : ''}第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}%</div></div>
     </div>`).join('');
-  return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 点蛋看详情</h2>${rows}
-    <div class="source-note" style="margin-top:8px">在养的蛋吃你的 token 一路进化到化形。换着养也不清零——每只各记各的进度，放桌面上就接着长。</div>`;
+  const mergeBtn = vm.mergeable > 0
+    ? `<button class="merge-btn nodrag" id="mergeBtn">🔗 合并同类精灵 · ${vm.mergeable} 组可合并</button>`
+    : '';
+  return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 点蛋看详情</h2>${mergeBtn}${rows}
+    <div class="source-note" style="margin-top:8px">同品种的多颗蛋可以合并成一颗，喂养进度全累加、还额外送 token（越稀有送越多）。在养的蛋吃你的 token 一路进化到化形，换着养也不清零。</div>`;
 }
 
 export function evolutionHTML(vm) {

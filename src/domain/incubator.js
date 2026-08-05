@@ -1,6 +1,7 @@
 import { drawEgg } from './gacha.js';
 import { incubation } from './incubation.js';
 import { speciesByKey } from '../config/species.js';
+import { MERGE_BONUS } from '../config/rarities.js';
 
 let eggSeq = 0;
 export function makeEgg(rarity, species) {
@@ -62,6 +63,36 @@ export function ensureStarter(state, _growth, rng = Math.random) {
   const sp = speciesByKey(res.species);
   if (sp && sp.nick && (!state.petName || state.petName === '小苗')) state.petName = sp.nick;
   return true;
+}
+
+// 可合并的品种组数（同一品种有 ≥2 颗蛋才算一组）。给 UI 判断要不要显示合并按钮。
+export function mergeableGroups(state) {
+  const count = {};
+  for (const e of state.eggs || []) count[e.species] = (count[e.species] || 0) + 1;
+  return Object.values(count).filter((n) => n >= 2).length;
+}
+
+// 合并同类蛋：每个品种的多颗蛋并成一颗，fed 全累加 + 每多合并一颗送 MERGE_BONUS[稀有度]。
+// 保留在养的那颗（在组里的话），否则保留第一颗。返回 { merged:[{species,count,gained}], totalGained } 或 null（无可合并）。
+export function mergeDuplicates(state) {
+  const eggs = state.eggs || [];
+  const bySpecies = {};
+  for (const e of eggs) (bySpecies[e.species] = bySpecies[e.species] || []).push(e);
+  const keep = [];
+  const merged = [];
+  for (const group of Object.values(bySpecies)) {
+    if (group.length < 2) { keep.push(...group); continue; }
+    const rarity = eggRarity(group[0]);
+    const gained = (MERGE_BONUS[rarity] || 0) * (group.length - 1);
+    const fedSum = group.reduce((s, e) => s + (e.fed || 0), 0);
+    const survivor = group.find((e) => e.id === state.activeEggId) || group[0];
+    survivor.fed = fedSum + gained;
+    keep.push(survivor);
+    merged.push({ species: group[0].species, count: group.length, gained });
+  }
+  if (!merged.length) return null;
+  state.eggs = keep;
+  return { merged, totalGained: merged.reduce((s, m) => s + m.gained, 0) };
 }
 
 // 切换在养对象：先把到目前为止的增量结算给当前这只，再换人；两边进度都保留。

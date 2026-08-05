@@ -1,7 +1,7 @@
 import './style.css';
 import { computeMood, pickBubble, ACTIVE_MS, RETURN_IDLE_MS, BURST_TOKENS } from './domain/mood.js';
 import { incubation, incubationStage, evolution, STAGE_NAMES } from './domain/incubation.js';
-import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch } from './domain/incubator.js';
+import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicates, mergeableGroups } from './domain/incubator.js';
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
 import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
@@ -96,6 +96,7 @@ function deriveVm() {
     tickets: state.tickets || { common: 0, rare: 0, epic: 0, legendary: 0 },
     eggs: eggsVm,
     eggsCount: (state.eggs || []).length,
+    mergeable: mergeableGroups(state),
     collection: state.collection || {},
     ownedCount: Object.keys(state.collection || {}).length,
     achievements: state.achievements || {},
@@ -290,12 +291,21 @@ function openGacha() {
 }
 
 function openIncubator() {
-  const { mask } = openSheet(incubatorHTML(deriveVm()));
+  const { mask, close } = openSheet(incubatorHTML(deriveVm()));
   mask.querySelectorAll('[data-egg]').forEach((row) => {
     row.addEventListener('click', () => {
       const egg = (state.eggs || []).find((e) => e.id === row.getAttribute('data-egg'));
       if (egg) openEvolution(egg);
     });
+  });
+  mask.querySelector('#mergeBtn')?.addEventListener('click', () => {
+    const res = mergeDuplicates(state);
+    if (!res) return;
+    savePet(state);
+    const total = res.merged.reduce((s, m) => s + m.count, 0);
+    close();
+    render();
+    setBubble(`✨ 合并 ${total} 只 · 进度 +${formatNeed(res.totalGained)} token`);
   });
 }
 
