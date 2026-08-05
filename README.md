@@ -33,6 +33,9 @@ Choose an egg and feed it with the tokens you actually use, from first crack to 
 六种属性、六条完整进化线：草木、海洋、岩浆、雷电、机械与冰晶。破壳前，你永远不知道会遇见谁。<br />
 Six elements, six complete evolution lines: flora, ocean, magma, thunder, mech, and ice. You will not know who is inside until the egg hatches.
 
+抽到重复的同类蛋？在孵化器里一键**合并**——喂养进度全累加，还按稀有度额外送 token，加速孵一只喜欢的。<br />
+Got duplicate eggs of the same species? **Merge** them in the incubator—progress stacks and you earn bonus tokens by rarity, fast-tracking a favorite.
+
 ## ✨ 为什么特别 / Why It’s Different
 
 - **真实劳动养出来 / Powered by real work**：读取本地 AI 编程工具的真实 Token 用量，写多少就长多少。 / It grows from your actual local AI-coding usage.
@@ -43,11 +46,15 @@ Six elements, six complete evolution lines: flora, ocean, magma, thunder, mech, 
 
 ## 🏆 成就与抽蛋 / Achievements & Hatching
 
-达成成就获得抽蛋券；每张券大概率开出对应稀有度，并有 **15%** 概率提升一档。<br />
-Complete achievements to earn egg tickets. Each ticket usually matches its rarity, with a **15%** chance to upgrade by one tier.
+达成成就获得抽蛋券；每张券大概率开出对应稀有度，并有 **15%** 概率提升一档。**新手期门槛低、发券快**，前几天就能集齐前 4 只、挑一只重点养。<br />
+Complete achievements to earn egg tickets. Each ticket usually matches its rarity, with a **15%** chance to upgrade by one tier. **Early achievements are quick**, so you can collect the first few species in days and pick a favorite.
 
 | 成就 / Achievement | 条件 / Requirement | 奖励 / Reward |
 |---|---|---|
+| 初次相遇 / First Meeting | 敲下第一个 token / Your first token | 🟢 普通 / Common |
+| 小试牛刀 / Warming Up | 累计 100M / 100M total | 🔵 稀有 / Rare |
+| 渐入佳境 / Getting There | 累计 500M / 500M total | 🟢 普通 / Common |
+| 破壳时刻 / First Hatch | 孵出第一只精灵 / Hatch your first | 🔵 稀有 / Rare |
 | 初出茅庐 / First Steps | 累计 1B Token / 1B total tokens | 🟢 普通 / Common |
 | 双修 / Dual Wielder | 两个工具各累计 ≥ 300M / 300M+ in two tools | 🟢 普通 / Common |
 | 昼夜不息 / Night Coder | 深夜写代码满 3 天 / Code overnight on 3 days | 🟢 普通 / Common |
