@@ -106,10 +106,9 @@ export function incubatorHTML(vm) {
   const rows = vm.eggs.map((e) => `
     <div class="egg-row ${e.active ? 'active' : ''} nodrag" data-egg="${e.id}">
       <img class="egg-thumb" src="${e.seedUrl}" alt="${esc(e.speciesName)}" />
-      <div class="egg-info"><div class="en">${esc(e.nick)} · ${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? `在养中 · 第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}%` : `第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}% · 点我看详情`}</div></div>
-      ${e.active ? '<span class="egg-badge">在养</span>' : ''}
+      <div class="egg-info"><div class="en">${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? '在养 · ' : ''}第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}%</div></div>
     </div>`).join('');
-  return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 选一颗养</h2>${rows}
+  return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 点蛋看详情</h2>${rows}
     <div class="source-note" style="margin-top:8px">在养的蛋吃你的 token 一路进化到化形。换着养也不清零——每只各记各的进度，放桌面上就接着长。</div>`;
 }
 
