@@ -1,9 +1,12 @@
 name: release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # 方案 B（未签名、手动发布）：不再让 v* 标签自动触发本流水线——它需要 Apple 签名/公证
+  # secret，未配置时会失败。日常用「本地出包 + gh release create」手动发布即可。
+  # 将来配好 Apple 证书想恢复「打标签自动签名发布」，把下面换回：
+  #   push:
+  #     tags: ['v*']
+  workflow_dispatch: {}
 
 permissions:
   contents: write
