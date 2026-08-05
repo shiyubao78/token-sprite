@@ -185,7 +185,7 @@ async function sync() {
   const streakDays = computeStreak(state.activeDates, today);
 
   // 成就结算发券
-  const ctx = { growthTotal: growth, breakdown: usage.breakdown || [], todayTokens: usage.todayTokens || 0, streakDays, nightDays: (state.nightDates || []).length };
+  const ctx = { growthTotal: growth, breakdown: usage.breakdown || [], todayTokens: usage.todayTokens || 0, streakDays, nightDays: (state.nightDates || []).length, ownedCount: Object.keys(state.collection || {}).length };
   const ach = evaluateAchievements(ctx, state.achievements);
   for (const a of ach.newly) {
     state.achievements[a.id] = { at: now };

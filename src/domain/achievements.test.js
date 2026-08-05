@@ -44,3 +44,33 @@ describe('evaluateAchievements', () => {
     expect(r.tickets.legendary).toBe(1);
   });
 });
+
+describe('新手成就（前期多给券，凑齐前 4 只挑一只）', () => {
+  const M = 1_000_000;
+  const base = { growthTotal: 0, breakdown: [], todayTokens: 0, streakDays: 0, nightDays: 0, ownedCount: 0 };
+
+  it('敲下第一个 token → 初次相遇（普通券）', () => {
+    const r = evaluateAchievements({ ...base, growthTotal: 1 }, {});
+    expect(r.newly.map((a) => a.id)).toContain('meet');
+    expect(r.tickets.common).toBeGreaterThanOrEqual(1);
+  });
+  it('100M → 小试牛刀（稀有券，解锁火苗/雷）', () => {
+    const r = evaluateAchievements({ ...base, growthTotal: 100 * M }, {});
+    expect(r.newly.map((a) => a.id)).toContain('warmup');
+    expect(r.tickets.rare).toBeGreaterThanOrEqual(1);
+  });
+  it('500M → 渐入佳境；且初次相遇/小试牛刀也一并达成', () => {
+    const r = evaluateAchievements({ ...base, growthTotal: 500 * M }, {});
+    const ids = r.newly.map((a) => a.id);
+    expect(ids).toEqual(expect.arrayContaining(['meet', 'warmup', 'getting-there']));
+    // 2 普通(初次相遇+渐入佳境) + 1 稀有(小试牛刀)
+    expect(r.tickets.common).toBeGreaterThanOrEqual(2);
+    expect(r.tickets.rare).toBeGreaterThanOrEqual(1);
+  });
+  it('破壳时刻要真的孵出过一只（ownedCount≥1）才发', () => {
+    const before = evaluateAchievements({ ...base, growthTotal: 1 }, {});
+    expect(before.newly.map((a) => a.id)).not.toContain('first-hatch');
+    const after = evaluateAchievements({ ...base, growthTotal: 1, ownedCount: 1 }, {});
+    expect(after.newly.map((a) => a.id)).toContain('first-hatch');
+  });
+});
