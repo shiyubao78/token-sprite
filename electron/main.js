@@ -7,6 +7,7 @@ import {
   nativeImage,
   powerMonitor,
   screen,
+  shell,
   Tray,
 } from 'electron';
 import path from 'node:path';
@@ -133,17 +134,28 @@ function createTray() {
   tray.on('click', recallSprite);
 }
 
-async function initializeUpdates() {
-  const enabled = app.isPackaged && process.platform === 'darwin';
-  if (!enabled) return;
-  try {
-    const updaterModule = await import('electron-updater');
-    const updater = updaterModule.autoUpdater || updaterModule.default?.autoUpdater;
-    if (!updater) throw new Error('electron-updater autoUpdater unavailable');
-    updateController = createUpdateController({ updater, dialog, isEnabled: true });
-  } catch (error) {
-    console.error('自动更新初始化失败', error);
-  }
+const RELEASE_REPO = 'shiyubao78/token-sprite';
+
+// 查 GitHub 最新 Release。404=还没发布任何版本→返回 null；其它错误抛出（由控制器兜底提示）。
+async function fetchLatestRelease() {
+  const res = await fetch(`https://api.github.com/repos/${RELEASE_REPO}/releases/latest`, {
+    headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'token-sprite' },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+  const data = await res.json();
+  return { version: data.tag_name, url: data.html_url };
+}
+
+function initializeUpdates() {
+  // 正式打包版才检查更新（开发态保持不联网）；轻量提醒无需签名，各系统通用。
+  updateController = createUpdateController({
+    currentVersion: app.getVersion(),
+    fetchLatest: fetchLatestRelease,
+    dialog,
+    openExternal: (url) => shell.openExternal(url),
+    isEnabled: app.isPackaged,
+  });
 }
 
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
@@ -180,7 +192,7 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
     } catch { /* 平台不支持则跳过 */ }
   }
   createWindow();
-  await initializeUpdates();
+  initializeUpdates();
   createTray();
   updateController.start();
   screen.on('display-added', ensureSpriteVisible);

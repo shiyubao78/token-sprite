@@ -1,20 +1,26 @@
-function releaseNotesText(releaseNotes) {
-  const raw = Array.isArray(releaseNotes)
-    ? releaseNotes.map((note) => note?.note || '').join('\n')
-    : releaseNotes || '';
-  return String(raw)
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 1200);
+// 轻量更新提醒：查 GitHub 最新 Release，发现新版本就弹窗引导去下载页。
+// 不下载、不安装、无需代码签名——只是提醒用户去 Releases 手动更新。
+
+// 版本比较：忽略前缀 v，按 主.次.修 逐段比。a<b→-1，a>b→1，相等→0。
+export function compareVersions(a, b) {
+  const parse = (v) => String(v || '').replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0);
+  const pa = parse(a);
+  const pb = parse(b);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i += 1) {
+    const diff = (pa[i] || 0) - (pb[i] || 0);
+    if (diff !== 0) return diff < 0 ? -1 : 1;
+  }
+  return 0;
 }
 
 export function createUpdateController({
-  updater,
+  currentVersion,
+  fetchLatest, // async () => { version, url } | null（null 表示还没有发布任何版本）
   dialog,
+  openExternal, // async (url) => void
   isEnabled,
   startupDelayMs = 30_000,
-  intervalMs = 4 * 60 * 60 * 1000,
+  intervalMs = 6 * 60 * 60 * 1000,
   setTimeoutFn = setTimeout,
   setIntervalFn = setInterval,
   clearTimeoutFn = clearTimeout,
@@ -23,62 +29,29 @@ export function createUpdateController({
   let startupTimer = null;
   let intervalTimer = null;
   let checking = false;
-  let userInitiatedCheck = false;
-  const listeners = [];
-
-  function listen(event, handler) {
-    updater.on(event, handler);
-    listeners.push([event, handler]);
-  }
 
   async function show(options) {
-    return dialog.showMessageBox({
-      type: 'info',
-      defaultId: 0,
-      cancelId: 1,
-      noLink: true,
-      ...options,
-    });
+    return dialog.showMessageBox({ type: 'info', defaultId: 0, cancelId: 1, noLink: true, ...options });
   }
 
-  if (isEnabled) {
-    updater.autoDownload = false;
-    updater.autoInstallOnAppQuit = true;
-
-    listen('update-available', async (info) => {
-      checking = false;
-      const notes = releaseNotesText(info.releaseNotes);
-      const { response } = await show({
-        buttons: ['下载更新', '稍后'],
-        message: `发现新版本 ${info.version}`,
-        detail: notes || '新版本已经准备好，要现在下载吗？',
-      });
-      if (response === 0) await updater.downloadUpdate();
-    });
-
-    listen('update-not-available', async () => {
-      checking = false;
-      const shouldNotify = userInitiatedCheck;
-      userInitiatedCheck = false;
-      if (shouldNotify) {
+  async function check({ userInitiated = false } = {}) {
+    if (!isEnabled || checking) return;
+    checking = true;
+    try {
+      const latest = await fetchLatest();
+      const hasNewer = latest && latest.version && compareVersions(currentVersion, latest.version) < 0;
+      if (hasNewer) {
+        const { response } = await show({
+          buttons: ['去下载', '稍后'],
+          message: `发现新版本 ${latest.version}`,
+          detail: '打开下载页获取最新版，拖进「应用程序」覆盖即可，成长数据会保留。',
+        });
+        if (response === 0) await openExternal(latest.url);
+      } else if (userInitiated) {
         await show({ buttons: ['知道了'], cancelId: 0, message: '已经是最新版本' });
       }
-    });
-
-    listen('update-downloaded', async (info) => {
-      const { response } = await show({
-        buttons: ['重启并更新', '稍后'],
-        message: `新版本 ${info.version} 已下载完成`,
-        detail: '重启 Token 小精灵即可完成更新，成长数据会保留。',
-      });
-      if (response === 0) updater.quitAndInstall();
-    });
-
-    listen('error', async () => {
-      checking = false;
-      const shouldNotify = userInitiatedCheck;
-      userInitiatedCheck = false;
-      if (shouldNotify) {
+    } catch {
+      if (userInitiated) {
         await show({
           type: 'warning',
           buttons: ['知道了'],
@@ -87,17 +60,8 @@ export function createUpdateController({
           detail: '请检查网络后稍后再试，小精灵可以继续正常使用。',
         });
       }
-    });
-  }
-
-  async function check({ userInitiated = false } = {}) {
-    if (!isEnabled || checking) return;
-    checking = true;
-    userInitiatedCheck = userInitiated;
-    try {
-      await updater.checkForUpdates();
-    } catch {
-      updater.emit('error', new Error('check for updates failed'));
+    } finally {
+      checking = false;
     }
   }
 
@@ -112,7 +76,6 @@ export function createUpdateController({
     if (intervalTimer) clearIntervalFn(intervalTimer);
     startupTimer = null;
     intervalTimer = null;
-    for (const [event, handler] of listeners) updater.removeListener(event, handler);
   }
 
   return { enabled: !!isEnabled, start, check, dispose };

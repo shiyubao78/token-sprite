@@ -39,7 +39,7 @@ Six elements, six complete evolution lines: flora, ocean, magma, thunder, mech, 
 - **会陪你 / A companion, not a counter**：连续工作会劝你休息，深夜会提醒早点睡，久别重逢会向你招手。 / It nudges you to rest, sleep, and come back without turning work into pressure.
 - **桌面常驻 / Always on your desktop**：悬浮置顶、自由拖动，也能缩成侧边探头。 / Always on top, draggable, and able to peek quietly from the screen edge.
 - **孵化收集 / Hatch and collect**：成就 → 抽蛋 → 进化 → 图鉴，让每次写代码都有期待。 / Achievements unlock eggs; eggs evolve into creatures for your collection.
-- **全本地私密 / Private by design**：只读本机日志，不联网、不上传。 / Usage stays on your machine and is never uploaded.
+- **全本地私密 / Private by design**：只读本机日志，用量绝不上传；仅正式版会向 GitHub 查询有无新版本。 / Usage stays on your machine and is never uploaded; only released builds check GitHub for new versions.
 
 ## 🏆 成就与抽蛋 / Achievements & Hatching
 
@@ -94,11 +94,11 @@ Requires [Node.js](https://nodejs.org/) 20+ and runs on **macOS, Windows, and Li
 
 ### macOS 普通用户安装 / Install on macOS
 
-普通用户请从 GitHub Releases 下载最新的 `.dmg`，打开后把 **Token 小精灵**拖进“应用程序”。源码方式主要面向开发者。<br />
-Download the latest `.dmg` from GitHub Releases and drag **Token Sprite** into Applications. The source workflow below is mainly for developers.
+普通用户请从 GitHub Releases 下载最新的 `.dmg`，打开后把 **Token 小精灵**拖进“应用程序”。若未签名，首次打开右键点图标选“打开”通过一次系统提示即可。源码方式主要面向开发者。<br />
+Download the latest `.dmg` from GitHub Releases and drag **Token Sprite** into Applications. If it is unsigned, right-click the app and choose “Open” once to pass Gatekeeper. The source workflow below is mainly for developers.
 
-当前未签名旧版需要手动安装首个正式版一次；从正式版开始，后续更新可通过 macOS 菜单栏的小精灵图标 → **检查更新**完成。更新不会清除成长数据。<br />
-Existing unsigned builds need one manual upgrade to the first signed release. Later versions can update from the menu-bar icon → **Check for Updates**, without clearing growth data.
+有新版时，正式版会弹窗提醒；菜单栏的小精灵图标 → **检查更新** 也会打开下载页，下载新版 `.dmg` 覆盖安装即可，成长数据保留。<br />
+When a new version is available, released builds show a reminder. The menu-bar icon → **Check for Updates** opens the download page; grab the new `.dmg` and reinstall over the old one—your growth data is kept.
 
 如果小精灵不在桌面上，点击菜单栏的小精灵图标 → **召回小精灵**。显示器拔插、分辨率变化或睡眠恢复后，如果窗口完全跑出屏幕，应用也会自动把它带回来。<br />
 If your sprite disappears, choose **Recall Sprite** from its menu-bar icon. It also returns automatically after display changes or wake when its window is fully off-screen.
