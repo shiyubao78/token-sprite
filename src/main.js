@@ -1,6 +1,6 @@
 import './style.css';
 import { computeMood, pickBubble, ACTIVE_MS, RETURN_IDLE_MS, BURST_TOKENS } from './domain/mood.js';
-import { incubation, incubationStage } from './domain/incubation.js';
+import { incubation, incubationStage, evolution, STAGE_NAMES } from './domain/incubation.js';
 import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch } from './domain/incubator.js';
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
 import { loadPet, savePet } from './services/pet-store.js';
@@ -10,7 +10,7 @@ import { RARITY } from './config/rarities.js';
 import { SPECIES, speciesByKey } from './config/species.js';
 import { ACHIEVEMENTS } from './config/achievements.js';
 import {
-  mainHTML, peekHTML, menuHTML, gachaHTML, incubatorHTML, collectionHTML, achievementsHTML,
+  mainHTML, peekHTML, menuHTML, gachaHTML, incubatorHTML, collectionHTML, achievementsHTML, evolutionHTML,
 } from './ui/views.js';
 
 const app = document.getElementById('app');
@@ -57,7 +57,8 @@ function deriveVm() {
     const active = e.id === state.activeEggId;
     // 稀有度以品种为准（修旧存档存歪的 rarity）；进度用这只自己的累积喂养，非在养也保留
     const inc = incubation(e.fed, sp.rarity);
-    return { id: e.id, rarity: sp.rarity, active, percent: pct(inc.fraction), speciesName: sp.name, seedUrl: stageUrl(sp.folder, 1) };
+    const stageNo = incubationStage(inc.fraction);
+    return { id: e.id, rarity: sp.rarity, active, percent: pct(inc.fraction), stageNo, stageName: STAGE_NAMES[stageNo - 1], speciesName: sp.name, seedUrl: stageUrl(sp.folder, 1) };
   });
 
   let mode, egg = null, pet = null;
@@ -279,12 +280,48 @@ function openGacha() {
 }
 
 function openIncubator() {
-  const { mask, close } = openSheet(incubatorHTML(deriveVm()));
+  const { mask } = openSheet(incubatorHTML(deriveVm()));
   mask.querySelectorAll('[data-egg]').forEach((row) => {
     row.addEventListener('click', () => {
-      setActiveEgg(state, row.getAttribute('data-egg'), growthTotal());
-      savePet(state); close(); render();
+      const egg = (state.eggs || []).find((e) => e.id === row.getAttribute('data-egg'));
+      if (egg) openEvolution(egg);
     });
+  });
+}
+
+function evolutionVm(egg) {
+  const sp = speciesByKey(egg.species) || SPECIES[0];
+  const evo = evolution(egg.fed, sp.rarity);
+  const stages = evo.stages.map((s) => ({
+    no: s.no,
+    name: s.name,
+    state: s.state,
+    url: s.state === 'mystery' ? null : stageUrl(sp.folder, s.no),
+    thresholdText: formatNeed(s.threshold),
+    withinPct: s.withinPct != null ? Math.round(s.withinPct * 100) : null,
+    nextName: s.nextName,
+    toNextText: s.toNext != null ? formatNeed(s.toNext) : null,
+  }));
+  return {
+    speciesName: sp.name,
+    rarityName: RARITY[sp.rarity].name,
+    color: RARITY[sp.rarity].color,
+    current: evo.current,
+    fedText: formatNeed(evo.fed),
+    toHatchText: formatNeed(evo.toHatch),
+    needText: formatNeed(evo.need),
+    active: egg.id === state.activeEggId,
+    stages,
+  };
+}
+
+function openEvolution(egg) {
+  const { mask } = openSheet(evolutionHTML(evolutionVm(egg)));
+  mask.querySelector('#evoActivate')?.addEventListener('click', () => {
+    setActiveEgg(state, egg.id, growthTotal());
+    savePet(state);
+    document.querySelectorAll('.sheet-mask').forEach((m) => m.remove()); // 关掉详情+孵化器
+    render();
   });
 }
 

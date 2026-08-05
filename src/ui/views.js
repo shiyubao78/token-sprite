@@ -106,11 +106,45 @@ export function incubatorHTML(vm) {
   const rows = vm.eggs.map((e) => `
     <div class="egg-row ${e.active ? 'active' : ''} nodrag" data-egg="${e.id}">
       <img class="egg-thumb" src="${e.seedUrl}" alt="${esc(e.speciesName)}" />
-      <div class="egg-info"><div class="en">${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? `在养中 · ${e.percent}%` : `已养到 ${e.percent}% · 点我接着养`}</div></div>
+      <div class="egg-info"><div class="en">${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? `在养中 · 第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}%` : `第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}% · 点我看详情`}</div></div>
       ${e.active ? '<span class="egg-badge">在养</span>' : ''}
     </div>`).join('');
   return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 选一颗养</h2>${rows}
     <div class="source-note" style="margin-top:8px">在养的蛋吃你的 token 一路进化到化形。换着养也不清零——每只各记各的进度，放桌面上就接着长。</div>`;
+}
+
+export function evolutionHTML(vm) {
+  const rows = vm.stages.map((s) => {
+    const thumb = s.state === 'mystery'
+      ? '<div class="evo-thumb mystery">?</div>'
+      : `<div class="evo-thumb ${s.state === 'locked' ? 'locked' : ''}">${s.url ? `<img src="${s.url}" alt="${esc(s.name)}" draggable="false" />` : ''}</div>`;
+    let info, state;
+    if (s.state === 'current') {
+      info = `<div class="evo-name"><span class="seg">第${s.no}段</span>${esc(s.name)}</div>
+        <div class="evo-prog-wrap"><div class="evo-prog"><span style="width:${s.withinPct}%"></span></div>
+        <div class="evo-prog-txt">距下一段 · ${esc(s.nextName)} 还差 <b>${s.toNextText}</b> token（本段已 ${s.withinPct}%）</div></div>`;
+      state = '<span class="cur">当前</span>';
+    } else if (s.state === 'done') {
+      info = `<div class="evo-name"><span class="seg">第${s.no}段</span>${esc(s.name)}</div><div class="evo-desc">已解锁</div>`;
+      state = '✅';
+    } else if (s.state === 'mystery') {
+      info = `<div class="evo-name"><span class="seg">第${s.no}段</span>化形 · ？？？</div><div class="evo-desc">养满 ${vm.needText} 破壳揭晓</div>`;
+      state = '<span class="lock">🔒</span>';
+    } else {
+      info = `<div class="evo-name"><span class="seg">第${s.no}段</span>${esc(s.name)}</div><div class="evo-desc">养到 ${s.thresholdText} 解锁</div>`;
+      state = '<span class="lock">🔒</span>';
+    }
+    return `<div class="evo-row ${s.state}">${thumb}<div class="evo-info">${info}</div><div class="evo-state">${state}</div></div>`;
+  }).join('');
+  return `<button class="close nodrag" data-close aria-label="关闭">✕</button>
+    <h2>${esc(vm.speciesName)} · 进化</h2>
+    <div class="sub-h"><span class="evo-chip" style="color:${vm.color}">${esc(vm.rarityName)} · 第 ${vm.current} 段 / 共 5 段</span></div>
+    ${rows}
+    <div class="evo-total"><span>累计已喂 <b>${vm.fedText}</b></span><span>距化形还差 <b>${vm.toHatchText}</b></span></div>
+    ${vm.active
+      ? '<button class="evo-btn nodrag" disabled>在养中 🌱</button>'
+      : '<button class="evo-btn nodrag" id="evoActivate">设为在养 🌱</button>'}
+    <div class="source-note" style="margin-top:12px">养满一段解锁一段，进度不清零。最终「化形」保持神秘，破壳才揭晓 🎉</div>`;
 }
 
 export function collectionHTML(vm) {

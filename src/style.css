@@ -232,3 +232,29 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .ach-info .an { font-size: 13.5px; font-weight: 600; }
 .ach-info .ad { font-size: 11.5px; color: var(--muted); }
 .ach-tk { font-size: 11px; font-weight: 600; }
+
+/* 进化详情 */
+.sub-h { margin: -6px 0 12px; }
+.evo-chip { display: inline-block; font-size: 12px; font-weight: 600; background: rgba(255,255,255,.7); border: 1px solid var(--line); padding: 3px 12px; border-radius: 999px; }
+.evo-row { display: flex; align-items: center; gap: 12px; padding: 9px 11px; border-radius: 14px; margin-bottom: 9px; background: var(--card); border: 1px solid var(--line); }
+.evo-row.current { border: 2px solid var(--accent); background: #f4fbf6; }
+.evo-row.locked, .evo-row.mystery { opacity: .72; }
+.evo-thumb { width: 54px; height: 54px; flex: 0 0 auto; border-radius: 12px; background: #fbf6ea; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.evo-thumb img { max-width: 50px; max-height: 50px; object-fit: contain; -webkit-user-drag: none; }
+.evo-thumb.locked img { filter: grayscale(1) brightness(.6) opacity(.35); }
+.evo-thumb.mystery { font-size: 26px; font-weight: 800; color: #c9bda3; }
+.evo-info { flex: 1; min-width: 0; }
+.evo-name { font-size: 14px; font-weight: 600; }
+.evo-name .seg { color: var(--muted); font-weight: 500; font-size: 11.5px; margin-right: 6px; }
+.evo-desc { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.evo-state { font-size: 13px; flex: 0 0 auto; }
+.evo-state .cur { color: #fff; background: var(--accent); padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.evo-state .lock { font-size: 15px; }
+.evo-prog-wrap { margin-top: 8px; }
+.evo-prog { width: 100%; height: 7px; background: var(--track); border-radius: 999px; overflow: hidden; }
+.evo-prog > span { display: block; height: 100%; background: linear-gradient(90deg, #7fd0a3, #63bd8b); border-radius: 999px; }
+.evo-prog-txt { font-size: 11px; color: var(--muted); margin-top: 5px; }
+.evo-total { display: flex; justify-content: space-between; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 4px; font-size: 12.5px; color: var(--muted); }
+.evo-total b { color: var(--ink); }
+.evo-btn { width: 100%; margin-top: 12px; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.evo-btn:disabled { background: #e7e0d0; color: var(--muted); border-color: var(--line); cursor: default; }

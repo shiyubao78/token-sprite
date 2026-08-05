@@ -15,3 +15,33 @@ export function incubationStage(fraction) {
   if (f >= 1) return 5;
   return Math.min(4, Math.floor(f * 4) + 1);
 }
+
+export const STAGE_NAMES = ['蛋', '幼体', '成长', '蓄能', '化形'];
+
+// 每只精灵的「进化详情」：由这只累计喂养 fed + 稀有度门槛，实时算出 5 段的解锁状态与到下一段的距离。
+// state：done=已过 / current=当前(带本段进度) / locked=未到的中间段(灰剪影) / mystery=未到的化形(藏成 ?)。
+export function evolution(fed, rarity) {
+  const need = (RARITY[rarity] && RARITY[rarity].hatch) || 0;
+  const f = Math.max(0, fed || 0);
+  const fraction = need > 0 ? Math.min(1, f / need) : 1;
+  const current = incubationStage(fraction); // 1..5
+  const stages = [];
+  for (let n = 1; n <= 5; n++) {
+    const threshold = ((n - 1) / 4) * need; // 到达第 n 段的累计喂养门槛
+    let state;
+    if (n < current) state = 'done';
+    else if (n === current) state = 'current';
+    else state = n === 5 ? 'mystery' : 'locked';
+    const stage = { no: n, name: STAGE_NAMES[n - 1], threshold, state };
+    if (state === 'current' && n < 5) {
+      const start = (n - 1) / 4;
+      const end = n / 4;
+      stage.withinPct = Math.max(0, Math.min(1, (fraction - start) / (end - start)));
+      stage.nextName = STAGE_NAMES[n]; // 下一段的名字
+      stage.nextThreshold = (n / 4) * need;
+      stage.toNext = Math.max(0, stage.nextThreshold - f);
+    }
+    stages.push(stage);
+  }
+  return { need, fed: f, fraction, current, toHatch: Math.max(0, need - f), stages };
+}
