@@ -190,7 +190,7 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .tk-badge { font-size: 11px; background: rgba(255,255,255,.72); color: var(--ink); padding: 2px 8px; border-radius: 999px; cursor: pointer; }
 
 .hub { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.hub-btn { border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 12px 8px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+.hub-btn { border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 12px 6px; font-size: 12.5px; font-weight: 600; color: var(--ink); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hub-btn:active { transform: scale(.98); }
 
 .tk-row { display: flex; align-items: center; gap: 9px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
