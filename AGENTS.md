@@ -16,9 +16,10 @@ npm run pack:mac:release  # macOS universal DMG、ZIP、blockmap、latest-mac.ym
 ```
 
 - `npm start` = `npm run build`（Vite 构建）+ `electron .`（启动桌面壳）。退出：点桌宠 `⋯` → 退出，或使用 macOS 菜单栏入口。
+- **更新到最新版**（用户让 Agent 帮忙升级时）：源码安装 → `git pull` 拉最新 + `npm install` + 重新 `npm start`；下载安装版 → 从 GitHub Releases 取最新 zip 解压，覆盖 `/Applications` 里的旧 app。**成长数据在用户数据目录**（`~/Library/Application Support/Token小精灵/`，源码开发态是 `token-sprite/`），覆盖 / 重装都不受影响。
 - 开发热更新：`npm run dev`（终端1）+ `npm run desktop`（终端2，electron 指向 localhost:5173，用 cross-env 设环境变量以兼容 Windows）。
 - 打包（在目标系统本机跑）：`npm run pack`（mac → `release/mac-universal/Token小精灵.app`）/ `pack:win`（Windows → 免安装 exe + NSIS）/ `pack:linux`（Linux → AppImage）。三系统一键出包用 `.github/workflows/build.yml`（仅 Actions 手动触发）。测试：`npm test`。
-- macOS 正式发布：先更新 `package.json` 版本，再打同版本标签（如 `v1.2.3`）。`.github/workflows/release.yml` 会测试、校验版本、签名、公证、构建并创建 GitHub Release。没有仓库所有者明确授权，不得打标签或发布。
+- macOS 发布（当前方案 B，未签名、手动）：先更新 `package.json` 版本；本地 `npm run pack:mac:release` 出 zip（企业机 `hdiutil` 常因安全软件"资源忙"建 DMG 失败，用 zip 即可，手动安装/更新完全够用）；再 `gh release create v<x.y.z> release/*.zip`（标签与版本一致）。`.github/workflows/release.yml` 已改为手动触发（`workflow_dispatch`）——配好 Apple 签名 Secrets 后可改回打标签自动签名发布。没有仓库所有者明确授权，不得发布。
 - 正式发布所需 GitHub Secrets：`MAC_CERTIFICATE_P12_BASE64`、`MAC_CERTIFICATE_PASSWORD`、`APPLE_API_KEY_P8_BASE64`、`APPLE_API_KEY_ID`、`APPLE_API_ISSUER_ID`。不得把值写入仓库或日志。
 
 ## 这是什么

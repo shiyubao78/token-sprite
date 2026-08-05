@@ -126,6 +126,17 @@ Send this directly to Codex, Claude Code, or any terminal-capable agent:
 仓库内置 `AGENTS.md` 与 `CLAUDE.md`，Agent 可以自动完成克隆、安装与启动。<br />
 The repository includes `AGENTS.md` and `CLAUDE.md`, so an agent can clone, install, and launch it for you.
 
+### 🔄 一句话让 Agent 帮你更新 / Let Your Agent Update It
+
+想升级到最新版，同样发一句话给 Agent 即可，成长数据会保留：<br />
+To upgrade to the latest version, just send your agent one line—your growth data is kept:
+
+> 帮我把 token-sprite 更新到最新版<br />
+> Update token-sprite to the latest version for me.
+
+源码方式安装的，Agent 会 `git pull` 最新代码并重装启动；下载安装版的，Agent 会取最新 Release 覆盖旧版。<br />
+For source installs the agent runs `git pull` and reinstalls; for downloaded builds it fetches the latest release and replaces the old app.
+
 ## 🧩 工作原理 / How It Works
 
 应用会自动检测本机支持的 AI 工具，读取本地日志中的 Token 用量。没安装的工具会自动跳过，数据不会离开你的电脑。<br />
