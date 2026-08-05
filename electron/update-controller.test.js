@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createUpdateController, compareVersions } from './update-controller.js';
+import { createUpdateController, compareVersions, parseReleaseFromUrl } from './update-controller.js';
 
 function fakeDialog(response = 0) {
   return { showMessageBox: vi.fn().mockResolvedValue({ response }) };
@@ -24,6 +24,20 @@ describe('compareVersions', () => {
     expect(compareVersions('v1.2.0', '1.1.9')).toBe(1);
     expect(compareVersions('1.0.0', 'v1.0.0')).toBe(0);
     expect(compareVersions('0.1', '0.1.1')).toBe(-1);
+  });
+});
+
+describe('parseReleaseFromUrl（从 github.com 重定向 URL 解析版本）', () => {
+  it('命中 /releases/tag/<ver> → 解析出版本和下载页', () => {
+    const url = 'https://github.com/shiyubao78/token-sprite/releases/tag/v0.3.0';
+    expect(parseReleaseFromUrl(url)).toEqual({ version: 'v0.3.0', url });
+  });
+  it('重定向到 releases 列表（暂无发布）→ null', () => {
+    expect(parseReleaseFromUrl('https://github.com/shiyubao78/token-sprite/releases')).toBeNull();
+  });
+  it('空/异常输入 → null', () => {
+    expect(parseReleaseFromUrl('')).toBeNull();
+    expect(parseReleaseFromUrl(null)).toBeNull();
   });
 });
 

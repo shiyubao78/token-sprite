@@ -14,7 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { computeLocalUsage } from '../scripts/usage.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
-import { createUpdateController } from './update-controller.js';
+import { createUpdateController, parseReleaseFromUrl } from './update-controller.js';
 import { bottomRightBounds, isVisibleOnAnyDisplay } from './window-placement.js';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -136,15 +136,16 @@ function createTray() {
 
 const RELEASE_REPO = 'shiyubao78/token-sprite';
 
-// 查 GitHub 最新 Release。404=还没发布任何版本→返回 null；其它错误抛出（由控制器兜底提示）。
+// 查最新 Release：走 github.com 网页重定向（不碰限流的 api.github.com）。
+// 跟随重定向到 .../releases/tag/<ver>，从最终 URL 解析版本；无 Release 时重定向到列表页→返回 null。
 async function fetchLatestRelease() {
-  const res = await fetch(`https://api.github.com/repos/${RELEASE_REPO}/releases/latest`, {
-    headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'token-sprite' },
+  const res = await fetch(`https://github.com/${RELEASE_REPO}/releases/latest`, {
+    redirect: 'follow',
+    headers: { 'User-Agent': 'token-sprite' },
   });
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-  const data = await res.json();
-  return { version: data.tag_name, url: data.html_url };
+  if (!res.ok) throw new Error(`GitHub ${res.status}`);
+  return parseReleaseFromUrl(res.url);
 }
 
 function initializeUpdates() {
