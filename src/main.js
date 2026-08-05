@@ -136,6 +136,11 @@ function setCollapsed(next) {
   render();
 }
 
+globalThis.tokenSprite?.onRecall?.(() => {
+  collapsed = false;
+  render();
+});
+
 function interact() {
   const sprite = document.querySelector('.sprite, .egg');
   const fx = document.getElementById('fx');

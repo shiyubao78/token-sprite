@@ -35,6 +35,7 @@
     },
     "files": [
       "electron/**",
+      "build/icon.png",
       "dist/**",
       "scripts/usage.mjs",
       "package.json"

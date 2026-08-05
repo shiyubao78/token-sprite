@@ -10,4 +10,5 @@ contextBridge.exposeInMainWorld('tokenSprite', {
   getWindowPos: () => ipcRenderer.invoke('window:getPos'),
   setWindowPos: (x, y) => ipcRenderer.send('window:setPos', x, y),
   setCollapsed: (collapsed) => ipcRenderer.send('window:setCollapsed', collapsed),
+  onRecall: (callback) => ipcRenderer.on('window:recalled', callback),
 });
