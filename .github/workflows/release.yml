@@ -1,26 +1,49 @@
 name: release
+
 on:
   push:
-    tags: ['v*']
+    tags:
+      - 'v*'
+
 permissions:
   contents: write
+
 jobs:
-  build-mac:
+  release-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
       - run: npm ci
-      - run: npm run pack
-      - name: Zip app
+      - run: npm test
+      - name: 校验标签与应用版本一致
+        run: npm run verify:release-version
+      - name: 准备 Apple 公证密钥
+        env:
+          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
         run: |
-          APP=$(find release -maxdepth 2 -name "*.app" | head -1)
-          echo "Found app: $APP"
-          test -n "$APP"
-          ditto -c -k --sequesterRsrc --keepParent "$APP" token-sprite-mac-universal.zip
-          ls -la token-sprite-mac-universal.zip
-      - uses: softprops/action-gh-release@v2
+          test -n "$APPLE_API_KEY_P8_BASE64"
+          printf '%s' "$APPLE_API_KEY_P8_BASE64" | base64 -D > "$RUNNER_TEMP/AuthKey.p8"
+      - name: 构建、签名并公证 macOS 安装包
+        run: npm run pack:mac:release
+        env:
+          CSC_LINK: ${{ secrets.MAC_CERTIFICATE_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          APPLE_API_KEY: ${{ runner.temp }}/AuthKey.p8
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 校验自动更新产物完整
+        run: npm run verify:update-artifacts
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          files: token-sprite-mac-universal.zip
+          generate_release_notes: true
+          files: |
+            release/*.dmg
+            release/*.zip
+            release/*.blockmap
+            release/latest-mac.yml

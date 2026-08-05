@@ -1,12 +1,9 @@
 name: Build desktop apps
 
-# 手动触发或打 tag 时，在三个系统上各自打出安装包并上传为构建产物。
+# 手动触发时，在三个系统上各自打出安装包并上传为构建产物。
 # macOS 出 .app 目录、Windows 出 portable .exe + NSIS 安装包、Linux 出 AppImage。
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'v*'
 
 jobs:
   build:

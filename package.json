@@ -2,6 +2,8 @@
   "name": "token-sprite",
   "private": true,
   "version": "0.1.0",
+  "description": "一只会从本地 AI 编程 token 用量中成长的桌面小精灵",
+  "author": "shiyubao78",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "electron/main.js",
@@ -13,12 +15,16 @@
     "sync": "node scripts/sync.mjs",
     "electron": "electron .",
     "desktop": "cross-env TS_DEV_URL=http://localhost:5173 electron .",
-    "pack": "npm run build && electron-builder --mac dir",
+    "pack": "npm run build && electron-builder --mac dir --universal",
+    "pack:mac:release": "npm run build && electron-builder --mac dmg zip --universal --publish never",
+    "verify:release-version": "node scripts/verify-release-version.mjs",
+    "verify:update-artifacts": "node scripts/verify-update-artifacts.mjs",
     "pack:win": "npm run build && electron-builder --win",
     "pack:linux": "npm run build && electron-builder --linux",
     "test": "vitest run"
   },
   "devDependencies": {
+    "@electron/notarize": "^2.5.0",
     "cross-env": "^7.0.3",
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",
@@ -33,23 +39,32 @@
     "directories": {
       "output": "release"
     },
+    "afterSign": "scripts/notarize.cjs",
     "files": [
       "electron/**",
+      "!electron/**/*.test.js",
       "build/icon.png",
       "dist/**",
       "scripts/usage.mjs",
       "package.json"
     ],
     "mac": {
+      "artifactName": "${name}-${version}-${arch}-${os}.${ext}",
       "target": [
         {
-          "target": "dir",
+          "target": "dmg",
+          "arch": "universal"
+        },
+        {
+          "target": "zip",
           "arch": "universal"
         }
       ],
       "category": "public.app-category.developer-tools",
       "icon": "build/icon.icns",
-      "identity": null
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "win": {
       "target": [
@@ -74,7 +89,14 @@
       ],
       "category": "Utility",
       "icon": "build/icon.png"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "shiyubao78",
+        "repo": "token-sprite"
+      }
+    ]
   },
   "dependencies": {
     "electron-updater": "^6.8.9"

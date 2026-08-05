@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { configDefaults } from 'vitest/config';
 
 function localUsagePlugin() {
   return {
@@ -40,5 +41,6 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    exclude: [...configDefaults.exclude, 'release/**', '.worktrees/**'],
   },
 });
