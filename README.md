@@ -92,6 +92,19 @@ Fully local, no login — one floating window: rename, draw, hatch, collect, and
 需要 [Node.js](https://nodejs.org/) 20+，支持 **macOS、Windows 与 Linux**。<br />
 Requires [Node.js](https://nodejs.org/) 20+ and runs on **macOS, Windows, and Linux**.
 
+### macOS 普通用户安装 / Install on macOS
+
+普通用户请从 GitHub Releases 下载最新的 `.dmg`，打开后把 **Token 小精灵**拖进“应用程序”。源码方式主要面向开发者。<br />
+Download the latest `.dmg` from GitHub Releases and drag **Token Sprite** into Applications. The source workflow below is mainly for developers.
+
+当前未签名旧版需要手动安装首个正式版一次；从正式版开始，后续更新可通过 macOS 菜单栏的小精灵图标 → **检查更新**完成。更新不会清除成长数据。<br />
+Existing unsigned builds need one manual upgrade to the first signed release. Later versions can update from the menu-bar icon → **Check for Updates**, without clearing growth data.
+
+如果小精灵不在桌面上，点击菜单栏的小精灵图标 → **召回小精灵**。显示器拔插、分辨率变化或睡眠恢复后，如果窗口完全跑出屏幕，应用也会自动把它带回来。<br />
+If your sprite disappears, choose **Recall Sprite** from its menu-bar icon. It also returns automatically after display changes or wake when its window is fully off-screen.
+
+### 从源码运行 / Run from source
+
 ```bash
 git clone https://github.com/shiyubao78/token-sprite.git
 cd token-sprite
@@ -161,11 +174,12 @@ Run the matching command on the target operating system. Builds are written to `
 
 ```bash
 npm run pack         # macOS universal app
+npm run pack:mac:release # macOS universal DMG + ZIP + update metadata
 npm run pack:win     # Windows portable app + installer
 npm run pack:linux   # Linux AppImage
 ```
 
-- **macOS**：未签名版本首次运行可能需要右键选择“打开”。
+- **macOS 本地构建**：没有 Developer ID 凭证时仍是未签名版本，首次运行可能需要右键选择“打开”。正式 Release 必须经过签名和 Apple 公证。
 - **Windows**：SmartScreen 拦截时选择“更多信息 → 仍要运行”。
 - **Linux**：先为 AppImage 添加执行权限；透明和置顶效果取决于桌面环境。
 - Packaging must run on its target OS. GitHub Actions can also build all three platforms.
