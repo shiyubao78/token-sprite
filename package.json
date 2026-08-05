@@ -75,5 +75,8 @@
       "category": "Utility",
       "icon": "build/icon.png"
     }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }

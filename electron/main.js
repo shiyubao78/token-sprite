@@ -1,6 +1,7 @@
 import {
   app,
   BrowserWindow,
+  dialog,
   ipcMain,
   Menu,
   nativeImage,
@@ -12,6 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { computeLocalUsage } from '../scripts/usage.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
+import { createUpdateController } from './update-controller.js';
 import { bottomRightBounds, isVisibleOnAnyDisplay } from './window-placement.js';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -22,6 +24,12 @@ const PEEK = { w: 56, h: 104 };
 let mainWin = null;
 let tray = null;
 let collapsed = false;
+let updateController = {
+  enabled: false,
+  start() {},
+  check: async () => {},
+  dispose() {},
+};
 
 function cursorDisplay() {
   return screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
@@ -116,13 +124,26 @@ function createTray() {
   tray.setContextMenu(Menu.buildFromTemplate(createTrayMenuTemplate({
     version: app.getVersion(),
     autoLaunch: autoLaunchEnabled(),
-    updateEnabled: false,
+    updateEnabled: updateController.enabled,
     onRecall: recallSprite,
-    onCheckUpdates: () => {},
+    onCheckUpdates: () => updateController.check({ userInitiated: true }),
     onToggleAutoLaunch: setAutoLaunch,
     onQuit: () => app.quit(),
   })));
   tray.on('click', recallSprite);
+}
+
+async function initializeUpdates() {
+  const enabled = app.isPackaged && process.platform === 'darwin';
+  if (!enabled) return;
+  try {
+    const updaterModule = await import('electron-updater');
+    const updater = updaterModule.autoUpdater || updaterModule.default?.autoUpdater;
+    if (!updater) throw new Error('electron-updater autoUpdater unavailable');
+    updateController = createUpdateController({ updater, dialog, isEnabled: true });
+  } catch (error) {
+    console.error('自动更新初始化失败', error);
+  }
 }
 
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
@@ -159,7 +180,9 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
     } catch { /* 平台不支持则跳过 */ }
   }
   createWindow();
+  await initializeUpdates();
   createTray();
+  updateController.start();
   screen.on('display-added', ensureSpriteVisible);
   screen.on('display-removed', ensureSpriteVisible);
   screen.on('display-metrics-changed', ensureSpriteVisible);
@@ -170,4 +193,5 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   });
 });
 
+app.on('before-quit', () => updateController.dispose());
 app.on('window-all-closed', () => app.quit());
