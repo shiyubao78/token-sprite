@@ -1,4 +1,5 @@
-const KEY = 'token-sprite:pet:v1';
+// ⚠️ 跨版本更新的存档全靠这个 key 定位——绝不要随意改，改了旧存档会读不到、用户成长进度会"丢失"。
+export const KEY = 'token-sprite:pet:v1';
 
 export function defaultState() {
   return {
