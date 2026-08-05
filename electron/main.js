@@ -118,7 +118,7 @@ function setAutoLaunch(on) {
 function createTray() {
   if (process.platform !== 'darwin') return;
   const icon = nativeImage
-    .createFromPath(path.join(app.getAppPath(), 'build', 'icon.png'))
+    .createFromPath(path.join(app.getAppPath(), 'build', 'tray-icon.png'))
     .resize({ width: 18, height: 18 });
   tray = new Tray(icon);
   tray.setToolTip('Token 小精灵');

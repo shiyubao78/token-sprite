@@ -44,6 +44,7 @@
       "electron/**",
       "!electron/**/*.test.js",
       "build/icon.png",
+      "build/tray-icon.png",
       "dist/**",
       "scripts/usage.mjs",
       "package.json"
