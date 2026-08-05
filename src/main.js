@@ -1,7 +1,7 @@
 import './style.css';
 import { computeMood, pickBubble, ACTIVE_MS, RETURN_IDLE_MS, BURST_TOKENS } from './domain/mood.js';
 import { incubation, incubationStage, evolution, STAGE_NAMES } from './domain/incubation.js';
-import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicates, mergeableGroups } from './domain/incubator.js';
+import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicates, mergeableGroups, normalizeSpecies } from './domain/incubator.js';
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
 import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
@@ -17,6 +17,7 @@ const app = document.getElementById('app');
 const source = new LocalUsageSource();
 
 let state = loadPet();
+if (normalizeSpecies(state)) savePet(state); // 迁移旧存档里已废弃的品种键
 let usage = { total: 0, recentTokens: 0, todayTokens: 0, lastActivityAt: Date.now(), breakdown: [] };
 let collapsed = false;
 

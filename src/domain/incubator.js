@@ -1,7 +1,19 @@
 import { drawEgg } from './gacha.js';
 import { incubation } from './incubation.js';
-import { speciesByKey } from '../config/species.js';
+import { speciesByKey, SPECIES } from '../config/species.js';
 import { MERGE_BONUS } from '../config/rarities.js';
+
+// 迁移旧存档：早期版本的品种（如 nightfox/mossling）现在已不存在，遇到会回退显示成萌芽精灵，
+// 但品种键各不相同、无法合并。这里把废弃品种统一归到现有的第一个品种，让它们真正成为同一只、可合并。
+export function normalizeSpecies(state) {
+  const fallback = SPECIES[0].key;
+  let changed = false;
+  for (const e of state.eggs || []) {
+    if (!speciesByKey(e.species)) { e.species = fallback; changed = true; }
+  }
+  if (state.activePetSpecies && !speciesByKey(state.activePetSpecies)) { state.activePetSpecies = null; changed = true; }
+  return changed;
+}
 
 let eggSeq = 0;
 export function makeEgg(rarity, species) {

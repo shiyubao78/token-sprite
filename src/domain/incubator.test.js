@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, accrue, mergeDuplicates, mergeableGroups } from './incubator.js';
+import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, accrue, mergeDuplicates, mergeableGroups, normalizeSpecies } from './incubator.js';
 import { speciesByKey } from '../config/species.js';
 
 const B = 1_000_000_000;
@@ -92,6 +92,35 @@ describe('accrue（每只自己累积喂养）', () => {
     accrue(s, 0.4 * B); // 当前 growth 0.4B → 已喂 0.3B
     expect(s.eggs[0].fed).toBeCloseTo(0.3 * B, 0);
     expect(s.lastGrowth).toBe(0.4 * B);
+  });
+});
+
+describe('normalizeSpecies 旧存档迁移', () => {
+  it('废弃品种归一到现有品种，之后能合并到一起', () => {
+    const s = baseState();
+    s.eggs = [
+      { id: 'a', species: 'nightfox', rarity: 'common', at: 1, fed: 5000000 }, // 废弃
+      { id: 'b', species: 'mossling', rarity: 'common', at: 2, fed: 0 },        // 废弃
+      { id: 'c', species: 'flower', rarity: 'common', at: 3, fed: 50000000 },   // 现有
+      { id: 'd', species: 'ice', rarity: 'epic', at: 4, fed: 0 },               // 现有，不动
+    ];
+    expect(normalizeSpecies(s)).toBe(true);
+    // 前 3 只都归一成同一个现有品种 → 变成可合并的一组
+    expect(mergeableGroups(s)).toBe(1);
+    const r = mergeDuplicates(s);
+    expect(r.merged[0].count).toBe(3);
+    expect(s.eggs).toHaveLength(2); // 合并后：1 归一品种 + 1 ice
+  });
+  it('全是现有品种时不改动', () => {
+    const s = baseState();
+    s.eggs = [{ id: 'a', species: 'flower', rarity: 'common', at: 1, fed: 0 }];
+    expect(normalizeSpecies(s)).toBe(false);
+  });
+  it('废弃的出战品种清空', () => {
+    const s = baseState();
+    s.activePetSpecies = 'nightfox';
+    expect(normalizeSpecies(s)).toBe(true);
+    expect(s.activePetSpecies).toBeNull();
   });
 });
 
