@@ -1,6 +1,7 @@
 node_modules/
 dist/
 release/
+.worktrees/
 .DS_Store
 build/icon.iconset/
 build/icon-1024.png
