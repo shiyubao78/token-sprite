@@ -58,7 +58,7 @@ function deriveVm() {
     // 稀有度以品种为准（修旧存档存歪的 rarity）；进度用这只自己的累积喂养，非在养也保留
     const inc = incubation(e.fed, sp.rarity);
     const stageNo = incubationStage(inc.fraction);
-    return { id: e.id, rarity: sp.rarity, active, percent: pct(inc.fraction), stageNo, stageName: STAGE_NAMES[stageNo - 1], speciesName: sp.name, seedUrl: stageUrl(sp.folder, 1) };
+    return { id: e.id, rarity: sp.rarity, active, percent: pct(inc.fraction), stageNo, stageName: STAGE_NAMES[stageNo - 1], speciesName: sp.name, nick: sp.nick, seedUrl: stageUrl(sp.folder, 1) };
   });
 
   let mode, egg = null, pet = null;
@@ -76,6 +76,7 @@ function deriveVm() {
       needText: formatNeed(inc.need),
       toHatchText: formatNeed(Math.max(0, inc.need - inc.fed)),
       speciesName: sp.name,
+      nick: sp.nick,
       stageNo,
       stageName: STAGE_NAMES[stageNo - 1],
       stageUrl: stageUrl(sp.folder, stageNo),
@@ -83,7 +84,7 @@ function deriveVm() {
   } else {
     mode = 'pet';
     const sp = speciesByKey(state.activePetSpecies) || SPECIES[0];
-    pet = { name: sp.name, spriteUrl: adultUrl(sp.folder), mood };
+    pet = { name: sp.name, nick: sp.nick, spriteUrl: adultUrl(sp.folder), mood };
   }
 
   return {
@@ -308,6 +309,7 @@ function evolutionVm(egg) {
   }));
   return {
     speciesName: sp.name,
+    nick: sp.nick,
     rarityName: RARITY[sp.rarity].name,
     color: RARITY[sp.rarity].color,
     current: evo.current,

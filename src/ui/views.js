@@ -20,7 +20,7 @@ export function mainHTML(vm) {
       </div>`;
     info = `
       <div class="petinfo">
-        <div class="chip" style="color:${vm.egg.color}">${esc(vm.egg.speciesName)} · 第${vm.egg.stageNo}段 ${esc(vm.egg.stageName)}</div>
+        <div class="chip" style="color:${vm.egg.color}">${esc(vm.egg.nick)} · 第${vm.egg.stageNo}段 ${esc(vm.egg.stageName)}</div>
         <div class="bar"><span style="width:${vm.egg.percent}%;background:${vm.egg.color}"></span></div>
         <div class="subline">${vm.egg.percent}% · 距化形还差 ${vm.egg.toHatchText}</div>
       </div>`;
@@ -34,7 +34,7 @@ export function mainHTML(vm) {
       </div>`;
     info = `
       <div class="petinfo">
-        <div class="chip">${esc(vm.pet.name)}</div>
+        <div class="chip">${esc(vm.pet.nick)}</div>
         <div class="subline">${vm.eggsCount > 0 ? '孵化器有蛋 · 去挑一颗养' : '陪着你 · 攒券抽新蛋'}</div>
       </div>`;
   }
@@ -106,7 +106,7 @@ export function incubatorHTML(vm) {
   const rows = vm.eggs.map((e) => `
     <div class="egg-row ${e.active ? 'active' : ''} nodrag" data-egg="${e.id}">
       <img class="egg-thumb" src="${e.seedUrl}" alt="${esc(e.speciesName)}" />
-      <div class="egg-info"><div class="en">${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? `在养中 · 第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}%` : `第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}% · 点我看详情`}</div></div>
+      <div class="egg-info"><div class="en">${esc(e.nick)} · ${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? `在养中 · 第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}%` : `第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}% · 点我看详情`}</div></div>
       ${e.active ? '<span class="egg-badge">在养</span>' : ''}
     </div>`).join('');
   return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 选一颗养</h2>${rows}
@@ -137,8 +137,8 @@ export function evolutionHTML(vm) {
     return `<div class="evo-row ${s.state}">${thumb}<div class="evo-info">${info}</div><div class="evo-state">${state}</div></div>`;
   }).join('');
   return `<button class="close nodrag" data-close aria-label="关闭">✕</button>
-    <h2>${esc(vm.speciesName)} · 进化</h2>
-    <div class="sub-h"><span class="evo-chip" style="color:${vm.color}">${esc(vm.rarityName)} · 第 ${vm.current} 段 / 共 5 段</span></div>
+    <h2>${esc(vm.nick)} · 进化</h2>
+    <div class="sub-h"><span class="evo-chip" style="color:${vm.color}">${esc(vm.speciesName)} · ${esc(vm.rarityName)} · 第${vm.current}/5段</span></div>
     ${rows}
     <div class="evo-total"><span>累计已喂 <b>${vm.fedText}</b></span><span>距化形还差 <b>${vm.toHatchText}</b></span></div>
     ${vm.active

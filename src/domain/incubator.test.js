@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, accrue } from './incubator.js';
+import { speciesByKey } from '../config/species.js';
 
 const B = 1_000_000_000;
 function seq(vals) { let i = 0; return () => vals[i++ % vals.length]; }
@@ -38,6 +39,18 @@ describe('ensureStarter', () => {
     const s = baseState();
     s.collection = { mossling: { count: 1 } };
     expect(ensureStarter(s, 0, seq([0.9, 0]))).toBe(false);
+  });
+  it('默认名跟随启动的那只（用它的昵称）', () => {
+    const s = baseState();
+    ensureStarter(s, 0, seq([0.9, 0]));
+    const sp = speciesByKey(s.eggs[0].species);
+    expect(s.petName).toBe(sp.nick);
+  });
+  it('用户已改过名就不覆盖', () => {
+    const s = baseState();
+    s.petName = '旺财';
+    ensureStarter(s, 0, seq([0.9, 0]));
+    expect(s.petName).toBe('旺财');
   });
 });
 

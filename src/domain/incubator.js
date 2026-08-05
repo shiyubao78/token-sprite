@@ -58,6 +58,9 @@ export function ensureStarter(state, _growth, rng = Math.random) {
   const egg = makeEgg(res.rarity, res.species);
   state.eggs.push(egg);
   state.activeEggId = egg.id;
+  // 首个精灵的默认名跟随启动的这只（贝壳→小贝、萌芽→小苗…）；用户随时可改名。
+  const sp = speciesByKey(res.species);
+  if (sp && sp.nick && (!state.petName || state.petName === '小苗')) state.petName = sp.nick;
   return true;
 }
 
