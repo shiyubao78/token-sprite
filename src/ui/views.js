@@ -105,7 +105,7 @@ export function incubatorHTML(vm) {
   }
   const rows = vm.eggs.map((e) => `
     <div class="egg-row ${e.active ? 'active' : ''} nodrag" data-egg="${e.id}">
-      <img class="egg-thumb" src="${e.seedUrl}" alt="${esc(e.speciesName)}" />
+      <img class="egg-thumb" src="${e.thumbUrl}" alt="${esc(e.speciesName)}" />
       <div class="egg-info"><div class="en">${esc(e.speciesName)} · <span style="color:${RARITY[e.rarity].color}">${RARITY[e.rarity].name}</span></div><div class="es">${e.active ? '在养 · ' : ''}第${e.stageNo}段·${esc(e.stageName)} · ${e.percent}%</div></div>
     </div>`).join('');
   const mergeBtn = vm.mergeable > 0

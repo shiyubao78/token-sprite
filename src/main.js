@@ -59,7 +59,7 @@ function deriveVm() {
     // 稀有度以品种为准（修旧存档存歪的 rarity）；进度用这只自己的累积喂养，非在养也保留
     const inc = incubation(e.fed, sp.rarity);
     const stageNo = incubationStage(inc.fraction);
-    return { id: e.id, rarity: sp.rarity, active, percent: pct(inc.fraction), stageNo, stageName: STAGE_NAMES[stageNo - 1], speciesName: sp.name, nick: sp.nick, seedUrl: stageUrl(sp.folder, 1) };
+    return { id: e.id, rarity: sp.rarity, active, percent: pct(inc.fraction), stageNo, stageName: STAGE_NAMES[stageNo - 1], speciesName: sp.name, nick: sp.nick, thumbUrl: stageUrl(sp.folder, stageNo) };
   });
 
   let mode, egg = null, pet = null;
