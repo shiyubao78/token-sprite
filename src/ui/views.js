@@ -20,9 +20,9 @@ export function mainHTML(vm) {
       </div>`;
     info = `
       <div class="petinfo">
-        <div class="chip" style="color:${vm.egg.color}">${esc(vm.egg.speciesName)} · 孵化中</div>
+        <div class="chip" style="color:${vm.egg.color}">${esc(vm.egg.speciesName)} · 第${vm.egg.stageNo}段 ${esc(vm.egg.stageName)}</div>
         <div class="bar"><span style="width:${vm.egg.percent}%;background:${vm.egg.color}"></span></div>
-        <div class="subline">${vm.egg.percent}% · 喂它 ${vm.egg.needText} 化形</div>
+        <div class="subline">${vm.egg.percent}% · 距化形还差 ${vm.egg.toHatchText}</div>
       </div>`;
   } else {
     stage = `
@@ -120,10 +120,10 @@ export function evolutionHTML(vm) {
       : `<div class="evo-thumb ${s.state === 'locked' ? 'locked' : ''}">${s.url ? `<img src="${s.url}" alt="${esc(s.name)}" draggable="false" />` : ''}</div>`;
     let info, state;
     if (s.state === 'current') {
-      info = `<div class="evo-name"><span class="seg">第${s.no}段</span>${esc(s.name)}</div>
+      info = `<div class="evo-name"><span class="seg">第${s.no}段</span>${esc(s.name)}<span class="cur">当前</span></div>
         <div class="evo-prog-wrap"><div class="evo-prog"><span style="width:${s.withinPct}%"></span></div>
-        <div class="evo-prog-txt">距下一段 · ${esc(s.nextName)} 还差 <b>${s.toNextText}</b> token（本段已 ${s.withinPct}%）</div></div>`;
-      state = '<span class="cur">当前</span>';
+        <div class="evo-prog-txt">距${esc(s.nextName)}还差 <b>${s.toNextText}</b></div></div>`;
+      state = '';
     } else if (s.state === 'done') {
       info = `<div class="evo-name"><span class="seg">第${s.no}段</span>${esc(s.name)}</div><div class="evo-desc">已解锁</div>`;
       state = '✅';

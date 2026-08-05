@@ -66,6 +66,7 @@ function deriveVm() {
   if (activeEgg) {
     const sp = speciesByKey(activeEgg.species) || SPECIES[0];
     const inc = incubation(activeEgg.fed, sp.rarity);
+    const stageNo = incubationStage(inc.fraction);
     mode = 'incubating';
     egg = {
       rarity: sp.rarity,
@@ -73,8 +74,11 @@ function deriveVm() {
       color: RARITY[sp.rarity].color,
       percent: pct(inc.fraction),
       needText: formatNeed(inc.need),
+      toHatchText: formatNeed(Math.max(0, inc.need - inc.fed)),
       speciesName: sp.name,
-      stageUrl: stageUrl(sp.folder, incubationStage(inc.fraction)),
+      stageNo,
+      stageName: STAGE_NAMES[stageNo - 1],
+      stageUrl: stageUrl(sp.folder, stageNo),
     };
   } else {
     mode = 'pet';

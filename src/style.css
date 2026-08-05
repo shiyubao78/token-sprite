@@ -236,20 +236,20 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 /* 进化详情 */
 .sub-h { margin: -6px 0 12px; }
 .evo-chip { display: inline-block; font-size: 12px; font-weight: 600; background: rgba(255,255,255,.7); border: 1px solid var(--line); padding: 3px 12px; border-radius: 999px; }
-.evo-row { display: flex; align-items: center; gap: 12px; padding: 9px 11px; border-radius: 14px; margin-bottom: 9px; background: var(--card); border: 1px solid var(--line); }
+.evo-row { display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 13px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--line); }
 .evo-row.current { border: 2px solid var(--accent); background: #f4fbf6; }
 .evo-row.locked, .evo-row.mystery { opacity: .72; }
-.evo-thumb { width: 54px; height: 54px; flex: 0 0 auto; border-radius: 12px; background: #fbf6ea; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.evo-thumb img { max-width: 50px; max-height: 50px; object-fit: contain; -webkit-user-drag: none; }
+.evo-thumb { width: 44px; height: 44px; flex: 0 0 auto; border-radius: 11px; background: #fbf6ea; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.evo-thumb img { max-width: 40px; max-height: 40px; object-fit: contain; -webkit-user-drag: none; }
 .evo-thumb.locked img { filter: grayscale(1) brightness(.6) opacity(.35); }
-.evo-thumb.mystery { font-size: 26px; font-weight: 800; color: #c9bda3; }
+.evo-thumb.mystery { font-size: 22px; font-weight: 800; color: #c9bda3; }
 .evo-info { flex: 1; min-width: 0; }
-.evo-name { font-size: 14px; font-weight: 600; }
-.evo-name .seg { color: var(--muted); font-weight: 500; font-size: 11.5px; margin-right: 6px; }
+.evo-name { font-size: 13.5px; font-weight: 600; }
+.evo-name .seg { color: var(--muted); font-weight: 500; font-size: 11px; margin-right: 5px; }
+.evo-name .cur { color: #fff; background: var(--accent); padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 700; margin-left: 6px; vertical-align: 1px; }
 .evo-desc { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 .evo-state { font-size: 13px; flex: 0 0 auto; }
-.evo-state .cur { color: #fff; background: var(--accent); padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
-.evo-state .lock { font-size: 15px; }
+.evo-state .lock { font-size: 14px; }
 .evo-prog-wrap { margin-top: 8px; }
 .evo-prog { width: 100%; height: 7px; background: var(--track); border-radius: 999px; overflow: hidden; }
 .evo-prog > span { display: block; height: 100%; background: linear-gradient(90deg, #7fd0a3, #63bd8b); border-radius: 999px; }
