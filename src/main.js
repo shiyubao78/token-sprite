@@ -3,7 +3,7 @@ import { computeMood, pickBubble, ACTIVE_MS, RETURN_IDLE_MS, BURST_TOKENS } from
 import { incubation, incubationStage, evolution, STAGE_NAMES } from './domain/incubation.js';
 import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicates, mergeableGroups, normalizeSpecies } from './domain/incubator.js';
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
-import { petInteract, settleBondLevel, bondView, BOND_LEVELS } from './domain/bond.js';
+import { petInteract, settleBondLevel, bondView, activateBond, BOND_LEVELS } from './domain/bond.js';
 import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
 import { stageUrl, adultUrl } from './services/sprites.js';
@@ -219,7 +219,9 @@ async function sync() {
   // 结算孵化
   const hatched = settleHatch(state, growth);
   if (hatched) dirty = true;
-  // 结算羁绊等级（写代码也在悄悄拉近关系）
+  // 首次化形后开启羁绊（化形 = 关系的开始）；之后写代码也在悄悄拉近关系
+  const bondStarted = Object.keys(state.collection || {}).length > 0 && activateBond(state, growth);
+  if (bondStarted) dirty = true;
   const bondUp = settleBondLevel(state, growth);
   if (bondUp) dirty = true;
   if (dirty) savePet(state);
@@ -234,6 +236,8 @@ async function sync() {
 
   if (hatched && !collapsed) {
     showHatch(hatched);
+  } else if (bondStarted) {
+    setTimeout(() => setBubble('💞 我们的关系，从今天开始记录～'), 300);
   } else if (bondUp) {
     setTimeout(() => setBubble(`💞 羁绊升到 Lv.${bondUp.level} ${bondUp.name}！`), 300);
   } else if (ach.newly.length) {

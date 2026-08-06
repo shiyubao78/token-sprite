@@ -20,10 +20,26 @@ function ensureBond(state) {
   return state.bond;
 }
 
-// 亲密度总分 = 写代码换算分（按累计 growthTotal）+ 互动累积分。
+// 羁绊是否已开始（孵出第一只精灵后才激活——化形=关系的开始）。
+export function bondActive(state) {
+  return !!(state.bond && state.bond.startedAt != null);
+}
+
+// 首次化形时激活羁绊，记录那一刻的 growth 当基准（之后写代码才计入）。返回是否刚激活。
+export function activateBond(state, growthTotal) {
+  const b = ensureBond(state);
+  if (b.startedAt != null) return false;
+  b.startedAt = Math.max(0, growthTotal || 0);
+  b.level = 1;
+  return true;
+}
+
+// 亲密度总分 = 化形后新写的代码换算分 + 互动累积分。未激活则为 0。
 export function bondPoints(state, growthTotal) {
-  const code = Math.floor(Math.max(0, growthTotal || 0) / CODE_PER_POINT);
-  return code + ((state.bond && state.bond.interactPoints) || 0);
+  const b = state.bond;
+  if (!b || b.startedAt == null) return 0;
+  const code = Math.floor(Math.max(0, (growthTotal || 0) - b.startedAt) / CODE_PER_POINT);
+  return code + (b.interactPoints || 0);
 }
 
 export function bondLevel(points) {
@@ -32,8 +48,9 @@ export function bondLevel(points) {
   return cur;
 }
 
-// 逗它一次：每天上限内 +1 亲密度。返回是否真的加了分（超上限返回 false）。
+// 逗它一次：每天上限内 +1 亲密度。返回是否真的加了分（未激活或超上限返回 false）。
 export function petInteract(state, today) {
+  if (!bondActive(state)) return false; // 化形前只逗着玩，不累积羁绊
   const b = ensureBond(state);
   if (b.day !== today) { b.day = today; b.todayInteract = 0; }
   if ((b.todayInteract || 0) >= INTERACT_DAILY_CAP) return false;
@@ -44,6 +61,7 @@ export function petInteract(state, today) {
 
 // 结算等级：算出的等级高于已记录则更新，并返回新达成的等级对象（用于弹庆祝），否则 null。
 export function settleBondLevel(state, growthTotal) {
+  if (!bondActive(state)) return null;
   const b = ensureBond(state);
   const lv = bondLevel(bondPoints(state, growthTotal)).level;
   const prev = b.level || 1;
@@ -59,6 +77,7 @@ export function bondView(state, growthTotal) {
   const next = BOND_LEVELS[idx + 1] || null;
   const pct = next ? Math.max(0, Math.min(100, Math.round(((points - cur.min) / (next.min - cur.min)) * 100))) : 100;
   return {
+    active: bondActive(state),
     points, level: cur.level, name: cur.name, unlock: cur.unlock,
     isMax: !next, nextName: next ? next.name : null, nextMin: next ? next.min : cur.min,
     toNext: next ? Math.max(0, next.min - points) : 0, pct,

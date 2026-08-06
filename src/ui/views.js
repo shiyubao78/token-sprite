@@ -50,7 +50,7 @@ export function mainHTML(vm) {
     </div>
     ${stage}
     ${info}
-    <div class="bond-badge nodrag" id="bondBadge" title="羁绊">💞 Lv.${vm.bond.level} ${esc(vm.bond.name)}${vm.bond.isMax ? '' : ` · ${vm.bond.pct}%`}</div>
+    ${vm.bond.active ? `<div class="bond-badge nodrag" id="bondBadge" title="羁绊">💞 Lv.${vm.bond.level} ${esc(vm.bond.name)}${vm.bond.isMax ? '' : ` · ${vm.bond.pct}%`}</div>` : ''}
   `;
 }
 
