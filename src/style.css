@@ -305,5 +305,7 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .u-bud.over .u-bud-bar span { background: linear-gradient(90deg, #e88a6a, #d3573a); }
 .u-set { display: flex; flex-direction: column; gap: 7px; }
 .u-set label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
-.u-set input { width: 96px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font-size: 12.5px; text-align: right; }
+.u-set-k { white-space: nowrap; }
+.u-set-v { display: inline-flex; align-items: center; gap: 3px; color: var(--muted); white-space: nowrap; }
+.u-set input { width: 66px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font-size: 12.5px; text-align: right; }
 .u-set input:focus { outline: none; border-color: #63bd8b; }

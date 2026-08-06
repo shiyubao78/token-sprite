@@ -5,7 +5,7 @@ import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicat
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
 import { petInteract, settleBondLevel, bondView, activateBond, BOND_LEVELS } from './domain/bond.js';
 import { usageStats } from './domain/usageStats.js';
-import { estimateCost, budgetView, settleBudgetAlert, DEFAULT_YUAN_PER_MILLION } from './domain/cost.js';
+import { estimateCost, budgetView, settleBudgetAlert, DEFAULT_USD_PER_MILLION } from './domain/cost.js';
 import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
 import { stageUrl, adultUrl } from './services/sprites.js';
@@ -129,16 +129,16 @@ function deriveVm() {
 function costSettings() {
   const s = state.settings || {};
   return {
-    yuanPerMillion: Number.isFinite(s.yuanPerMillion) && s.yuanPerMillion > 0 ? s.yuanPerMillion : DEFAULT_YUAN_PER_MILLION,
-    dailyBudgetYuan: Number.isFinite(s.dailyBudgetYuan) && s.dailyBudgetYuan > 0 ? s.dailyBudgetYuan : null,
+    usdPerMillion: Number.isFinite(s.usdPerMillion) && s.usdPerMillion > 0 ? s.usdPerMillion : DEFAULT_USD_PER_MILLION,
+    dailyBudget: Number.isFinite(s.dailyBudget) && s.dailyBudget > 0 ? s.dailyBudget : null,
   };
 }
 function usageVm() {
   const stats = usageStats(usage);
-  const { yuanPerMillion, dailyBudgetYuan } = costSettings();
-  const todayCost = estimateCost(stats.today, yuanPerMillion);
-  const weekCost = estimateCost(stats.week, yuanPerMillion);
-  return { ...stats, cost: { todayCost, weekCost, yuanPerMillion, budget: budgetView(todayCost, dailyBudgetYuan) } };
+  const { usdPerMillion, dailyBudget } = costSettings();
+  const todayCost = estimateCost(stats.today, usdPerMillion);
+  const weekCost = estimateCost(stats.week, usdPerMillion);
+  return { ...stats, cost: { todayCost, weekCost, usdPerMillion, budget: budgetView(todayCost, dailyBudget) } };
 }
 // 孵化进度百分比：保留两位小数（精确到 0.01%），并去掉多余的 0。
 // 刚喂一点点也能看到数字在动，不会误以为「没喂进去」。
@@ -185,11 +185,11 @@ function bindUsage(mask) {
   const budget = mask.querySelector('#budgetInput');
   rate?.addEventListener('change', () => {
     const v = parseFloat(rate.value);
-    commit({ yuanPerMillion: Number.isFinite(v) && v > 0 ? v : DEFAULT_YUAN_PER_MILLION });
+    commit({ usdPerMillion: Number.isFinite(v) && v > 0 ? v : DEFAULT_USD_PER_MILLION });
   });
   budget?.addEventListener('change', () => {
     const v = parseFloat(budget.value);
-    commit({ dailyBudgetYuan: Number.isFinite(v) && v > 0 ? v : null });
+    commit({ dailyBudget: Number.isFinite(v) && v > 0 ? v : null });
   });
 }
 
@@ -272,9 +272,9 @@ async function sync() {
   if (bondUp) dirty = true;
 
   // 每日预算提醒（到 80% / 超 100% 各提醒一次，当天不重复）
-  const { yuanPerMillion, dailyBudgetYuan } = costSettings();
-  const todayCost = estimateCost(usage.todayTokens || 0, yuanPerMillion);
-  const budgetAlert = settleBudgetAlert(state, todayCost, dailyBudgetYuan, today);
+  const { usdPerMillion, dailyBudget } = costSettings();
+  const todayCost = estimateCost(usage.todayTokens || 0, usdPerMillion);
+  const budgetAlert = settleBudgetAlert(state, todayCost, dailyBudget, today);
   if (budgetAlert) dirty = true;
 
   if (dirty) savePet(state);

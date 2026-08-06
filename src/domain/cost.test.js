@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_YUAN_PER_MILLION, estimateCost, formatYuan, budgetView, settleBudgetAlert } from './cost.js';
+import { DEFAULT_USD_PER_MILLION, estimateCost, formatMoney, budgetView, settleBudgetAlert } from './cost.js';
 
 const M = 1_000_000;
 
@@ -9,31 +9,32 @@ describe('estimateCost 花费估算（单一混合价）', () => {
     expect(estimateCost(1.5 * M, 8)).toBe(12);
   });
   it('默认单价', () => {
-    expect(estimateCost(1 * M, DEFAULT_YUAN_PER_MILLION)).toBe(DEFAULT_YUAN_PER_MILLION);
+    expect(estimateCost(1 * M, DEFAULT_USD_PER_MILLION)).toBe(DEFAULT_USD_PER_MILLION);
   });
   it('缺省/非法输入不报错、当 0', () => {
     expect(estimateCost(0, 8)).toBe(0);
     expect(estimateCost(undefined, 8)).toBe(0);
-    expect(estimateCost(100 * M, undefined)).toBe(estimateCost(100 * M, DEFAULT_YUAN_PER_MILLION));
+    expect(estimateCost(100 * M, undefined)).toBe(estimateCost(100 * M, DEFAULT_USD_PER_MILLION));
     expect(estimateCost(-5, 8)).toBe(0);
   });
 });
 
-describe('formatYuan 展示', () => {
-  it('大额取整带千分位', () => {
-    expect(formatYuan(1234)).toBe('¥1,234');
-    expect(formatYuan(800)).toBe('¥800');
+describe('formatMoney 展示（美元）', () => {
+  it('小额取整带千分位', () => {
+    expect(formatMoney(147)).toBe('$147');
+    expect(formatMoney(800)).toBe('$800');
+    expect(formatMoney(999)).toBe('$999');
   });
   it('小额（<10）保留一位小数', () => {
-    expect(formatYuan(3.44)).toBe('¥3.4');
-    expect(formatYuan(0)).toBe('¥0');
+    expect(formatMoney(3.44)).toBe('$3.4');
+    expect(formatMoney(0)).toBe('$0');
   });
-  it('大额用万/亿缩写（防折行）', () => {
-    expect(formatYuan(68170)).toBe('¥6.8万');
-    expect(formatYuan(10000)).toBe('¥1万');
-    expect(formatYuan(9999)).toBe('¥9,999'); // 不到万仍用千分位
-    expect(formatYuan(1234000)).toBe('¥123万'); // ≥100万取整
-    expect(formatYuan(250000000)).toBe('¥2.5亿');
+  it('大额用 K/M 缩写（防折行）', () => {
+    expect(formatMoney(9400)).toBe('$9.4K');
+    expect(formatMoney(1000)).toBe('$1K');
+    expect(formatMoney(12229)).toBe('$12.2K');
+    expect(formatMoney(150000)).toBe('$150K'); // ≥100K取整
+    expect(formatMoney(1_200_000)).toBe('$1.2M');
   });
 });
 

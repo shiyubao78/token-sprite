@@ -1,5 +1,5 @@
 import { formatTokens } from '../domain/format.js';
-import { formatYuan } from '../domain/cost.js';
+import { formatMoney } from '../domain/cost.js';
 import { RARITY } from '../config/rarities.js';
 import { SPECIES, speciesByKey } from '../config/species.js';
 import { ACHIEVEMENTS } from '../config/achievements.js';
@@ -128,12 +128,12 @@ export function usageHTML(vm) {
     : '<div class="u-tool"><span>暂无本地可读的用量</span><b>—</b></div>';
   const bars = u.bars.map((h, i) => `<div class="u-bar" style="height:${Math.max(3, h)}%" title="${i}:00"></div>`).join('');
   const peak = u.peakHour == null ? '还没数据' : `${String(u.peakHour).padStart(2, '0')}:00 前后`;
-  const c = u.cost || { todayCost: 0, weekCost: 0, yuanPerMillion: 8, budget: { hasBudget: false } };
+  const c = u.cost || { todayCost: 0, weekCost: 0, usdPerMillion: 1.3, budget: { hasBudget: false } };
   const b = c.budget || { hasBudget: false };
   const budgetLabel = { over: '⚠️ 今天超预算了', near: '快到今天的预算啦', ok: '今日预算' }[b.level] || '今日预算';
   const budgetBlock = b.hasBudget
     ? `<div class="u-bud ${b.level}">
-        <div class="u-bud-top"><span>${budgetLabel}</span><b>${formatYuan(b.cost)} / ${formatYuan(b.budget)}</b></div>
+        <div class="u-bud-top"><span>${budgetLabel}</span><b>${formatMoney(b.cost)} / ${formatMoney(b.budget)}</b></div>
         <div class="u-bud-bar"><span style="width:${b.pct}%"></span></div>
        </div>`
     : '';
@@ -144,8 +144,8 @@ export function usageHTML(vm) {
       <div class="u-stat"><div class="u-n">${fmt(u.week)}</div><div class="u-l">最近 7 天</div></div>
     </div>
     <div class="u-stat-row">
-      <div class="u-stat"><div class="u-n"><span class="approx">约</span>${formatYuan(c.todayCost)}</div><div class="u-l">今日花费</div></div>
-      <div class="u-stat"><div class="u-n"><span class="approx">约</span>${formatYuan(c.weekCost)}</div><div class="u-l">近 7 天花费</div></div>
+      <div class="u-stat"><div class="u-n"><span class="approx">约</span>${formatMoney(c.todayCost)}</div><div class="u-l">今日花费</div></div>
+      <div class="u-stat"><div class="u-n"><span class="approx">约</span>${formatMoney(c.weekCost)}</div><div class="u-l">近 7 天花费</div></div>
     </div>
     ${budgetBlock}
     <div class="u-sec">按工具</div>
@@ -155,10 +155,10 @@ export function usageHTML(vm) {
     <div class="u-hint">🔥 最能写：<b>${peak}</b></div>
     <div class="u-sec">花费设置</div>
     <div class="u-set">
-      <label>每百万 token ≈ ¥<input class="nodrag" id="rateInput" type="number" min="0" step="0.5" value="${c.yuanPerMillion}" /></label>
-      <label>每日预算 ¥<input class="nodrag" id="budgetInput" type="number" min="0" step="1" placeholder="不填=不提醒" value="${b.hasBudget ? b.budget : ''}" /></label>
+      <label><span class="u-set-k">每百万 token</span><span class="u-set-v">$<input class="nodrag" id="rateInput" type="number" min="0" step="0.1" value="${c.usdPerMillion}" /></span></label>
+      <label><span class="u-set-k">每日预算</span><span class="u-set-v">$<input class="nodrag" id="budgetInput" type="number" min="0" step="1" placeholder="选填" value="${b.hasBudget ? b.budget : ''}" /></span></label>
     </div>
-    <div class="source-note" style="margin-top:10px">花费=用量×单价的<b>粗略估算</b>（输入/输出/缓存按混合价折算，单价可自己调）。只读本机日志，不联网、不上传。</div>`;
+    <div class="source-note" style="margin-top:10px">花费=用量×单价的<b>粗略估算</b>（输入/输出/缓存按混合价折算，单价可自己调）。金额为美元，只读本机日志，不联网、不上传。</div>`;
 }
 
 export function bondHTML(vm) {
