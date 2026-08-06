@@ -93,6 +93,15 @@ Fully local, no login — one floating window: rename, draw, hatch, collect, and
 | 🥚 孵化器 / Incubator | 多颗蛋切换养，各记各的进度、不清零 / Raise multiple eggs, each keeps its own progress |
 | 📖 图鉴 / Collection | 收集 6 种精灵，点已获得的让它陪伴 / Collect 6 species; tap an owned one to make it your companion |
 | 🏆 成就 / Achievements | 达成条件得券，全用真实 token 用量判定 / Earn tickets by hitting milestones, all judged on real token usage |
+| 📊 用量洞察 / Usage | 今日 / 最近 7 天用量、按工具占比、活跃时段，还有花费估算与每日预算 / Today & 7-day usage, per-tool split, active hours, plus cost estimate and daily budget |
+
+## 📊 用量洞察与花费 / Usage & Cost Insights
+
+菜单 → **用量洞察**：看今日 / 最近 7 天写了多少 Token、每个工具各占多少、你几点最能写。还能把用量折成**约多少钱**（粗略估算，每百万 token 的单价可自己调），并设一个**每日预算**——当天估算花费到 80% 或超 100% 时，小精灵会冒泡提醒你。全部只读本机日志，不联网、不上传。<br />
+Open **Usage Insights** from the menu to see how many tokens you wrote today and over the last 7 days, each tool's share, and your most productive hours. It also turns usage into a **rough cost estimate** (with an adjustable per-million rate) and lets you set a **daily budget**—your sprite gently reminds you when the day's estimate hits 80% or goes over 100%. Everything is read from local logs only, never uploaded.
+
+化形之后，陪伴不止：随着你写代码和逗它，**羁绊**会一路升级，解锁更亲昵的反应。<br />
+After it reaches its final form, the bond continues: coding and playful pokes level up your **bond**, unlocking warmer reactions over time.
 
 ## 🚀 快速开始 / Quick Start
 
@@ -101,11 +110,11 @@ Requires [Node.js](https://nodejs.org/) 20+ and runs on **macOS, Windows, and Li
 
 ### macOS 普通用户安装 / Install on macOS
 
-普通用户请从 GitHub Releases 下载最新的 `.dmg`，打开后把 **Token 小精灵**拖进“应用程序”。若未签名，首次打开右键点图标选“打开”通过一次系统提示即可。源码方式主要面向开发者。<br />
-Download the latest `.dmg` from GitHub Releases and drag **Token Sprite** into Applications. If it is unsigned, right-click the app and choose “Open” once to pass Gatekeeper. The source workflow below is mainly for developers.
+普通用户请从 GitHub Releases 下载最新的 `.zip`，解压后把 **Token 小精灵**拖进“应用程序”。当前为未签名版本，首次打开右键点图标选“打开”通过一次系统提示即可。源码方式主要面向开发者。<br />
+Download the latest `.zip` from GitHub Releases, unzip it, and drag **Token Sprite** into Applications. Current builds are unsigned, so right-click the app and choose “Open” once to pass Gatekeeper. The source workflow below is mainly for developers.
 
-有新版时，正式版会弹窗提醒；菜单栏的小精灵图标 → **检查更新** 也会打开下载页，下载新版 `.dmg` 覆盖安装即可，成长数据保留。<br />
-When a new version is available, released builds show a reminder. The menu-bar icon → **Check for Updates** opens the download page; grab the new `.dmg` and reinstall over the old one—your growth data is kept.
+有新版时，正式版会弹窗提醒；菜单栏的小精灵图标 → **检查更新** 也会打开下载页，下载新版 `.zip` 解压覆盖安装即可，成长数据保留。<br />
+When a new version is available, released builds show a reminder. The menu-bar icon → **Check for Updates** opens the download page; grab the new `.zip`, unzip, and reinstall over the old one—your growth data is kept.
 
 如果小精灵不在桌面上，点击菜单栏的小精灵图标 → **召回小精灵**。显示器拔插、分辨率变化或睡眠恢复后，如果窗口完全跑出屏幕，应用也会自动把它带回来。<br />
 If your sprite disappears, choose **Recall Sprite** from its menu-bar icon. It also returns automatically after display changes or wake when its window is fully off-screen.
