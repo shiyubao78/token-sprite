@@ -293,3 +293,16 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .u-bar { flex: 1; background: linear-gradient(180deg, #7fd0a3, #63bd8b); border-radius: 2px 2px 0 0; min-height: 3px; }
 .u-hint { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
 .u-hint b { color: var(--ink); }
+.u-bud { margin-top: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; }
+.u-bud-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; }
+.u-bud-top span { color: var(--muted); white-space: nowrap; }
+.u-bud-top b { color: var(--accent-ink); font-weight: 700; }
+.u-bud-bar { height: 7px; background: #eadfca; border-radius: 4px; margin-top: 7px; overflow: hidden; }
+.u-bud-bar span { display: block; height: 100%; background: linear-gradient(90deg, #7fd0a3, #63bd8b); border-radius: 4px; }
+.u-bud.near .u-bud-top b, .u-bud.over .u-bud-top b { color: #c0392b; }
+.u-bud.near .u-bud-bar span { background: linear-gradient(90deg, #f0c469, #e0a13a); }
+.u-bud.over .u-bud-bar span { background: linear-gradient(90deg, #e88a6a, #d3573a); }
+.u-set { display: flex; flex-direction: column; gap: 7px; }
+.u-set label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.u-set input { width: 96px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font-size: 12.5px; text-align: right; }
+.u-set input:focus { outline: none; border-color: #63bd8b; }

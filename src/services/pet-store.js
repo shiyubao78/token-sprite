@@ -16,6 +16,8 @@ export function defaultState() {
     activePetSpecies: null, // 出战宠物
     activeDates: [], // 活跃日 YYYY-MM-DD
     nightDates: [], // 深夜活跃日
+    settings: { yuanPerMillion: 8, dailyBudgetYuan: null }, // 花费估算单价（每百万token≈¥）+ 每日预算（null=不提醒）
+    budgetAlert: null, // { date, level:80|100 } 当天预算提醒已到哪档，防重复
   };
 }
 

@@ -1,4 +1,5 @@
 import { formatTokens } from '../domain/format.js';
+import { formatYuan } from '../domain/cost.js';
 import { RARITY } from '../config/rarities.js';
 import { SPECIES, speciesByKey } from '../config/species.js';
 import { ACHIEVEMENTS } from '../config/achievements.js';
@@ -127,18 +128,37 @@ export function usageHTML(vm) {
     : '<div class="u-tool"><span>暂无本地可读的用量</span><b>—</b></div>';
   const bars = u.bars.map((h, i) => `<div class="u-bar" style="height:${Math.max(3, h)}%" title="${i}:00"></div>`).join('');
   const peak = u.peakHour == null ? '还没数据' : `${String(u.peakHour).padStart(2, '0')}:00 前后`;
+  const c = u.cost || { todayCost: 0, weekCost: 0, yuanPerMillion: 8, budget: { hasBudget: false } };
+  const b = c.budget || { hasBudget: false };
+  const budgetLabel = { over: '⚠️ 今天超预算了', near: '快到今天的预算啦', ok: '今日预算' }[b.level] || '今日预算';
+  const budgetBlock = b.hasBudget
+    ? `<div class="u-bud ${b.level}">
+        <div class="u-bud-top"><span>${budgetLabel}</span><b>${formatYuan(b.cost)} / ${formatYuan(b.budget)}</b></div>
+        <div class="u-bud-bar"><span style="width:${b.pct}%"></span></div>
+       </div>`
+    : '';
   return `<button class="close nodrag" data-close aria-label="关闭">✕</button>
     <h2>📊 用量洞察</h2>
     <div class="u-stat-row">
       <div class="u-stat"><div class="u-n">${fmt(u.today)}</div><div class="u-l">今日${trend}</div></div>
       <div class="u-stat"><div class="u-n">${fmt(u.week)}</div><div class="u-l">最近 7 天</div></div>
     </div>
+    <div class="u-stat-row">
+      <div class="u-stat"><div class="u-n">${formatYuan(c.todayCost)}</div><div class="u-l">今日花费 · 约</div></div>
+      <div class="u-stat"><div class="u-n">${formatYuan(c.weekCost)}</div><div class="u-l">最近 7 天 · 约</div></div>
+    </div>
+    ${budgetBlock}
     <div class="u-sec">按工具</div>
     ${tools}
     <div class="u-sec">活跃时段 · 最近 7 天你几点最能写</div>
     <div class="u-hist">${bars}</div>
     <div class="u-hint">🔥 最能写：<b>${peak}</b></div>
-    <div class="source-note" style="margin-top:10px">只读本机 AI 工具的用量日志（Claude Code / Codex 等），不联网、不上传。更多工具与花费估算陆续加。</div>`;
+    <div class="u-sec">花费设置</div>
+    <div class="u-set">
+      <label>每百万 token ≈ ¥<input class="nodrag" id="rateInput" type="number" min="0" step="0.5" value="${c.yuanPerMillion}" /></label>
+      <label>每日预算 ¥<input class="nodrag" id="budgetInput" type="number" min="0" step="1" placeholder="不填=不提醒" value="${b.hasBudget ? b.budget : ''}" /></label>
+    </div>
+    <div class="source-note" style="margin-top:10px">花费=用量×单价的<b>粗略估算</b>（输入/输出/缓存按混合价折算，单价可自己调）。只读本机日志，不联网、不上传。</div>`;
 }
 
 export function bondHTML(vm) {
