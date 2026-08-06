@@ -1,15 +1,15 @@
-# Token Sprite「代码孵化桌宠」海报设计
+# Token Sprite「Prompt 孵化桌宠」海报设计
 
 ## 目标
 
-制作一张全新的 3:4 竖版传播海报。与上一版“六只剪影围蛋”拉开明显差异，让观众第一眼看懂：真实写代码产生的 Token，会在桌面角落孵化并养大一只小精灵。
+制作一张全新的 3:4 竖版传播海报。与上一版“六只剪影围蛋”拉开明显差异，让观众第一眼看懂：向 AI 发出 Prompt 会消耗 Token，而这些 Token 会在桌面角落孵化并养大一只小精灵。
 
 ## 核心场景
 
 - 深夜程序员桌面，画面只出现桌面、显示器、键盘和桌角孵化器，不出现人物正脸。
-- 显示器中的代码化为青蓝与金色 Token 能量流，从屏幕边缘飞出，注入桌角的发光精灵蛋。
+- 显示器展示抽象的 AI 对话与 Prompt 输入框，不出现代码。发出的 Prompt 化为青蓝与金色 Token 能量流，从屏幕边缘飞出，注入桌角的发光精灵蛋。
 - 蛋正在破壳，一只全新、原创、可爱的未知小精灵只露出眼睛、耳朵或嫩芽轮廓，不完全揭晓身份。
-- 桌面边缘可有极轻的像素粒子、星光和成长刻度，但不出现复杂 UI。
+- 桌面边缘设置三张轻量悬浮信息卡，分别传达稀有抽蛋、用量花费和本地隐私；不出现复杂 UI。
 - 用暖色台灯与冷色屏幕光形成真实桌面和幻想世界的交界。
 
 ## 视觉风格
@@ -25,16 +25,18 @@
 - 上部约 22% 留出深色负空间，承载标题。
 - 中部以显示器、飞出的 Token 能量和孵化蛋构成清晰的视觉动线。
 - 下部保留简洁暗色区域，承载副标题和 GitHub 地址。
-- 主标题：`YOUR CODE IS HATCHING.`
-- 副标题：`Write code. Grow a companion.`
-- 地址：`github.com/shiyubao78/token-sprite`
+- 唯一主标题：`PROMPT. BURN TOKENS. HATCH COMPANIONS.`
+- 卖点一：`HATCH THE RARE` / `Draw Common, Rare, Epic & Legendary eggs.`
+- 卖点二：`KNOW YOUR SPEND` / `Track token usage, estimated cost & daily budget.`
+- 卖点三：`KEEP IT LOCAL` / `Your usage data never leaves your computer.`
+- 行动入口：`Tell your agent: Install github.com/shiyubao78/token-sprite`
 - 图像模型只生成无字主视觉，所有英文通过本地排版保证准确。
 
 ## 验收标准
 
-- 三秒内能理解“代码 / Token → 蛋 → 桌面精灵”的关系。
+- 三秒内能理解“Prompt → 消耗 Token → 蛋 → 桌面精灵”的关系。
 - 与现有六只剪影海报在场景和构图上明显不同。
-- 蛋与未知精灵是第一视觉焦点，显示器是清晰的能量来源。
+- 蛋与未知精灵是第一视觉焦点，Prompt 对话屏幕是清晰的能量来源，画面不出现代码。
 - 手机缩略图中仍能读懂主标题、发光蛋和屏幕到蛋的能量流。
-- 英文逐字准确，GitHub 地址完整可读。
+- 英文逐字准确，三项卖点和 GitHub 地址完整可读。
 - 不出现品牌 Logo、第三方角色、乱码、伪代码文字或水印。
