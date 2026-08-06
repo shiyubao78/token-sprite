@@ -69,6 +69,7 @@ export function menuHTML(vm) {
       <button class="nodrag hub-btn" id="incubatorBtn">🥚 孵化器${vm.eggsCount ? ` · ${vm.eggsCount}` : ''}</button>
       <button class="nodrag hub-btn" id="dexBtn">📖 图鉴 · ${vm.ownedCount}/${SPECIES.length}</button>
       <button class="nodrag hub-btn" id="achBtn">🏆 成就 · ${vm.achDone}/${ACHIEVEMENTS.length}</button>
+      <button class="nodrag hub-btn" id="usageBtn">📊 用量洞察</button>
     </div>
     <div class="field" style="margin-top:12px">
       <label>给它起个名字</label>
@@ -114,6 +115,30 @@ export function incubatorHTML(vm) {
     : '';
   return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 点蛋看详情</h2>${mergeBtn}${rows}
     <div class="source-note" style="margin-top:8px">同品种的多颗蛋可以合并成一颗，喂养进度全累加、还额外送 token（越稀有送越多）。在养的蛋吃你的 token 一路进化到化形，换着养也不清零。</div>`;
+}
+
+export function usageHTML(vm) {
+  const u = vm.usage;
+  const fmt = (n) => formatTokens(n);
+  const trend = u.trendPct == null ? ''
+    : u.trendPct >= 0 ? ` <span class="up">↑${u.trendPct}%</span>` : ` <span class="down">↓${Math.abs(u.trendPct)}%</span>`;
+  const tools = u.byTool.length
+    ? u.byTool.map((t) => `<div class="u-tool"><span>${esc(t.label)}</span><b>今日 ${fmt(t.today)} · 周 ${fmt(t.week)}</b></div>`).join('')
+    : '<div class="u-tool"><span>暂无本地可读的用量</span><b>—</b></div>';
+  const bars = u.bars.map((h, i) => `<div class="u-bar" style="height:${Math.max(3, h)}%" title="${i}:00"></div>`).join('');
+  const peak = u.peakHour == null ? '还没数据' : `${String(u.peakHour).padStart(2, '0')}:00 前后`;
+  return `<button class="close nodrag" data-close aria-label="关闭">✕</button>
+    <h2>📊 用量洞察</h2>
+    <div class="u-stat-row">
+      <div class="u-stat"><div class="u-n">${fmt(u.today)}</div><div class="u-l">今日${trend}</div></div>
+      <div class="u-stat"><div class="u-n">${fmt(u.week)}</div><div class="u-l">最近 7 天</div></div>
+    </div>
+    <div class="u-sec">按工具</div>
+    ${tools}
+    <div class="u-sec">活跃时段 · 最近 7 天你几点最能写</div>
+    <div class="u-hist">${bars}</div>
+    <div class="u-hint">🔥 最能写：<b>${peak}</b></div>
+    <div class="source-note" style="margin-top:10px">只读本机 AI 工具的用量日志（Claude Code / Codex 等），不联网、不上传。更多工具与花费估算陆续加。</div>`;
 }
 
 export function bondHTML(vm) {

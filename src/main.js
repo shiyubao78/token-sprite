@@ -4,6 +4,7 @@ import { incubation, incubationStage, evolution, STAGE_NAMES } from './domain/in
 import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicates, mergeableGroups, normalizeSpecies } from './domain/incubator.js';
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
 import { petInteract, settleBondLevel, bondView, activateBond, BOND_LEVELS } from './domain/bond.js';
+import { usageStats } from './domain/usageStats.js';
 import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
 import { stageUrl, adultUrl } from './services/sprites.js';
@@ -11,7 +12,7 @@ import { RARITY } from './config/rarities.js';
 import { SPECIES, speciesByKey } from './config/species.js';
 import { ACHIEVEMENTS } from './config/achievements.js';
 import {
-  mainHTML, peekHTML, menuHTML, gachaHTML, incubatorHTML, collectionHTML, achievementsHTML, evolutionHTML, bondHTML,
+  mainHTML, peekHTML, menuHTML, gachaHTML, incubatorHTML, collectionHTML, achievementsHTML, evolutionHTML, bondHTML, usageHTML,
 } from './ui/views.js';
 
 const app = document.getElementById('app');
@@ -119,6 +120,7 @@ function deriveVm() {
     bond: bondView(state, growth),
     daysTogether: Math.floor((Date.now() - (state.createdAt || Date.now())) / 86400000) + 1,
     bondLevels: BOND_LEVELS,
+    usage: usageStats(usage),
   };
 }
 // 孵化进度百分比：保留两位小数（精确到 0.01%），并去掉多余的 0。
@@ -150,6 +152,10 @@ function render() {
 
 function openBond() {
   openSheet(bondHTML(deriveVm()));
+}
+
+function openUsage() {
+  openSheet(usageHTML(deriveVm()));
 }
 
 let collapsedInit = false;
@@ -286,6 +292,7 @@ function openMenu() {
     mask.querySelector('#incubatorBtn')?.addEventListener('click', () => { close(); openIncubator(); });
     mask.querySelector('#dexBtn')?.addEventListener('click', () => { close(); openCollection(); });
     mask.querySelector('#achBtn')?.addEventListener('click', () => { close(); openAchievements(); });
+    mask.querySelector('#usageBtn')?.addEventListener('click', () => { close(); openUsage(); });
     mask.querySelector('#saveBtn')?.addEventListener('click', () => {
       const name = mask.querySelector('#nameInput').value.trim();
       state.petName = name || '小苗'; savePet(state); close(); render();

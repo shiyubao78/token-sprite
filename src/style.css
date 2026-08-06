@@ -277,3 +277,19 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .bond-info .bn .cur { color: #fff; background: #e97ba9; font-size: 10px; padding: 1px 7px; border-radius: 999px; margin-left: 6px; }
 .bond-info .bd { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 .bond-ck { font-size: 15px; }
+
+/* 用量洞察 */
+.u-stat-row { display: flex; gap: 8px; margin-bottom: 4px; }
+.u-stat { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.u-n { font-size: 18px; font-weight: 800; color: var(--accent-ink); }
+.u-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.u-l .up { color: var(--accent-ink); font-weight: 700; }
+.u-l .down { color: #b4884a; font-weight: 700; }
+.u-sec { font-size: 12px; font-weight: 600; color: var(--ink); margin: 12px 0 6px; }
+.u-tool { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12.5px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.u-tool span { color: var(--muted); white-space: nowrap; }
+.u-tool b { color: var(--ink); font-weight: 600; font-size: 11.5px; text-align: right; }
+.u-hist { display: flex; align-items: flex-end; gap: 2px; height: 56px; background: #fbf6ea; border: 1px solid var(--line); border-radius: 10px; padding: 6px; }
+.u-bar { flex: 1; background: linear-gradient(180deg, #7fd0a3, #63bd8b); border-radius: 2px 2px 0 0; min-height: 3px; }
+.u-hint { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+.u-hint b { color: var(--ink); }

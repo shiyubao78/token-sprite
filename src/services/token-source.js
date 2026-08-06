@@ -32,5 +32,7 @@ function normalize(data) {
     todayTokens: Number(data.todayTokens) || 0,
     lastActivityAt: Number(data.lastActivityAt) || Date.now(),
     breakdown: Array.isArray(data.breakdown) ? data.breakdown : [],
+    daily: (data.daily && typeof data.daily === 'object') ? data.daily : {},
+    hourly: (Array.isArray(data.hourly) && data.hourly.length === 24) ? data.hourly : new Array(24).fill(0),
   };
 }
