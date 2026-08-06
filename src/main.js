@@ -175,9 +175,12 @@ function openUsage() {
 }
 function bindUsage(mask) {
   const commit = (patch) => {
-    state.settings = { ...costSettings(), ...patch };
+    state.settings = { ...state.settings, ...patch }; // 保留其它设置字段，只改传入的
     savePet(state);
-    mask.querySelector('.sheet').innerHTML = usageHTML(deriveVm());
+    const sheet = mask.querySelector('.sheet');
+    const top = sheet.scrollTop;
+    sheet.innerHTML = usageHTML(deriveVm());
+    sheet.scrollTop = top; // 改单价后保持滚动位置，别跳回顶部
     bindUsage(mask); // 重渲后重新绑定新的输入框
   };
   const rate = mask.querySelector('#rateInput');
