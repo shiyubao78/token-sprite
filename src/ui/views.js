@@ -20,7 +20,7 @@ export function mainHTML(vm) {
       </div>`;
     info = `
       <div class="petinfo">
-        <div class="chip" style="color:${vm.egg.color}">${esc(vm.egg.nick)} · 第${vm.egg.stageNo}段 ${esc(vm.egg.stageName)}</div>
+        <div class="chip" style="color:${vm.egg.color}">${esc(vm.egg.speciesName)} · 第${vm.egg.stageNo}段 ${esc(vm.egg.stageName)}</div>
         <div class="bar"><span style="width:${vm.egg.percent}%;background:${vm.egg.color}"></span></div>
         <div class="subline">${vm.egg.percent}% · 距化形还差 ${vm.egg.toHatchText}</div>
       </div>`;
@@ -34,7 +34,7 @@ export function mainHTML(vm) {
       </div>`;
     info = `
       <div class="petinfo">
-        <div class="chip">${esc(vm.pet.nick)}</div>
+        <div class="chip">${esc(vm.pet.name)}</div>
         <div class="subline">${vm.eggsCount > 0 ? '孵化器有蛋 · 去挑一颗养' : '陪着你 · 攒券抽新蛋'}</div>
       </div>`;
   }

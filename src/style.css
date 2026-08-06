@@ -82,10 +82,10 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .sprite.eating { animation: pop 0.55s ease; }
 .sprite.wilted { filter: grayscale(.4) brightness(.97) saturate(.8) drop-shadow(0 4px 8px rgba(120,100,60,.15)); animation: droop 4.5s ease-in-out infinite; }
 @keyframes float { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-9px);} }
-.sprite.mood-excited { animation: bounce 0.85s ease-in-out infinite; }
+.sprite.mood-excited { animation: bounce 2.4s ease-in-out infinite; }
 .sprite.mood-sleepy { animation: sway 5s ease-in-out infinite; filter: brightness(.98) saturate(.9) drop-shadow(0 5px 9px rgba(120,100,60,.16)); }
 .sprite.mood-lonely { animation: float 5.5s ease-in-out infinite; opacity: .95; }
-@keyframes bounce { 0%,100% { transform: translateY(0) scale(1);} 30% { transform: translateY(-15px) scale(1.03,.96);} 55% { transform: translateY(0) scale(.98,1.03);} }
+@keyframes bounce { 0%,100% { transform: translateY(0) scale(1);} 50% { transform: translateY(-7px) scale(1.015,.99);} }
 @keyframes sway { 0%,100% { transform: translateY(2px) rotate(-2.5deg);} 50% { transform: translateY(5px) rotate(2.5deg);} }
 @keyframes droop { 0%,100% { transform: translateY(2px) rotate(-2deg);} 50% { transform: translateY(6px) rotate(-3deg);} }
 @keyframes pop { 0% { transform: scale(1);} 30% { transform: scale(1.1,.9);} 55% { transform: scale(.95,1.06);} 100% { transform: scale(1);} }

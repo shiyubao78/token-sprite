@@ -96,8 +96,13 @@ function deriveVm() {
     pet = { name: sp.name, nick: sp.nick, spriteUrl: adultUrl(sp.folder), mood };
   }
 
+  // 名字跟着当前这只走：默认用它的昵称；若用户手动改过名（不是任何品种默认昵称）则用自定义名。
+  const creatureNick = mode === 'incubating' ? egg.nick : pet.nick;
+  const speciesNicks = SPECIES.map((s) => s.nick);
+  const displayName = (state.petName && !speciesNicks.includes(state.petName)) ? state.petName : creatureNick;
+
   return {
-    petName: state.petName,
+    petName: displayName,
     isDesktop: !!(globalThis.tokenSprite && globalThis.tokenSprite.getAutoLaunch),
     canAutoLaunch: !!(globalThis.tokenSprite && globalThis.tokenSprite.getAutoLaunch) && globalThis.tokenSprite.platform !== 'linux',
     mode, egg, pet,
