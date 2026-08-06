@@ -3,6 +3,7 @@ import { computeMood, pickBubble, ACTIVE_MS, RETURN_IDLE_MS, BURST_TOKENS } from
 import { incubation, incubationStage, evolution, STAGE_NAMES } from './domain/incubation.js';
 import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicates, mergeableGroups, normalizeSpecies } from './domain/incubator.js';
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
+import { petInteract, settleBondLevel, bondView, BOND_LEVELS } from './domain/bond.js';
 import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
 import { stageUrl, adultUrl } from './services/sprites.js';
@@ -10,7 +11,7 @@ import { RARITY } from './config/rarities.js';
 import { SPECIES, speciesByKey } from './config/species.js';
 import { ACHIEVEMENTS } from './config/achievements.js';
 import {
-  mainHTML, peekHTML, menuHTML, gachaHTML, incubatorHTML, collectionHTML, achievementsHTML, evolutionHTML,
+  mainHTML, peekHTML, menuHTML, gachaHTML, incubatorHTML, collectionHTML, achievementsHTML, evolutionHTML, bondHTML,
 } from './ui/views.js';
 
 const app = document.getElementById('app');
@@ -25,7 +26,14 @@ let activeSince = 0;
 let prevIdleMs = Infinity;
 let sessionMinutesNow = 0;
 const mem = { greetDate: state.greetDate || null, restSession: 0, nightSession: 0, lastBubbleAt: 0 };
-const LINES = ['码力充沛，继续冲！', '今天也在悄悄长大～', '多写点，快孵出来啦', '陪你写代码最开心', '你敲的每个 token 我都收到啦'];
+// 逗它的台词按羁绊等级变暖：越亲越黏人。
+const INTERACT_LINES = {
+  1: ['你好呀～', '嘿，戳我干嘛😳', '码力充沛，继续冲！'],
+  2: ['又见面啦！', '今天也在悄悄长大～', '陪你写代码最开心'],
+  3: ['你来啦～我一直在', '就喜欢你戳我 💚', '有你在真好'],
+  4: ['宝子，别太累哦', '我最粘你啦～', '你敲的每个 token 我都收到啦'],
+  5: ['最好的搭子就是你 💞', '一直一直陪着你', '有你这一路，值了'],
+};
 
 function growthTotal() {
   const base = state.baseline ? state.baseline.total : usage.total;
@@ -103,6 +111,9 @@ function deriveVm() {
     achievements: state.achievements || {},
     achDone: Object.keys(state.achievements || {}).length,
     activePetSpecies: state.activePetSpecies,
+    bond: bondView(state, growth),
+    daysTogether: Math.floor((Date.now() - (state.createdAt || Date.now())) / 86400000) + 1,
+    bondLevels: BOND_LEVELS,
   };
 }
 // 孵化进度百分比：保留两位小数（精确到 0.01%），并去掉多余的 0。
@@ -129,6 +140,11 @@ function render() {
   document.getElementById('menuBtn')?.addEventListener('click', openMenu);
   document.getElementById('collapseBtn')?.addEventListener('click', () => setCollapsed(true));
   document.getElementById('tkBadge')?.addEventListener('click', openGacha);
+  document.getElementById('bondBadge')?.addEventListener('click', openBond);
+}
+
+function openBond() {
+  openSheet(bondHTML(deriveVm()));
 }
 
 let collapsedInit = false;
@@ -154,7 +170,10 @@ function interact() {
       requestAnimationFrame(() => el.classList.add('go')); setTimeout(() => el.remove(), 900);
     });
   }
-  setBubble(LINES[Math.floor(Math.random() * LINES.length)]);
+  if (petInteract(state, todayStr())) savePet(state); // 逗它 +亲密度（每日上限内）
+  const lv = bondView(state, growthTotal()).level;
+  const pool = INTERACT_LINES[lv] || INTERACT_LINES[1];
+  setBubble(pool[Math.floor(Math.random() * pool.length)]);
 }
 
 async function sync() {
@@ -200,6 +219,9 @@ async function sync() {
   // 结算孵化
   const hatched = settleHatch(state, growth);
   if (hatched) dirty = true;
+  // 结算羁绊等级（写代码也在悄悄拉近关系）
+  const bondUp = settleBondLevel(state, growth);
+  if (bondUp) dirty = true;
   if (dirty) savePet(state);
 
   // 台词
@@ -212,6 +234,8 @@ async function sync() {
 
   if (hatched && !collapsed) {
     showHatch(hatched);
+  } else if (bondUp) {
+    setTimeout(() => setBubble(`💞 羁绊升到 Lv.${bondUp.level} ${bondUp.name}！`), 300);
   } else if (ach.newly.length) {
     setTimeout(() => setBubble('🏆 达成成就：' + ach.newly[0].name), 300);
   } else if (bubble) {

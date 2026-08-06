@@ -50,6 +50,7 @@ export function mainHTML(vm) {
     </div>
     ${stage}
     ${info}
+    <div class="bond-badge nodrag" id="bondBadge" title="羁绊">💞 Lv.${vm.bond.level} ${esc(vm.bond.name)}${vm.bond.isMax ? '' : ` · ${vm.bond.pct}%`}</div>
   `;
 }
 
@@ -113,6 +114,26 @@ export function incubatorHTML(vm) {
     : '';
   return `<button class="close nodrag" data-close aria-label="关闭">✕</button><h2>孵化器 · 点蛋看详情</h2>${mergeBtn}${rows}
     <div class="source-note" style="margin-top:8px">同品种的多颗蛋可以合并成一颗，喂养进度全累加、还额外送 token（越稀有送越多）。在养的蛋吃你的 token 一路进化到化形，换着养也不清零。</div>`;
+}
+
+export function bondHTML(vm) {
+  const b = vm.bond;
+  const ladder = vm.bondLevels.map((l) => {
+    const reached = b.level >= l.level;
+    const current = b.level === l.level;
+    return `<div class="bond-row ${current ? 'current' : ''} ${reached ? '' : 'locked'}">
+      <span class="bond-lv">Lv.${l.level}</span>
+      <div class="bond-info"><div class="bn">${esc(l.name)}${current ? '<span class="cur">当前</span>' : ''}</div><div class="bd">${esc(l.unlock)}</div></div>
+      <span class="bond-ck">${reached ? '✅' : '🔒'}</span>
+    </div>`;
+  }).join('');
+  return `<button class="close nodrag" data-close aria-label="关闭">✕</button>
+    <h2>💞 羁绊 · Lv.${b.level} ${esc(b.name)}</h2>
+    <div class="sub-h"><span class="evo-chip">陪伴 ${vm.daysTogether} 天 · 亲密度 ${b.points}</span></div>
+    <div class="bond-bar"><span style="width:${b.pct}%"></span></div>
+    <div class="bond-next">${b.isMax ? '已是最高羁绊 💞' : `距 ${esc(b.nextName)} 还差 ${b.toNext} 亲密度`}</div>
+    ${ladder}
+    <div class="source-note" style="margin-top:10px">写代码 + 逗它都会加深羁绊（只涨不掉）。越亲，它越黏你、台词越暖。</div>`;
 }
 
 export function evolutionHTML(vm) {
