@@ -48,3 +48,18 @@
 - [x] 验证最终海报为精确 3:4，PNG 文件完整。
 - [x] 在 360×480 手机缩略图下检查标题、孵化关系和 GitHub 地址。
 - [x] 运行项目测试并提交版本存档。
+
+### Task 4: 史诗幻想融合版
+
+**Files:**
+- Reference: `assets/promo/token-sprite-prompt-hatching-art.png`
+- Reference: 用户提供的紫蓝精灵群像图
+- Create: `assets/promo/token-sprite-prompt-hatching-epic-art.png`
+- Create: `assets/promo/token-sprite-prompt-hatching-epic.png`
+- Create: `assets/promo/token-sprite-prompt-hatching-epic-mobile-preview.jpg`
+
+- [x] 保留 Prompt 屏幕、Token 光带和中央孵化蛋的叙事，升级为紫蓝星云、元素轮廓光和魔法底座。
+- [x] 在背景加入六只稀有精灵的半透明悬念轮廓，不抢中央蛋与 Prompt 能量流。
+- [x] 将三项卖点改成轻量属性徽章，保留原有准确英文与 Agent 安装入口。
+- [x] 检查 3:4 尺寸、英文拼写、手机缩略图、图片完整性和项目测试。
+- [x] 提交融合版海报存档。
