@@ -5,8 +5,8 @@
 **你写下的每个 Token，都在让它长大。**<br />
 **Every token you write helps it grow.**
 
-把真实的 AI 编程用量变成一只住在桌面角落、一路破壳进化的小精灵。<br />
-Turn your real AI-coding usage into a tiny desktop companion that hatches, evolves, and grows with you.
+把真实的 AI 编程用量变成一只住在桌面角落、一路破壳进化的小精灵——化形后和你结下羁绊，还顺手告诉你写了多少、花了多少。<br />
+Turn your real AI-coding usage into a tiny desktop companion that hatches, evolves, and bonds with you—while showing how much you have written and roughly spent.
 
 <img src="assets/readme/hatching-hero-wide.png" width="900" alt="Token 小精灵横版孵化主视觉、五段进化与六只神秘精灵 / Token Sprite wide hatching hero, five-stage evolution, and six mystery creatures" />
 
@@ -39,7 +39,8 @@ Got duplicate eggs of the same species? **Merge** them in the incubator—progre
 ## ✨ 为什么特别 / Why It’s Different
 
 - **真实劳动养出来 / Powered by real work**：读取本地 AI 编程工具的真实 Token 用量，写多少就长多少。 / It grows from your actual local AI-coding usage.
-- **会陪你 / A companion, not a counter**：连续工作会劝你休息，深夜会提醒早点睡，久别重逢会向你招手。 / It nudges you to rest, sleep, and come back without turning work into pressure.
+- **会陪你 / A companion, not a counter**：连续工作会劝你休息，深夜会提醒早点睡，久别重逢会向你招手；化形后还会和你结下**羁绊**，越写越亲。 / It nudges you to rest, sleep, and come back—and after final form it forms a growing **bond** with you the more you code.
+- **看得见用量和花费 / See usage and cost**：用量洞察面板显示今日/近 7 天写了多少 token、按工具占比、活跃时段，还能折算**约多少钱**并设每日预算提醒（美元、粗略估算）。 / A panel breaks down tokens by day, tool, and hour, converts them into a **rough dollar cost**, and can warn you when you pass a daily budget.
 - **桌面常驻 / Always on your desktop**：悬浮置顶、自由拖动，也能缩成侧边探头。 / Always on top, draggable, and able to peek quietly from the screen edge.
 - **孵化收集 / Hatch and collect**：成就 → 抽蛋 → 进化 → 图鉴，让每次写代码都有期待。 / Achievements unlock eggs; eggs evolve into creatures for your collection.
 - **全本地私密 / Private by design**：只读本机日志，用量绝不上传；仅正式版会向 GitHub 查询有无新版本。 / Usage stays on your machine and is never uploaded; only released builds check GitHub for new versions.
@@ -78,11 +79,11 @@ Every draw gives you an egg. Keep coding to complete all five stages and add its
 
 ## 🖥️ 界面一览 / A Look Inside
 
-全本地、免登录，一个悬浮小窗搞定：改名、抽卡、孵化、图鉴、成就。<br />
-Fully local, no login — one floating window: rename, draw, hatch, collect, and earn achievements.
+全本地、免登录，一个悬浮小窗搞定：改名、抽卡、孵化、图鉴、成就、用量洞察，还有化形后的羁绊。<br />
+Fully local, no login — one floating window: rename, draw, hatch, collect, earn achievements, track usage & cost, and bond after final form.
 
 <p align="center">
-<img src="assets/readme/interface-overview.png" width="900" alt="六个界面：主界面、菜单（改名/功能入口）、抽卡、孵化器、图鉴、成就 / Six panels: main, menu (rename & hub), gacha, incubator, collection, achievements" />
+<img src="assets/readme/interface-overview.png" width="900" alt="八个界面：主界面、菜单、抽卡、孵化器、图鉴、成就、用量洞察、羁绊 / Eight panels: main, menu, gacha, incubator, collection, achievements, usage insights, and bond" />
 </p>
 
 | 界面 / Panel | 能做什么 / What you do |
@@ -94,6 +95,7 @@ Fully local, no login — one floating window: rename, draw, hatch, collect, and
 | 📖 图鉴 / Collection | 收集 6 种精灵，点已获得的让它陪伴 / Collect 6 species; tap an owned one to make it your companion |
 | 🏆 成就 / Achievements | 达成条件得券，全用真实 token 用量判定 / Earn tickets by hitting milestones, all judged on real token usage |
 | 📊 用量洞察 / Usage | 今日 / 最近 7 天用量、按工具占比、活跃时段，还有花费估算与每日预算 / Today & 7-day usage, per-tool split, active hours, plus cost estimate and daily budget |
+| 💞 羁绊 / Bond | 化形后开启，写代码 + 逗它越处越亲，5 级解锁暖心回报 / Unlocks after final form; coding and play deepen a 5-level bond |
 
 ## 📊 用量洞察与花费 / Usage & Cost Insights
 
