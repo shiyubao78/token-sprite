@@ -22,25 +22,3 @@ function trimUnit(x) {
   if (x >= 100) return String(Math.round(x));
   return x.toFixed(1).replace(/\.0$/, '');
 }
-
-// 今日花费 / 预算 的进度视图。budget 为空 = 没设。
-export function budgetView(cost, budget) {
-  const b = Number.isFinite(budget) && budget > 0 ? budget : null;
-  if (!b) return { hasBudget: false, cost, budget: null, pct: 0, level: 'ok' };
-  const raw = (cost / b) * 100;
-  const level = raw >= 100 ? 'over' : raw >= 80 ? 'near' : 'ok';
-  return { hasBudget: true, cost, budget: b, pct: Math.min(100, Math.round(raw)), level };
-}
-
-// 每日预算提醒：同一天每档（80/100）只提醒一次，跨天自动重置。命中就地写 state.budgetAlert 并返回 { level }，否则 null。
-export function settleBudgetAlert(state, cost, budget, today) {
-  const b = Number.isFinite(budget) && budget > 0 ? budget : null;
-  if (!b) return null;
-  const raw = (cost / b) * 100;
-  const reached = raw >= 100 ? 100 : raw >= 80 ? 80 : 0;
-  if (reached === 0) return null;
-  const prev = state.budgetAlert && state.budgetAlert.date === today ? state.budgetAlert.level : 0;
-  if (reached <= prev) return null;
-  state.budgetAlert = { date: today, level: reached };
-  return { level: reached >= 100 ? 'over' : 'near' };
-}

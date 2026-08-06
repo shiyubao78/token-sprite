@@ -22,14 +22,13 @@ const DEMO = {
     { id: 'e1', species: 'shell', at: now - 5 * DAY, fed: 200000000 },
     { id: 'e2', species: 'thunder', at: now - 2 * DAY, fed: 0 },
   ],
-  activeEggId: 'e1',
+  activeEggId: null, // 主界面显示已化形的精灵(带亲密度)，孵化进度由孵化器面板体现——亲密度只在化形后才有，别挂在蛋上
   lastGrowth: 0,
   collection: { flower: { count: 1, firstAt: now - 15 * DAY }, fire: { count: 1, firstAt: now - 8 * DAY } },
   activePetSpecies: 'flower',
   activeDates: [],
   nightDates: [],
-  settings: { usdPerMillion: 1.3, dailyBudget: 200 },
-  budgetAlert: null,
+  settings: { usdPerMillion: 1.3 },
   bond: { startedAt: 0, interactPoints: 80, todayInteract: 0, day: '', level: 3 },
 };
 
@@ -78,30 +77,51 @@ app.whenReady().then(async () => {
     `(()=>{const e=document.querySelector(${JSON.stringify(sel)});if(e){e.click();return true;}return false;})()`);
   const closeSheets = () => wc.executeJavaScript(`document.querySelectorAll('.sheet-mask').forEach(m=>m.remove());true`);
 
+  // 轮询直到 .sheet 里出现某段专属文字，确保截的是对的面板（避免截到还没画好的空壳/背后主界面）
+  async function waitText(marker, timeout = 4000) {
+    const t0 = Date.now();
+    while (Date.now() - t0 < timeout) {
+      const ok = await wc.executeJavaScript(`(()=>{const s=document.querySelector('.sheet');return !!(s&&s.innerText&&s.innerText.includes(${JSON.stringify(marker)}));})()`);
+      if (ok) return true;
+      await wait(150);
+    }
+    console.log('WAITFAIL', marker);
+    return false;
+  }
+  async function waitSel(sel, timeout = 4000) {
+    const t0 = Date.now();
+    while (Date.now() - t0 < timeout) {
+      if (await wc.executeJavaScript(`!!document.querySelector(${JSON.stringify(sel)})`)) return true;
+      await wait(150);
+    }
+    return false;
+  }
   async function shot(name, sel) {
     const rect = await rectOf(sel);
     if (!rect || !rect.width) { console.log('MISS', name, sel); return; }
+    await wait(150);
     const img = await wc.capturePage(rect);
     fs.writeFileSync(path.join(OUTDIR, name + '.png'), img.toPNG());
     console.log('OK', name, JSON.stringify(rect));
   }
+  // 打开某面板：先关掉旧的，按钮序列点开，等专属文字出现，再截 .sheet
+  async function panel(name, clicks, marker) {
+    await closeSheets();
+    for (const c of clicks) { await clickSel(c); await wait(300); }
+    await waitText(marker);
+    await shot(name, '.sheet');
+  }
 
   // main（整个 #app）
+  await waitSel('.petstage');
   await shot('main', '#app');
-  // 菜单
-  await closeSheets(); await clickSel('#menuBtn'); await wait(400); await shot('menu', '.sheet');
-  // 抽卡（主界面券徽章直接进）
-  await closeSheets(); await clickSel('#tkBadge'); await wait(400); await shot('gacha', '.sheet');
-  // 孵化器（菜单→孵化器）
-  await closeSheets(); await clickSel('#menuBtn'); await wait(300); await clickSel('#incubatorBtn'); await wait(400); await shot('incubator', '.sheet');
-  // 图鉴
-  await closeSheets(); await clickSel('#menuBtn'); await wait(300); await clickSel('#dexBtn'); await wait(400); await shot('collection', '.sheet');
-  // 成就
-  await closeSheets(); await clickSel('#menuBtn'); await wait(300); await clickSel('#achBtn'); await wait(400); await shot('achievements', '.sheet');
-  // 用量洞察
-  await closeSheets(); await clickSel('#menuBtn'); await wait(300); await clickSel('#usageBtn'); await wait(700); await shot('usage', '.sheet');
-  // 羁绊（主界面 bondBadge）
-  await closeSheets(); await clickSel('#bondBadge'); await wait(400); await shot('bond', '.sheet');
+  await panel('menu', ['#menuBtn'], '给它起个名字');
+  await panel('gacha', ['#tkBadge'], '达成成就攒券');
+  await panel('incubator', ['#menuBtn', '#incubatorBtn'], '点蛋看详情');
+  await panel('collection', ['#menuBtn', '#dexBtn'], '点已获得的品种');
+  await panel('achievements', ['#menuBtn', '#achBtn'], '用券抽蛋');
+  await panel('usage', ['#menuBtn', '#usageBtn'], '活跃时段');
+  await panel('bond', ['#bondBadge'], '亲密度');
 
   await closeSheets();
   console.log('done');

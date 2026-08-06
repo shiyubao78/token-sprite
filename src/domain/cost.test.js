@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_USD_PER_MILLION, estimateCost, formatMoney, budgetView, settleBudgetAlert } from './cost.js';
+import { DEFAULT_USD_PER_MILLION, estimateCost, formatMoney } from './cost.js';
 
 const M = 1_000_000;
 
@@ -35,75 +35,5 @@ describe('formatMoney 展示（美元）', () => {
     expect(formatMoney(12229)).toBe('$12.2K');
     expect(formatMoney(150000)).toBe('$150K'); // ≥100K取整
     expect(formatMoney(1_200_000)).toBe('$1.2M');
-  });
-});
-
-describe('budgetView 预算进度', () => {
-  it('没设预算', () => {
-    const v = budgetView(50, null);
-    expect(v.hasBudget).toBe(false);
-  });
-  it('未到 80% = ok', () => {
-    const v = budgetView(50, 100);
-    expect(v.hasBudget).toBe(true);
-    expect(v.pct).toBe(50);
-    expect(v.level).toBe('ok');
-  });
-  it('到 80% = near', () => {
-    expect(budgetView(80, 100).level).toBe('near');
-    expect(budgetView(99, 100).level).toBe('near');
-  });
-  it('超 100% = over，进度条封顶 100', () => {
-    const v = budgetView(150, 100);
-    expect(v.level).toBe('over');
-    expect(v.pct).toBe(100);
-  });
-});
-
-describe('settleBudgetAlert 每日预算提醒（每档每天一次）', () => {
-  const today = '2026-08-06';
-
-  it('没设预算不提醒', () => {
-    const state = {};
-    expect(settleBudgetAlert(state, 999, null, today)).toBeNull();
-    expect(state.budgetAlert).toBeUndefined();
-  });
-
-  it('未到 80% 不提醒', () => {
-    const state = {};
-    expect(settleBudgetAlert(state, 50, 100, today)).toBeNull();
-  });
-
-  it('首次到 80% 提醒 near 并记档', () => {
-    const state = {};
-    const r = settleBudgetAlert(state, 85, 100, today);
-    expect(r).toEqual({ level: 'near' });
-    expect(state.budgetAlert).toEqual({ date: today, level: 80 });
-  });
-
-  it('同一天 near 已提醒过，不再重复', () => {
-    const state = { budgetAlert: { date: today, level: 80 } };
-    expect(settleBudgetAlert(state, 90, 100, today)).toBeNull();
-  });
-
-  it('同一天从 near 升到 over，提醒 over', () => {
-    const state = { budgetAlert: { date: today, level: 80 } };
-    const r = settleBudgetAlert(state, 120, 100, today);
-    expect(r).toEqual({ level: 'over' });
-    expect(state.budgetAlert).toEqual({ date: today, level: 100 });
-  });
-
-  it('直接冲过 100%（没经过 near）也只提醒 over 一次', () => {
-    const state = {};
-    expect(settleBudgetAlert(state, 200, 100, today)).toEqual({ level: 'over' });
-    expect(state.budgetAlert).toEqual({ date: today, level: 100 });
-    expect(settleBudgetAlert(state, 300, 100, today)).toBeNull();
-  });
-
-  it('跨天重置：昨天提醒过，今天重新算', () => {
-    const state = { budgetAlert: { date: '2026-08-05', level: 100 } };
-    const r = settleBudgetAlert(state, 85, 100, today);
-    expect(r).toEqual({ level: 'near' });
-    expect(state.budgetAlert).toEqual({ date: today, level: 80 });
   });
 });

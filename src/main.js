@@ -5,7 +5,7 @@ import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicat
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
 import { petInteract, settleBondLevel, bondView, activateBond, BOND_LEVELS } from './domain/bond.js';
 import { usageStats } from './domain/usageStats.js';
-import { estimateCost, budgetView, settleBudgetAlert, DEFAULT_USD_PER_MILLION } from './domain/cost.js';
+import { estimateCost, DEFAULT_USD_PER_MILLION } from './domain/cost.js';
 import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
 import { stageUrl, adultUrl } from './services/sprites.js';
@@ -130,15 +130,14 @@ function costSettings() {
   const s = state.settings || {};
   return {
     usdPerMillion: Number.isFinite(s.usdPerMillion) && s.usdPerMillion > 0 ? s.usdPerMillion : DEFAULT_USD_PER_MILLION,
-    dailyBudget: Number.isFinite(s.dailyBudget) && s.dailyBudget > 0 ? s.dailyBudget : null,
   };
 }
 function usageVm() {
   const stats = usageStats(usage);
-  const { usdPerMillion, dailyBudget } = costSettings();
+  const { usdPerMillion } = costSettings();
   const todayCost = estimateCost(stats.today, usdPerMillion);
   const weekCost = estimateCost(stats.week, usdPerMillion);
-  return { ...stats, cost: { todayCost, weekCost, usdPerMillion, budget: budgetView(todayCost, dailyBudget) } };
+  return { ...stats, cost: { todayCost, weekCost, usdPerMillion } };
 }
 // 孵化进度百分比：保留两位小数（精确到 0.01%），并去掉多余的 0。
 // 刚喂一点点也能看到数字在动，不会误以为「没喂进去」。
@@ -182,14 +181,9 @@ function bindUsage(mask) {
     bindUsage(mask); // 重渲后重新绑定新的输入框
   };
   const rate = mask.querySelector('#rateInput');
-  const budget = mask.querySelector('#budgetInput');
   rate?.addEventListener('change', () => {
     const v = parseFloat(rate.value);
     commit({ usdPerMillion: Number.isFinite(v) && v > 0 ? v : DEFAULT_USD_PER_MILLION });
-  });
-  budget?.addEventListener('change', () => {
-    const v = parseFloat(budget.value);
-    commit({ dailyBudget: Number.isFinite(v) && v > 0 ? v : null });
   });
 }
 
@@ -270,13 +264,6 @@ async function sync() {
   if (bondStarted) dirty = true;
   const bondUp = settleBondLevel(state, growth);
   if (bondUp) dirty = true;
-
-  // 每日预算提醒（到 80% / 超 100% 各提醒一次，当天不重复）
-  const { usdPerMillion, dailyBudget } = costSettings();
-  const todayCost = estimateCost(usage.todayTokens || 0, usdPerMillion);
-  const budgetAlert = settleBudgetAlert(state, todayCost, dailyBudget, today);
-  if (budgetAlert) dirty = true;
-
   if (dirty) savePet(state);
 
   // 台词
@@ -293,9 +280,6 @@ async function sync() {
     setTimeout(() => setBubble('💞 我们的关系，从今天开始记录～'), 300);
   } else if (bondUp) {
     setTimeout(() => setBubble(`💞 羁绊升到 Lv.${bondUp.level} ${bondUp.name}！`), 300);
-  } else if (budgetAlert) {
-    const msg = budgetAlert.level === 'over' ? '💸 今天超预算咯，悠着点～' : '💰 今天快到预算啦～';
-    setTimeout(() => setBubble(msg), 300);
   } else if (ach.newly.length) {
     setTimeout(() => setBubble('🏆 达成成就：' + ach.newly[0].name), 300);
   } else if (bubble) {

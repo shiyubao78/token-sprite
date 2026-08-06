@@ -40,7 +40,7 @@ Got duplicate eggs of the same species? **Merge** them in the incubator—progre
 
 - **真实劳动养出来 / Powered by real work**：读取本地 AI 编程工具的真实 Token 用量，写多少就长多少。 / It grows from your actual local AI-coding usage.
 - **会陪你 / A companion, not a counter**：连续工作会劝你休息，深夜会提醒早点睡，久别重逢会向你招手；化形后还会和你结下**羁绊**，越写越亲。 / It nudges you to rest, sleep, and come back—and after final form it forms a growing **bond** with you the more you code.
-- **看得见用量和花费 / See usage and cost**：用量洞察面板显示今日/近 7 天写了多少 token、按工具占比、活跃时段，还能折算**约多少钱**并设每日预算提醒（美元、粗略估算）。 / A panel breaks down tokens by day, tool, and hour, converts them into a **rough dollar cost**, and can warn you when you pass a daily budget.
+- **看得见用量和花费 / See usage and cost**：用量洞察面板显示今日/近 7 天写了多少 token、按工具占比、活跃时段，还能折算成**约多少钱**（美元、粗略估算），当作「你的用量值多少钱」的参考。 / A panel breaks down tokens by day, tool, and hour, and converts them into a **rough dollar value** of what you've used.
 - **桌面常驻 / Always on your desktop**：悬浮置顶、自由拖动，也能缩成侧边探头。 / Always on top, draggable, and able to peek quietly from the screen edge.
 - **孵化收集 / Hatch and collect**：成就 → 抽蛋 → 进化 → 图鉴，让每次写代码都有期待。 / Achievements unlock eggs; eggs evolve into creatures for your collection.
 - **全本地私密 / Private by design**：只读本机日志，用量绝不上传；仅正式版会向 GitHub 查询有无新版本。 / Usage stays on your machine and is never uploaded; only released builds check GitHub for new versions.
@@ -94,13 +94,13 @@ Fully local, no login — one floating window: rename, draw, hatch, collect, ear
 | 🥚 孵化器 / Incubator | 多颗蛋切换养，各记各的进度、不清零 / Raise multiple eggs, each keeps its own progress |
 | 📖 图鉴 / Collection | 收集 6 种精灵，点已获得的让它陪伴 / Collect 6 species; tap an owned one to make it your companion |
 | 🏆 成就 / Achievements | 达成条件得券，全用真实 token 用量判定 / Earn tickets by hitting milestones, all judged on real token usage |
-| 📊 用量洞察 / Usage | 今日 / 最近 7 天用量、按工具占比、活跃时段，还有花费估算与每日预算 / Today & 7-day usage, per-tool split, active hours, plus cost estimate and daily budget |
+| 📊 用量洞察 / Usage | 今日 / 最近 7 天用量、按工具占比、活跃时段，还有花费估算 / Today & 7-day usage, per-tool split, active hours, plus a rough cost estimate |
 | 💞 羁绊 / Bond | 化形后开启，写代码 + 逗它越处越亲，5 级解锁暖心回报 / Unlocks after final form; coding and play deepen a 5-level bond |
 
 ## 📊 用量洞察与花费 / Usage & Cost Insights
 
-菜单 → **用量洞察**：看今日 / 最近 7 天写了多少 Token、每个工具各占多少、你几点最能写。还能把用量折成**约多少钱**（粗略估算，每百万 token 的单价可自己调），并设一个**每日预算**——当天估算花费到 80% 或超 100% 时，小精灵会冒泡提醒你。全部只读本机日志，不联网、不上传。<br />
-Open **Usage Insights** from the menu to see how many tokens you wrote today and over the last 7 days, each tool's share, and your most productive hours. It also turns usage into a **rough cost estimate** (with an adjustable per-million rate) and lets you set a **daily budget**—your sprite gently reminds you when the day's estimate hits 80% or goes over 100%. Everything is read from local logs only, never uploaded.
+菜单 → **用量洞察**：看今日 / 最近 7 天写了多少 Token、每个工具各占多少、你几点最能写。还能把用量折成**约多少钱**（粗略估算，每百万 token 的单价可自己调），当作「你的用量值多少钱」的参考。全部只读本机日志，不联网、不上传。<br />
+Open **Usage Insights** from the menu to see how many tokens you wrote today and over the last 7 days, each tool's share, and your most productive hours. It also turns usage into a **rough dollar estimate** (with an adjustable per-million rate) so you get a feel for what your usage is worth. Everything is read from local logs only, never uploaded.
 
 化形之后，陪伴不止：随着你写代码和逗它，**羁绊**会一路升级，解锁更亲昵的反应。<br />
 After it reaches its final form, the bond continues: coding and playful pokes level up your **bond**, unlocking warmer reactions over time.
