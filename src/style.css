@@ -281,8 +281,9 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 /* 用量洞察 */
 .u-stat-row { display: flex; gap: 8px; margin-bottom: 4px; }
 .u-stat { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
-.u-n { font-size: 18px; font-weight: 800; color: var(--accent-ink); }
-.u-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.u-n { font-size: 18px; font-weight: 800; color: var(--accent-ink); white-space: nowrap; }
+.u-n .approx { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 1px; }
+.u-l { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; }
 .u-l .up { color: var(--accent-ink); font-weight: 700; }
 .u-l .down { color: #b4884a; font-weight: 700; }
 .u-sec { font-size: 12px; font-weight: 600; color: var(--ink); margin: 12px 0 6px; }

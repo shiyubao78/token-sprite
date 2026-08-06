@@ -28,6 +28,13 @@ describe('formatYuan 展示', () => {
     expect(formatYuan(3.44)).toBe('¥3.4');
     expect(formatYuan(0)).toBe('¥0');
   });
+  it('大额用万/亿缩写（防折行）', () => {
+    expect(formatYuan(68170)).toBe('¥6.8万');
+    expect(formatYuan(10000)).toBe('¥1万');
+    expect(formatYuan(9999)).toBe('¥9,999'); // 不到万仍用千分位
+    expect(formatYuan(1234000)).toBe('¥123万'); // ≥100万取整
+    expect(formatYuan(250000000)).toBe('¥2.5亿');
+  });
 });
 
 describe('budgetView 预算进度', () => {

@@ -144,8 +144,8 @@ export function usageHTML(vm) {
       <div class="u-stat"><div class="u-n">${fmt(u.week)}</div><div class="u-l">最近 7 天</div></div>
     </div>
     <div class="u-stat-row">
-      <div class="u-stat"><div class="u-n">${formatYuan(c.todayCost)}</div><div class="u-l">今日花费 · 约</div></div>
-      <div class="u-stat"><div class="u-n">${formatYuan(c.weekCost)}</div><div class="u-l">最近 7 天 · 约</div></div>
+      <div class="u-stat"><div class="u-n"><span class="approx">约</span>${formatYuan(c.todayCost)}</div><div class="u-l">今日花费</div></div>
+      <div class="u-stat"><div class="u-n"><span class="approx">约</span>${formatYuan(c.weekCost)}</div><div class="u-l">近 7 天花费</div></div>
     </div>
     ${budgetBlock}
     <div class="u-sec">按工具</div>

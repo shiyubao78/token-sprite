@@ -9,11 +9,18 @@ export function estimateCost(tokens, rate) {
   return (t / 1_000_000) * r;
 }
 
-// 展示：<10 元保留一位小数（看得出在动），否则取整带千分位。
+// 展示：大额用「万/亿」缩写（省宽、防折行），<10 元保留一位小数（看得出在动），中间取整带千分位。
 export function formatYuan(n) {
   const v = Number.isFinite(n) && n > 0 ? n : 0;
+  if (v >= 100_000_000) return '¥' + trimWan(v / 100_000_000) + '亿';
+  if (v >= 10_000) return '¥' + trimWan(v / 10_000) + '万';
   if (v > 0 && v < 10) return '¥' + v.toFixed(1).replace(/\.0$/, '');
   return '¥' + Math.round(v).toLocaleString('en-US');
+}
+// 万/亿 缩写：≥100 取整带千分位，否则一位小数并去掉多余的 0。
+function trimWan(x) {
+  if (x >= 100) return Math.round(x).toLocaleString('en-US');
+  return x.toFixed(1).replace(/\.0$/, '');
 }
 
 // 今日花费 / 预算 的进度视图。budget 为空 = 没设。
