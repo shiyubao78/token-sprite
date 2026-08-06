@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --gold: #ffd27a;
+    --gold-bright: #ffe6ad;
+    --cyan: #7fe3ff;
+    --ink: #eaf2ff;
+    --muted: #9fb0d8;
+  }
+  html, body { width: 1500px; height: 2000px; }
+  body {
+    font-family: "Helvetica Neue", Arial, "PingFang SC", sans-serif;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 900px at 50% 40%, #2a2470 0%, #1a1848 45%, #0d0b2b 100%),
+      linear-gradient(180deg, #0e0c2e 0%, #14103a 100%);
+    color: var(--ink);
+  }
+  /* star field */
+  .stars { position: absolute; inset: 0; }
+  .star { position: absolute; background: #fff; border-radius: 50%; opacity: .0; }
+
+  /* ---- top text ---- */
+  .top { position: absolute; top: 96px; left: 0; right: 0; text-align: center; z-index: 5; }
+  .kicker {
+    font-size: 26px; letter-spacing: 10px; color: var(--cyan);
+    font-weight: 700; text-transform: uppercase; margin-bottom: 26px; opacity: .9;
+  }
+  .title {
+    font-size: 128px; line-height: .96; font-weight: 900; letter-spacing: 2px;
+    color: var(--gold-bright);
+    text-shadow: 0 0 30px rgba(255,196,90,.55), 0 0 70px rgba(255,170,60,.35), 0 6px 0 rgba(0,0,0,.25);
+    transform: scaleX(.92);
+  }
+  .subtitle {
+    margin-top: 34px; font-size: 34px; font-weight: 500; letter-spacing: 3px;
+    color: var(--ink); opacity: .92;
+  }
+
+  /* ---- central stage ---- */
+  .stage { position: absolute; top: 470px; left: 0; right: 0; height: 900px; z-index: 3; }
+  .glow {
+    position: absolute; left: 50%; top: 50%; width: 760px; height: 760px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(150,230,255,.55) 0%, rgba(120,160,255,.28) 32%, rgba(80,90,200,0) 66%);
+    filter: blur(4px);
+  }
+  .rays {
+    position: absolute; left: 50%; top: 50%; width: 900px; height: 900px;
+    transform: translate(-50%, -50%);
+    background: conic-gradient(from 0deg, rgba(255,255,255,.10), rgba(255,255,255,0) 12deg, rgba(255,255,255,.10) 24deg, rgba(255,255,255,0) 36deg);
+    opacity: .35; mask: radial-gradient(circle, #000 30%, transparent 62%);
+    -webkit-mask: radial-gradient(circle, #000 30%, transparent 62%);
+  }
+  .egg {
+    position: absolute; left: 50%; top: 50%; width: 300px;
+    transform: translate(-50%, -52%);
+    filter: drop-shadow(0 0 34px rgba(180,235,255,.9)) drop-shadow(0 0 70px rgba(255,214,122,.5));
+    z-index: 4;
+  }
+  .crack {
+    position: absolute; left: 50%; top: 50%; width: 300px; height: 300px;
+    transform: translate(-50%, -52%); z-index: 5; pointer-events: none;
+  }
+
+  /* six surrounding silhouettes */
+  .sil { position: absolute; width: 210px; z-index: 2; }
+  .sil img {
+    width: 100%; display: block;
+    filter: brightness(.32) contrast(1.15) saturate(1.2)
+            drop-shadow(0 0 18px var(--rim)) drop-shadow(0 0 4px rgba(0,0,0,.6));
+    opacity: .96;
+  }
+  /* ring positions around the egg (stage is 1500x900, center ~750,450) */
+  .p1 { left: 620px;  top: -40px;  --rim: rgba(140,255,180,.75); }   /* top - flower */
+  .p2 { left: 1010px; top: 130px;  --rim: rgba(120,220,255,.75); width: 200px; } /* top-right - shell */
+  .p3 { left: 1070px; top: 520px;  --rim: rgba(255,150,90,.8); }     /* bottom-right - fire */
+  .p4 { left: 610px;  top: 660px;  --rim: rgba(255,225,120,.85); width: 230px;} /* bottom - mech */
+  .p5 { left: 150px;  top: 520px;  --rim: rgba(180,150,255,.8); }    /* bottom-left - ice */
+  .p6 { left: 100px;  top: 120px;  --rim: rgba(150,210,255,.8); }    /* top-left - thunder */
+
+  /* ---- evolution chain ---- */
+  .evo { position: absolute; left: 0; right: 0; top: 1410px; z-index: 5; text-align: center; }
+  .evo-label {
+    font-size: 22px; letter-spacing: 8px; color: var(--muted); text-transform: uppercase;
+    margin-bottom: 22px; font-weight: 700;
+  }
+  .chain { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .chain .node { width: 116px; text-align: center; }
+  .chain .node img {
+    width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,.5));
+  }
+  .chain .node.small img { filter: drop-shadow(0 4px 12px rgba(0,0,0,.5)) brightness(1); }
+  .chain .arrow { color: var(--gold); font-size: 34px; opacity: .7; font-weight: 700; }
+  .chain .n1 { width: 74px; } .chain .n2 { width: 90px; } .chain .n3 { width: 104px; }
+  .chain .n4 { width: 116px; } .chain .n5 { width: 132px; }
+
+  /* ---- gameplay strip ---- */
+  .flow {
+    position: absolute; left: 0; right: 0; top: 1660px; text-align: center; z-index: 5;
+    font-size: 30px; letter-spacing: 6px; font-weight: 800; color: var(--gold-bright);
+    text-shadow: 0 0 18px rgba(255,200,100,.4);
+  }
+
+  /* ---- install card ---- */
+  .card {
+    position: absolute; left: 130px; right: 130px; bottom: 96px; z-index: 6;
+    background: linear-gradient(180deg, rgba(20,18,55,.92), rgba(12,10,38,.96));
+    border: 1.5px solid rgba(255,210,122,.5);
+    border-radius: 26px; padding: 34px 40px; text-align: center;
+    box-shadow: 0 18px 60px rgba(0,0,0,.5), inset 0 0 40px rgba(120,160,255,.08);
+  }
+  .card .tell {
+    font-size: 24px; letter-spacing: 6px; color: var(--cyan); font-weight: 700;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .card .cmd { font-size: 33px; font-weight: 800; color: var(--ink); letter-spacing: 1px; }
+  .card .cmd .install { color: var(--gold); }
+  .card .cmd .url { color: var(--gold-bright); text-decoration: underline; text-decoration-color: rgba(255,214,122,.45); text-underline-offset: 6px; }
+</style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <div class="top">
+    <div class="kicker">A desktop companion powered by real code</div>
+    <div class="title">WHO WILL<br />HATCH NEXT?</div>
+    <div class="subtitle">EVERY TOKEN YOU WRITE HELPS IT GROW.</div>
+  </div>
+
+  <div class="stage">
+    <div class="rays"></div>
+    <div class="glow"></div>
+
+    <div class="sil p1"><img data-adult="00-flower-spirit" /></div>
+    <div class="sil p2"><img data-adult="01-water-shell" /></div>
+    <div class="sil p3"><img data-adult="02-fire-lava" /></div>
+    <div class="sil p4"><img data-adult="04-mech-spirit" /></div>
+    <div class="sil p5"><img data-adult="05-ice-phoenix" /></div>
+    <div class="sil p6"><img data-adult="03-thunder-spirit" /></div>
+
+    <img class="egg" data-seed="00-flower-spirit" />
+    <svg class="crack" viewBox="0 0 300 300">
+      <path d="M150 70 L142 120 L162 150 L138 185 L152 230"
+            fill="none" stroke="rgba(255,245,200,.9)" stroke-width="4"
+            stroke-linecap="round" stroke-linejoin="round"
+            style="filter: drop-shadow(0 0 8px rgba(255,235,150,.9));" />
+    </svg>
+  </div>
+
+  <div class="evo">
+    <div class="evo-label">Five stages of growth</div>
+    <div class="chain">
+      <div class="node n1"><img data-stage="00-flower-spirit/1" /></div>
+      <span class="arrow">›</span>
+      <div class="node n2"><img data-stage="00-flower-spirit/2" /></div>
+      <span class="arrow">›</span>
+      <div class="node n3"><img data-stage="00-flower-spirit/3" /></div>
+      <span class="arrow">›</span>
+      <div class="node n4"><img data-stage="00-flower-spirit/4" /></div>
+      <span class="arrow">›</span>
+      <div class="node n5"><img data-stage="00-flower-spirit/5" /></div>
+    </div>
+  </div>
+
+  <div class="flow">CODE &nbsp;·&nbsp; HATCH &nbsp;·&nbsp; EVOLVE &nbsp;·&nbsp; COLLECT</div>
+
+  <div class="card">
+    <div class="tell">Tell your agent:</div>
+    <div class="cmd"><span class="install">INSTALL</span> <span class="url">github.com/shiyubao78/token-sprite</span></div>
+  </div>
+
+  <script>
+    // starfield
+    const sf = document.getElementById('stars');
+    for (let i = 0; i < 140; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      const sz = Math.random() * 2.4 + 0.6;
+      s.style.width = s.style.height = sz + 'px';
+      s.style.left = Math.random() * 1500 + 'px';
+      s.style.top = Math.random() * 2000 + 'px';
+      s.style.opacity = (Math.random() * 0.6 + 0.15).toFixed(2);
+      sf.appendChild(s);
+    }
+    // wire image srcs from absolute asset base
+    const BASE = 'file:///Users/user/Game/TokenSprite/assets/sprite/';
+    document.querySelectorAll('[data-adult]').forEach(el => { el.src = BASE + el.dataset.adult + '/5-adult.png'; });
+    document.querySelectorAll('[data-seed]').forEach(el => { el.src = BASE + el.dataset.seed + '/1-seed.png'; });
+    document.querySelectorAll('[data-stage]').forEach(el => {
+      const [folder, n] = el.dataset.stage.split('/');
+      const names = { 1:'1-seed', 2:'2-sprout', 3:'3-growth', 4:'4-bud', 5:'5-adult' };
+      el.src = BASE + folder + '/' + names[n] + '.png';
+    });
+  </script>
+</body>
+</html>
