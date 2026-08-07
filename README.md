@@ -25,7 +25,7 @@ Write code, earn real tokens, hatch mystery eggs, evolve through five stages, an
 Choose an egg and feed it with the tokens you actually use, from first crack to final form.
 
 <div align="center">
-<img src="assets/readme/evolution-flower.png" width="720" alt="Five stages: egg, hatchling, growth, bud, and final form" />
+<img src="assets/readme/evolution-flower-en.png" width="720" alt="Five stages: egg, hatch, growing, bud, and awakened final form" />
 </div>
 
 Six elements, six complete evolution lines: flora, ocean, magma, thunder, mech, and ice. You won't know who's inside until the egg hatches.
