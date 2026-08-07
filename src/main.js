@@ -371,6 +371,16 @@ function openIncubator() {
       if (egg) openEvolution(egg);
     });
   });
+  mask.querySelectorAll('[data-set]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); // 别触发行的"打开详情"
+      setActiveEgg(state, btn.getAttribute('data-set'), growthTotal());
+      savePet(state);
+      close();
+      render();
+      openIncubator(); // 刷新列表，新在养的置顶高亮
+    });
+  });
   mask.querySelector('#mergeBtn')?.addEventListener('click', () => {
     const res = mergeDuplicates(state);
     if (!res) return;
