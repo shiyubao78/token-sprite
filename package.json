@@ -1,7 +1,7 @@
 {
   "name": "token-sprite",
   "private": true,
-  "version": "0.3.9",
+  "version": "0.4.0",
   "description": "一只会从本地 AI 编程 token 用量中成长的桌面小精灵",
   "author": "shiyubao78",
   "license": "SEE LICENSE IN LICENSE",
