@@ -115,6 +115,12 @@ function setAutoLaunch(on) {
   } catch { return false; }
 }
 
+// 主进程 UI（托盘/更新弹窗）跟随系统语言：zh* → 中文，其余 → 英文。
+// （渲染层可在菜单里手动切语言，主进程这层为简单起见按系统语言走。）
+function appLocale() {
+  return /^zh/i.test(app.getLocale()) ? 'zh' : 'en';
+}
+
 function createTray() {
   if (process.platform !== 'darwin') return;
   const icon = nativeImage
@@ -130,6 +136,7 @@ function createTray() {
     onCheckUpdates: () => updateController.check({ userInitiated: true }),
     onToggleAutoLaunch: setAutoLaunch,
     onQuit: () => app.quit(),
+    locale: appLocale(),
   })));
   tray.on('click', recallSprite);
 }
@@ -156,6 +163,7 @@ function initializeUpdates() {
     dialog,
     openExternal: (url) => shell.openExternal(url),
     isEnabled: app.isPackaged,
+    locale: appLocale(),
   });
 }
 

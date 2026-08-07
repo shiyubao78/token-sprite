@@ -1,3 +1,9 @@
+// 托盘菜单模板。labels 随 locale（'zh' | 'en'）切换，默认中文。
+const T = {
+  zh: { recall: '召回小精灵', check: '检查更新', auto: '开机启动', version: (v) => `当前版本 ${v}`, quit: '退出' },
+  en: { recall: 'Recall sprite', check: 'Check for updates', auto: 'Launch at login', version: (v) => `Version ${v}`, quit: 'Quit' },
+};
+
 export function createTrayMenuTemplate({
   version,
   autoLaunch,
@@ -6,25 +12,27 @@ export function createTrayMenuTemplate({
   onCheckUpdates,
   onToggleAutoLaunch,
   onQuit,
+  locale = 'zh',
 }) {
+  const t = T[locale] || T.zh;
   return [
-    { id: 'recall', label: '召回小精灵', click: onRecall },
+    { id: 'recall', label: t.recall, click: onRecall },
     {
       id: 'check-updates',
-      label: '检查更新',
+      label: t.check,
       enabled: updateEnabled,
       click: onCheckUpdates,
     },
     { type: 'separator' },
     {
       id: 'auto-launch',
-      label: '开机启动',
+      label: t.auto,
       type: 'checkbox',
       checked: autoLaunch,
       click: (item) => onToggleAutoLaunch(item.checked),
     },
-    { id: 'version', label: `当前版本 ${version}`, enabled: false },
+    { id: 'version', label: t.version(version), enabled: false },
     { type: 'separator' },
-    { id: 'quit', label: '退出', click: onQuit },
+    { id: 'quit', label: t.quit, click: onQuit },
   ];
 }

@@ -1,6 +1,6 @@
 import './style.css';
 import { computeMood, pickBubble, ACTIVE_MS, RETURN_IDLE_MS, BURST_TOKENS } from './domain/mood.js';
-import { incubation, incubationStage, evolution, STAGE_NAMES } from './domain/incubation.js';
+import { incubation, incubationStage, evolution, stageName } from './domain/incubation.js';
 import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicates, mergeableGroups, normalizeSpecies } from './domain/incubator.js';
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
 import { petInteract, settleBondLevel, bondView, activateBond, BOND_LEVELS } from './domain/bond.js';
@@ -10,8 +10,9 @@ import { loadPet, savePet } from './services/pet-store.js';
 import { LocalUsageSource } from './services/token-source.js';
 import { stageUrl, adultUrl } from './services/sprites.js';
 import { RARITY } from './config/rarities.js';
-import { SPECIES, speciesByKey } from './config/species.js';
+import { SPECIES, speciesByKey, DEFAULT_NICKS } from './config/species.js';
 import { ACHIEVEMENTS } from './config/achievements.js';
+import { L, setLocale, getLocale, detectLocale } from './config/i18n.js';
 import {
   mainHTML, peekHTML, menuHTML, gachaHTML, incubatorHTML, collectionHTML, achievementsHTML, evolutionHTML, bondHTML, usageHTML,
 } from './ui/views.js';
@@ -21,6 +22,8 @@ const source = new LocalUsageSource();
 
 let state = loadPet();
 if (normalizeSpecies(state)) savePet(state); // 迁移旧存档里已废弃的品种键
+// 语言：存档里有手动选择就用它，否则跟随系统语言（zh* → 中文，其余 → 英文）。
+setLocale((state.settings && state.settings.locale) || detectLocale(globalThis.tokenSprite?.locale || globalThis.navigator?.language));
 let usage = { total: 0, recentTokens: 0, todayTokens: 0, lastActivityAt: Date.now(), breakdown: [] };
 let collapsed = false;
 
@@ -28,13 +31,13 @@ let activeSince = 0;
 let prevIdleMs = Infinity;
 let sessionMinutesNow = 0;
 const mem = { greetDate: state.greetDate || null, restSession: 0, nightSession: 0, lastBubbleAt: 0 };
-// 逗它的台词按羁绊等级变暖：越亲越黏人。
+// 逗它的台词按羁绊等级变暖：越亲越黏人。双语，按当前语言取。
 const INTERACT_LINES = {
-  1: ['你好呀～', '嘿，戳我干嘛😳', '码力充沛，继续冲！'],
-  2: ['又见面啦！', '今天也在悄悄长大～', '陪你写代码最开心'],
-  3: ['你来啦～我一直在', '就喜欢你戳我 💚', '有你在真好'],
-  4: ['宝子，别太累哦', '我最粘你啦～', '你敲的每个 token 我都收到啦'],
-  5: ['最好的搭子就是你 💞', '一直一直陪着你', '有你这一路，值了'],
+  1: { zh: ['你好呀～', '嘿，戳我干嘛😳', '码力充沛，继续冲！'], en: ['Hi there~', 'Hey, why the poke 😳', 'Full of code-energy, keep going!'] },
+  2: { zh: ['又见面啦！', '今天也在悄悄长大～', '陪你写代码最开心'], en: ['We meet again!', 'Quietly growing today~', 'Love coding alongside you'] },
+  3: { zh: ['你来啦～我一直在', '就喜欢你戳我 💚', '有你在真好'], en: ['You’re here~ I’ve been waiting', 'I like it when you poke me 💚', 'So glad you’re around'] },
+  4: { zh: ['宝子，别太累哦', '我最粘你啦～', '你敲的每个 token 我都收到啦'], en: ['Don’t overwork, buddy', 'I’m so clingy with you~', 'I feel every token you type'] },
+  5: { zh: ['最好的搭子就是你 💞', '一直一直陪着你', '有你这一路，值了'], en: ['You’re the best partner 💞', 'Always, always by your side', 'This whole journey with you — worth it'] },
 };
 
 function growthTotal() {
@@ -69,7 +72,7 @@ function deriveVm() {
     // 稀有度以品种为准（修旧存档存歪的 rarity）；进度用这只自己的累积喂养，非在养也保留
     const inc = incubation(e.fed, sp.rarity);
     const stageNo = incubationStage(inc.fraction);
-    return { id: e.id, rarity: sp.rarity, active, percent: pct(inc.fraction), stageNo, stageName: STAGE_NAMES[stageNo - 1], speciesName: sp.name, nick: sp.nick, thumbUrl: stageUrl(sp.folder, stageNo) };
+    return { id: e.id, rarity: sp.rarity, active, percent: pct(inc.fraction), stageNo, stageName: stageName(stageNo), speciesName: sp.name, nick: sp.nick, thumbUrl: stageUrl(sp.folder, stageNo) };
   });
 
   let mode, egg = null, pet = null;
@@ -89,7 +92,7 @@ function deriveVm() {
       speciesName: sp.name,
       nick: sp.nick,
       stageNo,
-      stageName: STAGE_NAMES[stageNo - 1],
+      stageName: stageName(stageNo),
       stageUrl: stageUrl(sp.folder, stageNo),
     };
   } else {
@@ -99,9 +102,9 @@ function deriveVm() {
   }
 
   // 名字跟着当前这只走：默认用它的昵称；若用户手动改过名（不是任何品种默认昵称）则用自定义名。
+  // 用双语默认昵称集合判断，切语言后旧的默认昵称也能识别、不会被误当自定义名。
   const creatureNick = mode === 'incubating' ? egg.nick : pet.nick;
-  const speciesNicks = SPECIES.map((s) => s.nick);
-  const displayName = (state.petName && !speciesNicks.includes(state.petName)) ? state.petName : creatureNick;
+  const displayName = (state.petName && !DEFAULT_NICKS.includes(state.petName)) ? state.petName : creatureNick;
 
   return {
     petName: displayName,
@@ -215,7 +218,7 @@ function interact() {
   }
   if (petInteract(state, todayStr())) savePet(state); // 逗它 +亲密度（每日上限内）
   const lv = bondView(state, growthTotal()).level;
-  const pool = INTERACT_LINES[lv] || INTERACT_LINES[1];
+  const pool = L(INTERACT_LINES[lv] || INTERACT_LINES[1]);
   setBubble(pool[Math.floor(Math.random() * pool.length)]);
 }
 
@@ -280,11 +283,11 @@ async function sync() {
   if (hatched && !collapsed) {
     showHatch(hatched);
   } else if (bondStarted) {
-    setTimeout(() => setBubble('💞 我们的关系，从今天开始记录～'), 300);
+    setTimeout(() => setBubble(L({ zh: '💞 我们的关系，从今天开始记录～', en: '💞 Our story starts today~' })), 300);
   } else if (bondUp) {
-    setTimeout(() => setBubble(`💞 羁绊升到 Lv.${bondUp.level} ${bondUp.name}！`), 300);
+    setTimeout(() => setBubble(L({ zh: `💞 羁绊升到 Lv.${bondUp.level} ${bondUp.name}！`, en: `💞 Bond up to Lv.${bondUp.level} ${bondUp.name}!` })), 300);
   } else if (ach.newly.length) {
-    setTimeout(() => setBubble('🏆 达成成就：' + ach.newly[0].name), 300);
+    setTimeout(() => setBubble(L({ zh: '🏆 达成成就：', en: '🏆 Achievement: ' }) + ach.newly[0].name), 300);
   } else if (bubble) {
     mem.lastBubbleAt = now;
     if (bubble.set) { Object.assign(mem, bubble.set); if (bubble.set.greetDate) { state.greetDate = bubble.set.greetDate; savePet(state); } }
@@ -298,11 +301,11 @@ function showHatch(h) {
   mask.className = 'evolve-mask nodrag';
   const url = sp ? adultUrl(sp.folder) : null;
   mask.innerHTML = `
-    <div class="spark">✨ 破壳！</div>
+    <div class="spark">${L({ zh: '✨ 破壳！', en: '✨ Hatched!' })}</div>
     <div class="cap" style="color:${RARITY[h.rarity].color}">${RARITY[h.rarity].name}</div>
     ${url ? `<img src="${url}" alt="${sp.name}" />` : ''}
-    <div class="name">${sp ? sp.name : '新伙伴'}</div>
-    <div class="tip">已收进图鉴 · 轻触继续</div>`;
+    <div class="name">${sp ? sp.name : L({ zh: '新伙伴', en: 'New friend' })}</div>
+    <div class="tip">${L({ zh: '已收进图鉴 · 轻触继续', en: 'Added to your collection · tap to continue' })}</div>`;
   mask.addEventListener('click', () => { mask.remove(); render(); });
   document.body.appendChild(mask);
 }
@@ -332,10 +335,19 @@ function openMenu() {
     mask.querySelector('#quitBtn')?.addEventListener('click', () => { if (globalThis.tokenSprite?.quit) globalThis.tokenSprite.quit(); else close(); });
     const autoBtn = mask.querySelector('#autoBtn');
     if (autoBtn && globalThis.tokenSprite?.getAutoLaunch) {
-      const paint = (on) => { autoBtn.textContent = on ? '已开启' : '已关闭'; autoBtn.classList.toggle('on', !!on); };
+      const paint = (on) => { autoBtn.textContent = on ? L({ zh: '已开启', en: 'On' }) : L({ zh: '已关闭', en: 'Off' }); autoBtn.classList.toggle('on', !!on); };
       globalThis.tokenSprite.getAutoLaunch().then(paint);
       autoBtn.addEventListener('click', async () => { paint(await globalThis.tokenSprite.setAutoLaunch(!autoBtn.classList.contains('on'))); });
     }
+    mask.querySelector('#langBtn')?.addEventListener('click', () => {
+      const next = getLocale() === 'en' ? 'zh' : 'en';
+      setLocale(next);
+      state.settings = { ...state.settings, locale: next };
+      savePet(state);
+      close();
+      render();
+      openMenu(); // 用新语言重开菜单，即时看到切换效果
+    });
   });
 }
 
@@ -350,7 +362,7 @@ function openGacha() {
       const sp = speciesByKey(res.egg.species);
       const rc = RARITY[res.egg.rarity];
       const box = mask.querySelector('#gachaResult');
-      if (box) { box.innerHTML = `🎉 开出 <b style="color:${rc.color}">${rc.name}</b> · ${sp ? sp.name : '神秘蛋'}！去孵化器养它化形`; box.classList.add('pop'); }
+      if (box) { box.innerHTML = L({ zh: `🎉 开出 <b style="color:${rc.color}">${rc.name}</b> · ${sp ? sp.name : '神秘蛋'}！去孵化器养它化形`, en: `🎉 Got a <b style="color:${rc.color}">${rc.name}</b> · ${sp ? sp.name : 'mystery egg'}! Raise it in the incubator` }); box.classList.add('pop'); }
       // 刷新券数
       mask.querySelectorAll('[data-draw]').forEach((b2) => {
         const rr = b2.getAttribute('data-draw');
@@ -388,7 +400,7 @@ function openIncubator() {
     const total = res.merged.reduce((s, m) => s + m.count, 0);
     close();
     render();
-    setBubble(`✨ 合并 ${total} 只 · 进度 +${formatNeed(res.totalGained)} token`);
+    setBubble(L({ zh: `✨ 合并 ${total} 只 · 进度 +${formatNeed(res.totalGained)} token`, en: `✨ Merged ${total} · progress +${formatNeed(res.totalGained)} tokens` }));
   });
 }
 

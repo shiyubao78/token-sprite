@@ -1,4 +1,5 @@
 import { RARITY } from '../config/rarities.js';
+import { L } from '../config/i18n.js';
 
 // 孵化进度：这颗蛋累计被喂了多少 token / 该稀有度门槛。
 // fed 是「这只自己的」累积喂养量（切换在养对象也不清零），由 incubator.accrue 维护。
@@ -16,7 +17,17 @@ export function incubationStage(fraction) {
   return Math.min(4, Math.floor(f * 4) + 1);
 }
 
-export const STAGE_NAMES = ['蛋', '幼体', '成长', '蓄能', '化形'];
+// 5 段名（双语）。取第 n 段的当前语言名用 stageName(n)。
+export const STAGE_NAMES = [
+  { zh: '蛋', en: 'Egg' },
+  { zh: '幼体', en: 'Hatchling' },
+  { zh: '成长', en: 'Growing' },
+  { zh: '蓄能', en: 'Charging' },
+  { zh: '化形', en: 'Awakened' },
+];
+export function stageName(no) {
+  return L(STAGE_NAMES[no - 1]);
+}
 
 // 每只精灵的「进化详情」：由这只累计喂养 fed + 稀有度门槛，实时算出 5 段的解锁状态与到下一段的距离。
 // state：done=已过 / current=当前(带本段进度) / locked=未到的中间段(灰剪影) / mystery=未到的化形(藏成 ?)。
@@ -32,12 +43,12 @@ export function evolution(fed, rarity) {
     if (n < current) state = 'done';
     else if (n === current) state = 'current';
     else state = n === 5 ? 'mystery' : 'locked';
-    const stage = { no: n, name: STAGE_NAMES[n - 1], threshold, state };
+    const stage = { no: n, name: stageName(n), threshold, state };
     if (state === 'current' && n < 5) {
       const start = (n - 1) / 4;
       const end = n / 4;
       stage.withinPct = Math.max(0, Math.min(1, (fraction - start) / (end - start)));
-      stage.nextName = STAGE_NAMES[n]; // 下一段的名字
+      stage.nextName = stageName(n + 1); // 下一段的名字
       stage.nextThreshold = (n / 4) * need;
       stage.toNext = Math.max(0, stage.nextThreshold - f);
     }

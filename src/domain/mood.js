@@ -1,3 +1,5 @@
+import { L } from '../config/i18n.js';
+
 export const ACTIVE_MS = 12 * 60 * 1000; // 12 分钟内有活动 = 正在敲
 export const RETURN_IDLE_MS = 2 * 60 * 60 * 1000; // 久别 = 2 小时
 export const BURST_TOKENS = 5_000_000; // 最近 15 分钟超过这个量 = 火力全开
@@ -18,14 +20,30 @@ export function computeMood({ idleMs, hour, sessionMinutes, recentTokens, decaye
 }
 
 const LINES = {
-  morning: ['早，新的一天～ 🌱', '早呀，今天也一起加油！', '醒啦？我等你好久咯'],
-  night: ['这么晚了…注意身体呀 🌙', '夜深了，别太拼，我陪着你', '熬夜伤身，早点歇呀'],
-  rest: ['敲挺久啦，起来接杯水？', '连轴转好久了，伸个懒腰吧', '歇会儿眼睛，我看着进度～'],
-  welcome: ['你回来啦～想你了', '嘿，等你好久！', '回来就好，继续冲～'],
-  burst: ['刚刚好猛！🔥', '火力全开，我都跟着长了！', '这波输出可以啊！'],
+  morning: {
+    zh: ['早，新的一天～ 🌱', '早呀，今天也一起加油！', '醒啦？我等你好久咯'],
+    en: ['Morning! A fresh new day 🌱', 'Morning! Let’s do this together', 'You’re up! I’ve been waiting'],
+  },
+  night: {
+    zh: ['这么晚了…注意身体呀 🌙', '夜深了，别太拼，我陪着你', '熬夜伤身，早点歇呀'],
+    en: ['So late… take care of yourself 🌙', 'It’s late — don’t push too hard, I’m here', 'Late nights are rough, get some rest soon'],
+  },
+  rest: {
+    zh: ['敲挺久啦，起来接杯水？', '连轴转好久了，伸个懒腰吧', '歇会儿眼睛，我看着进度～'],
+    en: ['You’ve been at it a while — grab some water?', 'Long stretch! Time for a good stretch', 'Rest your eyes a sec, I’ll watch the progress'],
+  },
+  welcome: {
+    zh: ['你回来啦～想你了', '嘿，等你好久！', '回来就好，继续冲～'],
+    en: ['You’re back~ missed you', 'Hey, been waiting for you!', 'Good to have you back — let’s go'],
+  },
+  burst: {
+    zh: ['刚刚好猛！🔥', '火力全开，我都跟着长了！', '这波输出可以啊！'],
+    en: ['That was intense! 🔥', 'Full throttle — I grew right along!', 'Now that’s some output!'],
+  },
 };
 function pick(pool) {
-  return pool[Math.floor(Math.random() * pool.length)];
+  const arr = Array.isArray(pool) ? pool : L(pool);
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 // 挑一条情境台词。sig: {active,hour,sessionMinutes,burst,justReturned,today,sessionId}

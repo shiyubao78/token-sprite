@@ -22,12 +22,32 @@ export function compareVersions(a, b) {
   return 0;
 }
 
+const DIALOG_TEXT = {
+  zh: {
+    download: '去下载', later: '稍后', gotIt: '知道了',
+    newVersion: (v) => `发现新版本 ${v}`,
+    newDetail: '打开下载页获取最新版，拖进「应用程序」覆盖即可，成长数据会保留。',
+    latest: '已经是最新版本',
+    failTitle: '暂时无法检查更新',
+    failDetail: '请检查网络后稍后再试，小精灵可以继续正常使用。',
+  },
+  en: {
+    download: 'Download', later: 'Later', gotIt: 'Got it',
+    newVersion: (v) => `New version ${v} available`,
+    newDetail: 'Open the download page for the latest build; drag it into Applications to replace — your progress is kept.',
+    latest: 'You’re on the latest version',
+    failTitle: 'Couldn’t check for updates',
+    failDetail: 'Check your connection and try again later. The sprite keeps working fine.',
+  },
+};
+
 export function createUpdateController({
   currentVersion,
   fetchLatest, // async () => { version, url } | null（null 表示还没有发布任何版本）
   dialog,
   openExternal, // async (url) => void
   isEnabled,
+  locale = 'zh',
   startupDelayMs = 30_000,
   intervalMs = 6 * 60 * 60 * 1000,
   setTimeoutFn = setTimeout,
@@ -35,6 +55,7 @@ export function createUpdateController({
   clearTimeoutFn = clearTimeout,
   clearIntervalFn = clearInterval,
 }) {
+  const tx = DIALOG_TEXT[locale] || DIALOG_TEXT.zh;
   let startupTimer = null;
   let intervalTimer = null;
   let checking = false;
@@ -51,22 +72,22 @@ export function createUpdateController({
       const hasNewer = latest && latest.version && compareVersions(currentVersion, latest.version) < 0;
       if (hasNewer) {
         const { response } = await show({
-          buttons: ['去下载', '稍后'],
-          message: `发现新版本 ${latest.version}`,
-          detail: '打开下载页获取最新版，拖进「应用程序」覆盖即可，成长数据会保留。',
+          buttons: [tx.download, tx.later],
+          message: tx.newVersion(latest.version),
+          detail: tx.newDetail,
         });
         if (response === 0) await openExternal(latest.url);
       } else if (userInitiated) {
-        await show({ buttons: ['知道了'], cancelId: 0, message: '已经是最新版本' });
+        await show({ buttons: [tx.gotIt], cancelId: 0, message: tx.latest });
       }
     } catch {
       if (userInitiated) {
         await show({
           type: 'warning',
-          buttons: ['知道了'],
+          buttons: [tx.gotIt],
           cancelId: 0,
-          message: '暂时无法检查更新',
-          detail: '请检查网络后稍后再试，小精灵可以继续正常使用。',
+          message: tx.failTitle,
+          detail: tx.failDetail,
         });
       }
     } finally {

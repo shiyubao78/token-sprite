@@ -1,18 +1,29 @@
 // 亲密度 / 羁绊系统：化形之后「关系的开始」。只涨不掉——回落交给心情，不扣亲密度。
 // 驱动 = 写代码 + 逗它（方案 B，越常写越常逗越快变亲）。
 
+import { L } from '../config/i18n.js';
+
 const M = 1_000_000;
 
 export const CODE_PER_POINT = 20 * M;   // 每写 20M token +1 亲密度
 export const INTERACT_DAILY_CAP = 15;   // 逗它每天最多 +15（防狂点刷）
 
-// 5 段羁绊：达到 min 分即该等级。每级解锁在 UI/台词里体现。
+const T = (zh, en) => ({ zh, en });
+function mk(o) {
+  return {
+    ...o,
+    get name() { return L(o._name); },
+    get unlock() { return L(o._unlock); },
+  };
+}
+
+// 5 段羁绊：达到 min 分即该等级。name/unlock 双语，调用点仍用 .name / .unlock。
 export const BOND_LEVELS = [
-  { level: 1, name: '初识', min: 0, unlock: '刚认识，慢慢熟悉中' },
-  { level: 2, name: '熟络', min: 20, unlock: '会更主动跟你打招呼' },
-  { level: 3, name: '亲近', min: 60, unlock: '开始用昵称叫你' },
-  { level: 4, name: '依赖', min: 150, unlock: '有了专属口头禅' },
-  { level: 5, name: '羁绊', min: 300, unlock: '纪念日特别反应 + 专属称号' },
+  mk({ level: 1, min: 0, _name: T('初识', 'Acquainted'), _unlock: T('刚认识，慢慢熟悉中', 'Just met — warming up') }),
+  mk({ level: 2, min: 20, _name: T('熟络', 'Familiar'), _unlock: T('会更主动跟你打招呼', 'Greets you more often') }),
+  mk({ level: 3, min: 60, _name: T('亲近', 'Close'), _unlock: T('开始用昵称叫你', 'Starts calling you by name') }),
+  mk({ level: 4, min: 150, _name: T('依赖', 'Attached'), _unlock: T('有了专属口头禅', 'Has a catchphrase just for you') }),
+  mk({ level: 5, min: 300, _name: T('羁绊', 'Bonded'), _unlock: T('纪念日特别反应 + 专属称号', 'Anniversary surprises + a special title') }),
 ];
 
 function ensureBond(state) {
