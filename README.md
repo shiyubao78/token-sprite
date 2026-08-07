@@ -91,7 +91,7 @@ Fully local, no login — one floating window: rename, draw, hatch, collect, ear
 | 🏠 主界面 / Main | 桌面悬浮桌宠，实时显示孵化进度（精确到 0.01%）/ Floating pet with live hatch progress (down to 0.01%) |
 | ⚙️ 菜单 / Menu | 给精灵改名、进入各功能、开关开机自启 / Rename your sprite, open features, toggle auto-launch |
 | 🎴 抽卡 / Gacha | 用成就攒的券抽不同稀有度的蛋 / Spend achievement tickets to draw eggs of varying rarity |
-| 🥚 孵化器 / Incubator | 多颗蛋切换养，各记各的进度、不清零 / Raise multiple eggs, each keeps its own progress |
+| 🥚 孵化器 / Incubator | 一键把某颗蛋「设为在养」，多颗切换各记进度、不清零 / One tap to set an egg active; switch anytime, each keeps its own progress |
 | 📖 图鉴 / Collection | 收集 6 种精灵，点已获得的让它陪伴 / Collect 6 species; tap an owned one to make it your companion |
 | 🏆 成就 / Achievements | 达成条件得券，全用真实 token 用量判定 / Earn tickets by hitting milestones, all judged on real token usage |
 | 📊 用量洞察 / Usage | 今日 / 最近 7 天用量、按工具占比、活跃时段，还有花费估算 / Today & 7-day usage, per-tool split, active hours, plus a rough cost estimate |

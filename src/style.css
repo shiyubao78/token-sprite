@@ -35,7 +35,7 @@ body {
   height: 24px; padding: 0 2px; cursor: grab;
 }
 .dragbar:active { cursor: grabbing; }
-.bar-btns { display: flex; gap: 4px; }
+.bar-btns { display: flex; gap: 4px; align-items: center; }
 
 body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .peek {
