@@ -4,7 +4,7 @@
 
 **English · [中文](README.zh-CN.md)**
 
-**Every token you write helps it grow.**
+**Burning tokens, growing neurons.**
 
 Turn your real AI-coding usage into a tiny desktop companion that hatches, evolves, and bonds with you — while showing how much you've written and roughly spent.
 

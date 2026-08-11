@@ -70,7 +70,7 @@ function view() {
   root.innerHTML = `
     <header class="jr-head">
       <div class="jr-title">${L({ zh: '🧠 成长日记', en: '🧠 Growth Journal' })}</div>
-      <div class="jr-sub">${L({ zh: '别只烧 token——也让它帮你长本事、帮你记事', en: 'Don’t just burn tokens — grow from them, and remember what matters' })}</div>
+      <div class="jr-sub">${L({ zh: '借 AI 的力，长自己的筋骨', en: 'Borrow the AI’s strength. Grow your own.' })}</div>
     </header>
     <button class="jr-gen" id="genBtn">${L({ zh: '生成今日小结 🌱', en: 'Generate today’s recap 🌱' })}</button>
     <div class="jr-msg" id="genMsg"></div>

@@ -4,7 +4,7 @@
 
 **[English](README.md) · 中文**
 
-**你写下的每个 Token，都在让它长大。**<br />
+**烧的是 token，长的是脑子。**<br />
 **Every token you write helps it grow.**
 
 把真实的 AI 编程用量变成一只住在桌面角落、一路破壳进化的小精灵——化形后和你结下羁绊，还顺手告诉你写了多少、花了多少。<br />
