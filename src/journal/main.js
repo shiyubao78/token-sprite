@@ -12,12 +12,15 @@ const root = document.getElementById('journal');
 const api = globalThis.tokenSprite;
 const asArr = (x) => (Array.isArray(x) ? x : []);
 const newId = () => 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const TODAY = todayKey();
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 let store = { days: {}, todos: [], memory: [] };
+let busy = false;
 let genMsg = '';
 
 function save() { try { api?.journalSaveLists?.({ todos: store.todos, memory: store.memory }); } catch {} }
@@ -31,7 +34,22 @@ function errMsg(reason) {
   return m[reason] || L({ zh: '生成失败了，稍后再试～', en: 'Something went wrong. Try again later.' });
 }
 
-function todosHtml() {
+function todaySection() {
+  const d = store.days[TODAY];
+  const know = d ? asArr(d.knowledge) : [];
+  let body;
+  if (busy) body = `<div class="jr-loading">${L({ zh: '小精灵在帮你回顾今天… 🌱', en: 'Your sprite is reviewing your day… 🌱' })}</div>`;
+  else if (know.length) body = know.map((k) => `<div class="jr-know"><b>${esc(k.term)}</b>${k.term && k.explain ? '：' : ''}${esc(k.explain)}</div>`).join('');
+  else body = `<div class="jr-muted">${genMsg ? esc(genMsg) : L({ zh: '还没生成今天的小结。', en: 'Today’s recap not generated yet.' })}</div>`;
+  const label = busy ? L({ zh: '生成中…', en: 'Generating…' }) : (d ? L({ zh: '🔄 重新生成今日', en: '🔄 Regenerate today' }) : L({ zh: '生成今日小结 🌱', en: 'Generate today 🌱' }));
+  return `<section class="jr-block">
+    <div class="jr-sec-h">🧠 ${L({ zh: '今日知识点', en: 'Today’s takeaways' })} <span class="jr-sec-hint">${L({ zh: '借 AI 的力，长自己的筋骨', en: 'grow your own strength' })}</span></div>
+    ${body}
+    <button class="jr-regen ${busy ? 'busy' : ''}" id="genBtn" ${busy ? 'disabled' : ''}>${label}</button>
+  </section>`;
+}
+
+function todosSection() {
   const items = store.todos.map((t) => `
     <div class="jr-todo ${t.done ? 'done' : ''}">
       <span class="jr-check" data-toggle="${t.id}">${t.done ? '☑' : '☐'}</span>
@@ -45,7 +63,7 @@ function todosHtml() {
   </section>`;
 }
 
-function memoryHtml() {
+function memorySection() {
   const items = store.memory.map((m) => `
     <div class="jr-mem">
       <span class="jr-dot">•</span>
@@ -59,57 +77,34 @@ function memoryHtml() {
   </section>`;
 }
 
-function dayHtml(date, d) {
-  const tools = (d.tools || []).join(' / ');
-  const meta = d.count ? L({ zh: `汇总 ${tools} 共 ${d.count} 条`, en: `${d.count} prompts · ${tools}` }) : '';
-  const know = asArr(d.knowledge).map((k) => `<div class="jr-know"><b>${esc(k.term)}</b>${k.term && k.explain ? '：' : ''}${esc(k.explain)}</div>`).join('');
-  const legacy = !d.summary && !know && d.text ? `<div class="jr-summary">${esc(d.text)}</div>` : '';
-  return `<article class="jr-entry">
-    <div class="jr-date">${esc(date)}${meta ? ` <span class="jr-meta">· ${esc(meta)}</span>` : ''}</div>
-    ${d.summary ? `<div class="jr-summary">${esc(d.summary)}</div>` : ''}
-    ${know ? `<div class="jr-know-h">🧠 ${L({ zh: '知识点', en: 'What to learn' })}</div>${know}` : ''}
-    ${legacy}
-  </article>`;
-}
-
-function daysHtml() {
-  const dates = Object.keys(store.days).sort().reverse();
-  if (!dates.length) return `<div class="jr-empty">${L({ zh: '点上面「生成今日小结」，开始记录你的成长轨迹 🌱', en: 'Tap “Generate today’s recap” to start your growth trail 🌱' })}</div>`;
-  return dates.map((d) => dayHtml(d, store.days[d])).join('');
-}
-
 function mount() {
   root.innerHTML = `
     <header class="jr-head">
       <div class="jr-title">${L({ zh: '🧠 成长日记', en: '🧠 Growth Journal' })}</div>
       <div class="jr-sub">${L({ zh: '借 AI 的力，长自己的筋骨', en: 'Borrow the AI’s strength. Grow your own.' })}</div>
     </header>
-    <button class="jr-gen" id="genBtn">${L({ zh: '生成今日小结 🌱', en: 'Generate today’s recap 🌱' })}</button>
-    <div class="jr-msg" id="genMsg">${esc(genMsg)}</div>
-    ${todosHtml()}
-    ${memoryHtml()}
-    <section class="jr-block">
-      <div class="jr-sec-h">📖 ${L({ zh: '日记', en: 'Journal' })}</div>
-      <div class="jr-entries">${daysHtml()}</div>
-    </section>
+    ${todaySection()}
+    ${todosSection()}
+    ${memorySection()}
     <footer class="jr-foot">${L({ zh: '会花一点点 token（用你已在用的那个 AI）。全程本地，数据只去你本来就在用的 AI，不上传第三方。', en: 'Uses a little token (via the AI you already use). Fully local; data only goes to the AI you already use, never a third party.' })}</footer>`;
   wire();
 }
 
+function generate() {
+  if (!api?.journalGenerate || busy) return;
+  busy = true; genMsg = ''; mount();
+  api.journalGenerate().then((r) => {
+    busy = false;
+    if (r && r.ok) store = r.store; else genMsg = errMsg(r && r.reason);
+    mount();
+  }).catch(() => { busy = false; genMsg = errMsg('ai_error'); mount(); });
+}
+
 function wire() {
   const $ = (s) => root.querySelector(s);
-  const btn = $('#genBtn');
-  btn.addEventListener('click', async () => {
+  $('#genBtn')?.addEventListener('click', () => {
     if (!api?.journalGenerate) { genMsg = L({ zh: '桌面版才能生成（要调用你本机的 AI）。', en: 'Desktop app only — it calls your local AI.' }); mount(); return; }
-    btn.disabled = true;
-    btn.textContent = L({ zh: '小精灵在帮你回顾今天… 🌱', en: 'Your sprite is reviewing your day… 🌱' });
-    genMsg = '';
-    try {
-      const r = await api.journalGenerate();
-      if (r && r.ok) { store = r.store; genMsg = ''; }
-      else { genMsg = errMsg(r && r.reason); }
-    } catch { genMsg = errMsg('ai_error'); }
-    mount();
+    generate();
   });
 
   root.querySelectorAll('[data-toggle]').forEach((el) => el.addEventListener('click', () => {
@@ -123,22 +118,19 @@ function wire() {
     store.memory = store.memory.filter((x) => x.id !== el.getAttribute('data-delmem')); save(); mount();
   }));
 
-  const addTodo = () => {
-    const inp = $('#todoAdd'); const v = inp.value.trim();
-    if (!v) return; store.todos.push({ id: newId(), text: v, done: false, at: Date.now() }); save(); mount();
-  };
-  $('#todoAddBtn').addEventListener('click', addTodo);
-  $('#todoAdd').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTodo(); });
+  const addTodo = () => { const inp = $('#todoAdd'); const v = inp.value.trim(); if (!v) return; store.todos.push({ id: newId(), text: v, done: false, at: Date.now() }); save(); mount(); };
+  $('#todoAddBtn')?.addEventListener('click', addTodo);
+  $('#todoAdd')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTodo(); });
 
-  const addMem = () => {
-    const inp = $('#memAdd'); const v = inp.value.trim();
-    if (!v) return; store.memory.push({ id: newId(), text: v, at: Date.now() }); save(); mount();
-  };
-  $('#memAddBtn').addEventListener('click', addMem);
-  $('#memAdd').addEventListener('keydown', (e) => { if (e.key === 'Enter') addMem(); });
+  const addMem = () => { const inp = $('#memAdd'); const v = inp.value.trim(); if (!v) return; store.memory.push({ id: newId(), text: v, at: Date.now() }); save(); mount(); };
+  $('#memAddBtn')?.addEventListener('click', addMem);
+  $('#memAdd')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addMem(); });
 }
 
-mount();
-if (api?.journalGet) {
-  api.journalGet().then((s) => { if (s) store = s; mount(); }).catch(() => {});
+// 进窗口：先拉存档铺上（待办/记忆），今天还没生成过就自动生成一次。
+async function init() {
+  if (api?.journalGet) { try { const s = await api.journalGet(); if (s) store = s; } catch {} }
+  mount();
+  if (api?.journalGenerate && !store.days[TODAY]) generate();
 }
+init();
