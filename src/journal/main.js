@@ -22,6 +22,7 @@ function esc(s) {
 let store = { days: {}, todos: [], memory: [] };
 let busy = false;
 let genMsg = '';
+let editing = null; // 正在编辑文字的待办 id
 let showPast = false;
 
 // 只存待办（记忆不对用户开放、由生成在后台维护，别覆盖）。
@@ -52,14 +53,19 @@ function todaySection() {
 }
 
 function todosSection() {
-  const items = store.todos.map((t) => `
-    <div class="jr-todo ${t.done ? 'done' : ''}">
+  const clearable = store.todos.filter((t) => !t.done && t.from !== 'user').length;
+  const items = store.todos.map((t) => {
+    const body = editing === t.id
+      ? `<input class="jr-edit" data-editid="${t.id}" value="${esc(t.text)}" maxlength="160" />`
+      : `<span class="jr-todo-text" data-edit="${t.id}" title="${L({ zh: '点击编辑', en: 'Click to edit' })}">${esc(t.text)}</span>`;
+    return `<div class="jr-todo ${t.done ? 'done' : ''}">
       <span class="jr-check" data-toggle="${t.id}">${t.done ? '☑' : '☐'}</span>
-      <span class="jr-todo-text">${esc(t.text)}</span>
+      ${body}
       <span class="jr-del" data-deltodo="${t.id}" title="${L({ zh: '删除', en: 'Delete' })}">✕</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   return `<section class="jr-block">
-    <div class="jr-sec-h">✅ ${L({ zh: '待办', en: 'To-do' })}</div>
+    <div class="jr-sec-h">✅ ${L({ zh: '待办', en: 'To-do' })}${clearable ? `<span class="jr-clear" id="todoClear">🧹 ${L({ zh: '清空自动', en: 'Clear auto' })}</span>` : ''}</div>
     ${items || `<div class="jr-muted">${L({ zh: '还没有待办。写代码时说过要做的事，生成后会自动收进来。', en: 'No to-dos yet. Things you say you’ll do get collected here after you generate.' })}</div>`}
     <div class="jr-add"><input id="todoAdd" maxlength="120" placeholder="${L({ zh: '加一条待办…回车', en: 'Add a to-do… Enter' })}" /><button id="todoAddBtn">${L({ zh: '添加', en: 'Add' })}</button></div>
   </section>`;
@@ -123,11 +129,30 @@ function wire() {
     store.todos = store.todos.filter((x) => x.id !== el.getAttribute('data-deltodo')); save(); mount();
   }));
 
+  // 编辑待办文字（编辑后标记为 user，重新生成不再覆盖）
+  root.querySelectorAll('[data-edit]').forEach((el) => el.addEventListener('click', () => { editing = el.getAttribute('data-edit'); mount(); }));
+  const commitEdit = (el) => {
+    if (editing === null) return;
+    const t = store.todos.find((x) => x.id === el.getAttribute('data-editid'));
+    const v = el.value.trim();
+    editing = null;
+    if (t && v) { t.text = v; t.from = 'user'; save(); }
+    mount();
+  };
+  root.querySelectorAll('[data-editid]').forEach((el) => {
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); commitEdit(el); } else if (e.key === 'Escape') { editing = null; mount(); } });
+    el.addEventListener('blur', () => commitEdit(el));
+  });
+  // 清空自动待办（只清 AI 生成、没勾的；保留你手加的和已勾掉的）
+  $('#todoClear')?.addEventListener('click', () => { store.todos = store.todos.filter((t) => t.done || t.from === 'user'); save(); mount(); });
+
   const addTodo = () => { const inp = $('#todoAdd'); const v = inp.value.trim(); if (!v) return; store.todos.push({ id: newId(), text: v, done: false, from: 'user', at: Date.now() }); save(); mount(); };
   $('#todoAddBtn')?.addEventListener('click', addTodo);
   $('#todoAdd')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTodo(); });
 
   $('#pastToggle')?.addEventListener('click', () => { showPast = !showPast; mount(); });
+
+  if (editing) { const inp = root.querySelector('[data-editid]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }
 }
 
 // 进窗口：先拉存档铺上（待办/记忆），今天还没生成过就自动生成一次。

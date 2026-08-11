@@ -40,6 +40,11 @@ body {
 .jr-todo.done .jr-todo-text { color: var(--muted); text-decoration: line-through; }
 .jr-del { color: #cbb89a; cursor: pointer; flex: none; font-size: 12px; padding: 2px 4px; }
 .jr-del:hover { color: #c06a4a; }
+.jr-todo-text { cursor: text; }
+.jr-todo-text:hover { text-decoration: underline dotted #cbb89a; text-underline-offset: 3px; }
+.jr-edit { flex: 1; border: 1px solid var(--accent); border-radius: 8px; padding: 5px 9px; font-size: 14px; background: #fff; color: var(--ink); outline: none; font-family: inherit; }
+.jr-clear { float: right; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.jr-clear:hover { color: #c06a4a; }
 
 .jr-add { display: flex; gap: 8px; margin-top: 10px; }
 .jr-add input {
