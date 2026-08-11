@@ -13,6 +13,7 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { computeLocalUsage } from '../scripts/usage.mjs';
+import { generateGrowthSummary } from '../scripts/growth.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
 import { createUpdateController, parseReleaseFromUrl } from './update-controller.js';
 import { bottomRightBounds, isVisibleOnAnyDisplay } from './window-placement.js';
@@ -176,6 +177,7 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   const autoLaunchSupported = process.platform === 'darwin' || process.platform === 'win32';
   ipcMain.handle('autolaunch:supported', () => autoLaunchSupported);
   ipcMain.handle('usage:get', () => computeLocalUsage());
+  ipcMain.handle('growth:summarize', () => generateGrowthSummary({ locale: appLocale() }));
   ipcMain.on('app:quit', () => app.quit());
   ipcMain.handle('autolaunch:get', () => {
     return autoLaunchEnabled();

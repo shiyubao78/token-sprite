@@ -14,7 +14,7 @@ import { SPECIES, speciesByKey, DEFAULT_NICKS } from './config/species.js';
 import { ACHIEVEMENTS } from './config/achievements.js';
 import { L, setLocale, getLocale, detectLocale } from './config/i18n.js';
 import {
-  mainHTML, peekHTML, menuHTML, gachaHTML, incubatorHTML, collectionHTML, achievementsHTML, evolutionHTML, bondHTML, usageHTML,
+  mainHTML, peekHTML, menuHTML, gachaHTML, incubatorHTML, collectionHTML, achievementsHTML, evolutionHTML, bondHTML, usageHTML, growthHTML,
 } from './ui/views.js';
 
 const app = document.getElementById('app');
@@ -193,6 +193,47 @@ function bindUsage(mask) {
   });
 }
 
+function growthErr(reason) {
+  const m = {
+    no_prompts: L({ zh: '今天还没有和 AI 的对话记录，先去写会儿代码吧～', en: 'No AI chats yet today — go write some code first ~' }),
+    no_ai: L({ zh: '没检测到 Claude Code / Codex 命令。装了其中一个才能生成小结。', en: 'No Claude Code / Codex command found. Install one to use this.' }),
+    timeout: L({ zh: 'AI 想太久超时了，稍后再试～', en: 'The AI took too long. Try again later.' }),
+  };
+  return m[reason] || L({ zh: '生成失败了，稍后再试～', en: 'Something went wrong. Try again later.' });
+}
+
+function openGrowth() {
+  const { mask } = openSheet(growthHTML());
+  const btn = mask.querySelector('#growthGen');
+  const result = mask.querySelector('#growthResult');
+  btn?.addEventListener('click', async () => {
+    if (!globalThis.tokenSprite?.growthSummarize) {
+      result.textContent = L({ zh: '这个要桌面版才能用（需要调用你本机的 AI）。', en: 'Desktop app only — it calls your local AI.' });
+      return;
+    }
+    const orig = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = L({ zh: '小精灵在帮你回顾今天… 🌱', en: 'Your sprite is reviewing your day… 🌱' });
+    result.classList.remove('show');
+    result.textContent = '';
+    try {
+      const r = await globalThis.tokenSprite.growthSummarize();
+      if (r && r.ok) {
+        result.textContent = r.text; // 纯文本，textContent 天然防注入
+        result.classList.add('show');
+      } else {
+        result.textContent = growthErr(r && r.reason);
+        result.classList.add('show');
+      }
+    } catch {
+      result.textContent = growthErr('ai_error');
+      result.classList.add('show');
+    }
+    btn.disabled = false;
+    btn.textContent = orig;
+  });
+}
+
 let collapsedInit = false;
 function setCollapsed(next) {
   collapsed = next;
@@ -328,6 +369,7 @@ function openMenu() {
     mask.querySelector('#dexBtn')?.addEventListener('click', () => { close(); openCollection(); });
     mask.querySelector('#achBtn')?.addEventListener('click', () => { close(); openAchievements(); });
     mask.querySelector('#usageBtn')?.addEventListener('click', () => { close(); openUsage(); });
+    mask.querySelector('#growthBtn')?.addEventListener('click', () => { close(); openGrowth(); });
     mask.querySelector('#saveBtn')?.addEventListener('click', () => {
       const name = mask.querySelector('#nameInput').value.trim();
       state.petName = name || '小苗'; savePet(state); close(); render();

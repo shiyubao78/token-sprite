@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('tokenSprite', {
   getUsage: () => ipcRenderer.invoke('usage:get'),
+  growthSummarize: () => ipcRenderer.invoke('growth:summarize'),
   quit: () => ipcRenderer.send('app:quit'),
   getAutoLaunch: () => ipcRenderer.invoke('autolaunch:get'),
   setAutoLaunch: (on) => ipcRenderer.invoke('autolaunch:set', on),
