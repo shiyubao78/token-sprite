@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractUserText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt, todayKey, parseGeneration, normalizeStore, mergeGeneration } from './growth.mjs';
+import { extractUserText, extractAssistantText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt, todayKey, parseGeneration, normalizeStore, mergeGeneration } from './growth.mjs';
 
 describe('extractUserText', () => {
   it('抽出字符串 content 的用户提问', () => {
@@ -19,6 +19,15 @@ describe('extractUserText', () => {
   it('过滤系统注入内容', () => {
     expect(extractUserText({ message: { role: 'user', content: '<system-reminder>x</system-reminder>' } })).toBeNull();
     expect(extractUserText({ message: { role: 'user', content: 'Caveat: The messages below...' } })).toBeNull();
+  });
+});
+
+describe('extractAssistantText', () => {
+  it('抽助手回复文本', () => {
+    expect(extractAssistantText({ message: { role: 'assistant', content: '已提交并发版 v0.4.1' } })).toBe('已提交并发版 v0.4.1');
+  });
+  it('忽略用户消息', () => {
+    expect(extractAssistantText({ message: { role: 'user', content: '帮我发版' } })).toBeNull();
   });
 });
 

@@ -8,33 +8,34 @@ import { spawn } from 'node:child_process';
 
 // ---------- 纯函数（可测） ----------
 
-// Claude Code：从一条 jsonl 记录抽"用户真正打的字"。工具结果/系统注入的不算。
-export function extractUserText(obj) {
-  return pickUserText(obj && obj.message);
-}
+// Claude Code：抽用户提问 / 助手回复文本。工具结果/系统注入的不算。
+export function extractUserText(obj) { return pickText(obj && obj.message, 'user'); }
+export function extractAssistantText(obj) { return pickText(obj && obj.message, 'assistant'); }
 
-// Codex：rollout jsonl 里的用户消息（role 可能在 payload 或 payload.message 上）。best-effort。
-export function extractCodexUserText(obj) {
+// Codex：rollout jsonl，role 可能在 payload 或 payload.message 上。best-effort。
+function codexNode(obj) {
   const p = obj && obj.payload;
   if (!p) return null;
-  const node = p.role ? p : (p.message && p.message.role ? p.message : null);
-  return pickUserText(node);
+  return p.role ? p : (p.message && p.message.role ? p.message : null);
 }
+export function extractCodexUserText(obj) { return pickText(codexNode(obj), 'user'); }
+export function extractCodexAssistantText(obj) { return pickText(codexNode(obj), 'assistant'); }
 
-// 通用：从一个 {role, content} 节点抽用户文本（content 支持字符串 / 文本块数组）。
-function pickUserText(node) {
-  if (!node || node.role !== 'user') return null;
+// 通用：从一个 {role, content} 节点按角色抽文本（content 支持字符串 / 文本块数组）。
+function pickText(node, role) {
+  if (!node || node.role !== role) return null;
   let text = null;
   if (typeof node.content === 'string') text = node.content;
   else if (Array.isArray(node.content)) {
     const parts = node.content
-      .filter((b) => b && (b.type === 'text' || b.type === 'input_text') && typeof b.text === 'string')
+      .filter((b) => b && (b.type === 'text' || b.type === 'input_text' || b.type === 'output_text') && typeof b.text === 'string')
       .map((b) => b.text);
     text = parts.length ? parts.join('\n') : null;
   }
   if (!text) return null;
   text = text.trim();
-  return isRealUserPrompt(text) ? text : null;
+  if (role === 'user') return isRealUserPrompt(text) ? text : null;
+  return text.length >= 2 ? text : null;
 }
 
 // 过滤掉工具注入的非用户内容（命令回显、系统提醒、中断提示、注意事项等）。
@@ -60,16 +61,18 @@ export function condensePrompts(items, { maxCount = 60, maxChars = 400 } = {}) {
 }
 
 // 拼给 AI 的分析指令：把今天的交互分成四类，只输出一个 JSON 对象。带上已知长期记忆当背景。双语。
-export function buildPrompt(items, locale = 'zh', memory = [], openTodos = []) {
+export function buildPrompt(items, locale = 'zh', memory = [], openTodos = [], done = []) {
   const joined = items.map((it, i) => `${i + 1}. [${it.source}] ${it.text.replace(/\n+/g, ' ')}`).join('\n');
   const tools = [...new Set(items.map((it) => it.source))].join(' / ') || 'AI';
   const mem = asArr(memory).map((m) => String(m).trim()).filter(Boolean);
   const tdo = asArr(openTodos).map((t) => String(t).trim()).filter(Boolean);
+  const dn = asArr(done).map((d) => String(d).trim().replace(/\n+/g, ' ')).filter(Boolean);
   if (locale === 'en') {
     const memBlock = mem.length ? `Here's what you already know about me long-term — take it into account (personalize, don't re-ask, and don't repeat these as new memory):\n${mem.map((m) => '- ' + m).join('\n')}\n\n` : '';
     const todoBlock = tdo.length ? `I'm already tracking these to-dos — do NOT list them again (even reworded); only surface genuinely NEW ones from today:\n${tdo.map((t) => '- ' + t).join('\n')}\n\n` : '';
+    const doneBlock = dn.length ? `Here's what the AI assistant DID / said today — use it to judge what's already finished. Do NOT list finished work as an open to-do. If a batch of changes is done but not committed/shipped yet, collapse it into ONE forward to-do (e.g. "commit & release today's changes"):\n${dn.map((d) => '· ' + d).join('\n')}\n\n` : '';
     return `You are my coding buddy — the little sprite I'm raising. You want me to not just USE AI, but get stronger myself, remember what I said I'd do, and keep what matters long-term.
-${memBlock}${todoBlock}Below are the prompts I sent across all my AI coding tools today (${tools}). Read them and reply with ONE JSON object ONLY — no markdown code fences, no extra text — with exactly these keys:
+${memBlock}${todoBlock}${doneBlock}Below are the prompts I sent across all my AI coding tools today (${tools}). Read them and reply with ONE JSON object ONLY — no markdown code fences, no extra text — with exactly these keys:
 {
   "summary": "one or two sentences: what I mainly worked on / talked about today",
   "knowledge": [{"term": "the concept name", "explain": "2-3 sentences that actually teach this concept so I learn it right here"}],
@@ -83,8 +86,9 @@ ${joined}`;
   }
   const memBlock = mem.length ? `你已经知道我这些长期背景，生成时请考虑它们（据此个性化、别重复问，也别把它们当成今天新增的记忆）：\n${mem.map((m) => '- ' + m).join('\n')}\n\n` : '';
   const todoBlock = tdo.length ? `我已经在追踪下面这些待办，**别再列出来了（哪怕换个说法也不行）**，只从今天挑真正新出现的待办：\n${tdo.map((t) => '- ' + t).join('\n')}\n\n` : '';
+  const doneBlock = dn.length ? `下面是今天 AI 助手**做过 / 回复过**的事，用来判断什么**已经完成**。**已经做完的别当成待办**；如果一堆改动做完了但还没提交 / 发版，就把它们收成**一条向前的待办**（比如"把今天这些改动发个版"）：\n${dn.map((d) => '· ' + d).join('\n')}\n\n` : '';
   return `你是我的编程搭子，也是我养的那只小精灵。你希望我不只"会用 AI"、也越来越强，会帮我记住要做的事、也帮我留住值得长期保留的东西。
-${memBlock}${todoBlock}下面是我今天在所有 AI 编程工具（${tools}）里发出的提问。读完后，**只输出一个 JSON 对象**（不要 markdown 代码围栏、不要多余文字），严格用下面这些键，把内容分成四类：
+${memBlock}${todoBlock}${doneBlock}下面是我今天在所有 AI 编程工具（${tools}）里发出的提问。读完后，**只输出一个 JSON 对象**（不要 markdown 代码围栏、不要多余文字），严格用下面这些键，把内容分成四类：
 {
   "summary": "一两句话：今天我主要在做什么、聊了什么",
   "knowledge": [{"term": "技术点名字", "explain": "用 2-3 句把这个知识点讲清楚，让我看完就学到（不是只点名）"}],
@@ -180,12 +184,12 @@ async function walk(dir, endsWith) {
 
 // 各 AI 工具的"今日提问"读取器。加新工具 = 加一行（root / 文件过滤 / 抽取函数）。
 const READERS = [
-  { source: 'Claude Code', root: () => join(homedir(), '.claude', 'projects'), fileFilter: null, extract: extractUserText },
-  { source: 'Codex', root: () => join(homedir(), '.codex'), fileFilter: (f) => f.includes('rollout-'), extract: extractCodexUserText },
+  { source: 'Claude Code', root: () => join(homedir(), '.claude', 'projects'), fileFilter: null, user: extractUserText, done: extractAssistantText },
+  { source: 'Codex', root: () => join(homedir(), '.codex'), fileFilter: (f) => f.includes('rollout-'), user: extractCodexUserText, done: extractCodexAssistantText },
 ];
 
-// 汇总今天你发给"所有工具"的提问，按时间返回 [{source, text}]。
-export async function collectTodayPrompts(now = Date.now()) {
+// 汇总今天所有工具里的某类文本（which='user' 你的提问 / 'done' 助手做过/回复过的事），按时间返回 [{source, text}]。
+async function collectToday(now, which) {
   const all = [];
   for (const r of READERS) {
     const root = r.root();
@@ -199,7 +203,7 @@ export async function collectTodayPrompts(now = Date.now()) {
         let obj; try { obj = JSON.parse(line); } catch { continue; }
         const ts = obj.timestamp ? Date.parse(obj.timestamp) : NaN;
         if (!isToday(ts, now)) continue;
-        const t = r.extract(obj);
+        const t = r[which](obj);
         if (t) all.push({ ts, source: r.source, text: t });
       }
     }
@@ -207,6 +211,8 @@ export async function collectTodayPrompts(now = Date.now()) {
   all.sort((a, b) => a.ts - b.ts);
   return all.map(({ source, text }) => ({ source, text }));
 }
+export const collectTodayPrompts = (now = Date.now()) => collectToday(now, 'user');
+export const collectTodayDone = (now = Date.now()) => collectToday(now, 'done');
 
 // 调你本机的 AI（优先 claude，其次 codex）分析，返回它的输出。
 // GUI app 拿不到终端 PATH：既走登录 shell、又手动补常见安装目录，双保险找命令。
@@ -245,8 +251,9 @@ export async function generateGrowthSummary({ locale = 'zh', now = Date.now(), m
   const raw = await collectTodayPrompts(now);
   if (!raw.length) return { ok: false, reason: 'no_prompts' };
   const items = condensePrompts(raw);
+  const done = condensePrompts(await collectTodayDone(now), { maxCount: 50, maxChars: 180 }).map((d) => `[${d.source}] ${d.text}`);
   const tools = [...new Set(raw.map((r) => r.source))];
-  const res = await runViaLocalAI(buildPrompt(items, locale, memory, openTodos));
+  const res = await runViaLocalAI(buildPrompt(items, locale, memory, openTodos, done));
   if (!res.ok) return res;
   return { ok: true, parsed: parseGeneration(res.text), count: raw.length, tools };
 }
