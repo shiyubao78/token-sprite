@@ -154,13 +154,16 @@ export async function writeStore(filePath, store) {
   return store;
 }
 
-// 把一次生成结果并进存档：当天的 summary+knowledge 覆盖写；todos/memory 只追加「新」的（按归一化文本去重）。
+// 把一次生成结果并进存档：当天 summary+knowledge 覆盖写；
+// 待办 = 刷新「今天由 AI 生成、还没勾掉」的那批（重新生成就换成最新的），保留你手加的、已勾掉的、以及别的日子的；
+// 记忆只追加「新」的（按归一化文本去重）。
 export function mergeGeneration(store, date, parsed, meta = {}) {
   const at = meta.at || Date.now();
   const s = { days: { ...(store.days || {}) }, todos: [...asArr(store.todos)], memory: [...asArr(store.memory)] };
   s.days[date] = { summary: parsed.summary, knowledge: parsed.knowledge, tools: meta.tools || [], count: meta.count || 0, at };
+  s.todos = s.todos.filter((t) => !(t.from === 'ai' && t.day === date && !t.done)); // 清掉今天旧的 AI 待办，换最新的
   const haveT = new Set(s.todos.map((t) => normText(t.text)));
-  for (const t of parsed.todos) { const n = normText(t); if (n && !haveT.has(n)) { haveT.add(n); s.todos.push({ id: newId(), text: t, done: false, at }); } }
+  for (const t of parsed.todos) { const n = normText(t); if (n && !haveT.has(n)) { haveT.add(n); s.todos.push({ id: newId(), text: t, done: false, from: 'ai', day: date, at }); } }
   const haveM = new Set(s.memory.map((m) => normText(m.text)));
   for (const m of parsed.memory) { const n = normText(m); if (n && !haveM.has(n)) { haveM.add(n); s.memory.push({ id: newId(), text: m, at }); } }
   if (s.memory.length > 80) s.memory = s.memory.slice(-80); // 记忆有上限，别无限膨胀撑爆 prompt

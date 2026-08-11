@@ -202,7 +202,8 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
     const res = await generateGrowthSummary({
       locale: appLocale(),
       memory: (store.memory || []).map((m) => m.text),
-      openTodos: (store.todos || []).filter((t) => !t.done).map((t) => t.text), // 已在追踪的待办，别重复列
+      // 已在追踪的待办里，别把「今天待刷新的 AI 待办」算进去（那批会被替换），只把要保留的当背景喂给 AI 别重复
+      openTodos: (store.todos || []).filter((t) => !t.done && !(t.from === 'ai' && t.day === todayKey())).map((t) => t.text),
     });
     if (!res.ok) return res;
     const date = todayKey();

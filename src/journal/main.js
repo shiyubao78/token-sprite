@@ -123,7 +123,7 @@ function wire() {
     store.todos = store.todos.filter((x) => x.id !== el.getAttribute('data-deltodo')); save(); mount();
   }));
 
-  const addTodo = () => { const inp = $('#todoAdd'); const v = inp.value.trim(); if (!v) return; store.todos.push({ id: newId(), text: v, done: false, at: Date.now() }); save(); mount(); };
+  const addTodo = () => { const inp = $('#todoAdd'); const v = inp.value.trim(); if (!v) return; store.todos.push({ id: newId(), text: v, done: false, from: 'user', at: Date.now() }); save(); mount(); };
   $('#todoAddBtn')?.addEventListener('click', addTodo);
   $('#todoAdd')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTodo(); });
 

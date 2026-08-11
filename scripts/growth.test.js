@@ -155,6 +155,19 @@ describe('mergeGeneration', () => {
     const s = mergeGeneration(base, '2026-08-11', parsed, {});
     expect(s.todos.map((t) => t.text)).toEqual(['订机票', '加测试']);
   });
+  it('重新生成替换今天旧的 AI 待办，保留手加的和已勾掉的', () => {
+    const store = { days: {}, todos: [
+      { id: 'ai1', text: '旧的AI待办', done: false, from: 'ai', day: '2026-08-11' },
+      { id: 'ai2', text: '已勾掉的', done: true, from: 'ai', day: '2026-08-11' },
+      { id: 'u1', text: '我手加的', done: false, from: 'user' },
+    ], memory: [] };
+    const p = { summary: 's', knowledge: [], todos: ['发版这些改动'], memory: [] };
+    const texts = mergeGeneration(store, '2026-08-11', p, {}).todos.map((t) => t.text);
+    expect(texts).not.toContain('旧的AI待办'); // 今天未勾的 AI 待办被替换
+    expect(texts).toContain('已勾掉的');        // 勾掉的保留
+    expect(texts).toContain('我手加的');        // 手加的保留
+    expect(texts).toContain('发版这些改动');    // 新生成加入
+  });
   it('memory 追加并带 id', () => {
     const s = mergeGeneration(base, '2026-08-11', parsed, {});
     expect(s.memory[0].text).toBe('偏好简洁');
