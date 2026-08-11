@@ -22,8 +22,10 @@ function esc(s) {
 let store = { days: {}, todos: [], memory: [] };
 let busy = false;
 let genMsg = '';
+let showPast = false;
 
-function save() { try { api?.journalSaveLists?.({ todos: store.todos, memory: store.memory }); } catch {} }
+// 只存待办（记忆不对用户开放、由生成在后台维护，别覆盖）。
+function save() { try { api?.journalSaveLists?.({ todos: store.todos }); } catch {} }
 
 function errMsg(reason) {
   const m = {
@@ -63,17 +65,23 @@ function todosSection() {
   </section>`;
 }
 
-function memorySection() {
-  const items = store.memory.map((m) => `
-    <div class="jr-mem">
-      <span class="jr-dot">•</span>
-      <span class="jr-mem-text">${esc(m.text)}</span>
-      <span class="jr-del" data-delmem="${m.id}" title="${L({ zh: '删除', en: 'Delete' })}">✕</span>
-    </div>`).join('');
+function pastDays() { return Object.keys(store.days).filter((d) => d !== TODAY).sort().reverse(); }
+function pastSection() {
+  const days = pastDays();
+  if (!days.length) return '';
+  if (!showPast) return `<div class="jr-pastlink" id="pastToggle">${L({ zh: `📖 看往日 · ${days.length} 天`, en: `📖 Past days · ${days.length}` })}</div>`;
+  const list = days.map((d) => {
+    const e = store.days[d] || {};
+    const know = asArr(e.knowledge).map((k) => `<div class="jr-know"><b>${esc(k.term)}</b>${k.term && k.explain ? '：' : ''}${esc(k.explain)}</div>`).join('');
+    return `<article class="jr-past">
+      <div class="jr-date">${esc(d)}</div>
+      ${e.summary ? `<div class="jr-summary">${esc(e.summary)}</div>` : ''}
+      ${know}
+    </article>`;
+  }).join('');
   return `<section class="jr-block">
-    <div class="jr-sec-h">📌 ${L({ zh: '记忆', en: 'Memory' })} <span class="jr-sec-hint">${L({ zh: '值得长期保留的', en: 'worth keeping long-term' })}</span></div>
-    ${items || `<div class="jr-muted">${L({ zh: '还没有长期记忆。偏好、关键决定这类会攒在这。', en: 'No long-term memory yet. Preferences and key decisions collect here.' })}</div>`}
-    <div class="jr-add"><input id="memAdd" maxlength="160" placeholder="${L({ zh: '记一条…回车', en: 'Add a note… Enter' })}" /><button id="memAddBtn">${L({ zh: '添加', en: 'Add' })}</button></div>
+    <div class="jr-sec-h jr-pastlink" id="pastToggle">📖 ${L({ zh: '往日', en: 'Past days' })} <span class="jr-fold">${L({ zh: '收起', en: 'hide' })}</span></div>
+    ${list}
   </section>`;
 }
 
@@ -85,7 +93,7 @@ function mount() {
     </header>
     ${todaySection()}
     ${todosSection()}
-    ${memorySection()}
+    ${pastSection()}
     <footer class="jr-foot">${L({ zh: '会花一点点 token（用你已在用的那个 AI）。全程本地，数据只去你本来就在用的 AI，不上传第三方。', en: 'Uses a little token (via the AI you already use). Fully local; data only goes to the AI you already use, never a third party.' })}</footer>`;
   wire();
 }
@@ -114,17 +122,12 @@ function wire() {
   root.querySelectorAll('[data-deltodo]').forEach((el) => el.addEventListener('click', () => {
     store.todos = store.todos.filter((x) => x.id !== el.getAttribute('data-deltodo')); save(); mount();
   }));
-  root.querySelectorAll('[data-delmem]').forEach((el) => el.addEventListener('click', () => {
-    store.memory = store.memory.filter((x) => x.id !== el.getAttribute('data-delmem')); save(); mount();
-  }));
 
   const addTodo = () => { const inp = $('#todoAdd'); const v = inp.value.trim(); if (!v) return; store.todos.push({ id: newId(), text: v, done: false, at: Date.now() }); save(); mount(); };
   $('#todoAddBtn')?.addEventListener('click', addTodo);
   $('#todoAdd')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTodo(); });
 
-  const addMem = () => { const inp = $('#memAdd'); const v = inp.value.trim(); if (!v) return; store.memory.push({ id: newId(), text: v, at: Date.now() }); save(); mount(); };
-  $('#memAddBtn')?.addEventListener('click', addMem);
-  $('#memAdd')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addMem(); });
+  $('#pastToggle')?.addEventListener('click', () => { showPast = !showPast; mount(); });
 }
 
 // 进窗口：先拉存档铺上（待办/记忆），今天还没生成过就自动生成一次。

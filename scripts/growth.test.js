@@ -81,6 +81,15 @@ describe('buildPrompt', () => {
     expect(p).toContain('coding buddy');
     expect(p).toContain('1. [Codex] write a regex');
   });
+  it('带上已知记忆当背景', () => {
+    const p = buildPrompt([{ source: 'Codex', text: 'x' }], 'zh', ['偏好简洁', '项目全本地']);
+    expect(p).toContain('长期背景');
+    expect(p).toContain('- 偏好简洁');
+    expect(p).toContain('- 项目全本地');
+  });
+  it('没有记忆时不加背景块', () => {
+    expect(buildPrompt([{ source: 'Codex', text: 'x' }], 'zh', [])).not.toContain('长期背景');
+  });
   it('要求四类 JSON 键', () => {
     const p = buildPrompt([{ source: 'Codex', text: 'x' }], 'zh');
     expect(p).toContain('"summary"');

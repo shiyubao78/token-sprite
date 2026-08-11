@@ -59,31 +59,34 @@ export function condensePrompts(items, { maxCount = 60, maxChars = 400 } = {}) {
   }));
 }
 
-// 拼给 AI 的分析指令：把今天的交互分成四类，只输出一个 JSON 对象。双语。
-export function buildPrompt(items, locale = 'zh') {
+// 拼给 AI 的分析指令：把今天的交互分成四类，只输出一个 JSON 对象。带上已知长期记忆当背景。双语。
+export function buildPrompt(items, locale = 'zh', memory = []) {
   const joined = items.map((it, i) => `${i + 1}. [${it.source}] ${it.text.replace(/\n+/g, ' ')}`).join('\n');
   const tools = [...new Set(items.map((it) => it.source))].join(' / ') || 'AI';
+  const mem = asArr(memory).map((m) => String(m).trim()).filter(Boolean);
   if (locale === 'en') {
+    const memBlock = mem.length ? `Here's what you already know about me long-term — take it into account (personalize, don't re-ask, and don't repeat these as new memory):\n${mem.map((m) => '- ' + m).join('\n')}\n\n` : '';
     return `You are my coding buddy — the little sprite I'm raising. You want me to not just USE AI, but get stronger myself, remember what I said I'd do, and keep what matters long-term.
-Below are the prompts I sent across all my AI coding tools today (${tools}). Read them and reply with ONE JSON object ONLY — no markdown code fences, no extra text — with exactly these keys:
+${memBlock}Below are the prompts I sent across all my AI coding tools today (${tools}). Read them and reply with ONE JSON object ONLY — no markdown code fences, no extra text — with exactly these keys:
 {
   "summary": "one or two sentences: what I mainly worked on / talked about today",
   "knowledge": [{"term": "the concept name", "explain": "2-3 sentences that actually teach this concept so I learn it right here"}],
   "todos": ["things I said I need to do or follow up on, one short line each (e.g. 'add tests for X', 'book a flight')"],
-  "memory": ["things worth keeping long-term: my preferences, key project decisions, important facts, one short line each"]
+  "memory": ["ONLY NEW things worth keeping long-term that aren't already known above: my preferences, key project decisions, important facts, one short line each"]
 }
 Pick at most 3 knowledge items. Use [] for any empty category. Base it only on the prompts below. Values in English.
 
 --- my prompts today (tagged by tool) ---
 ${joined}`;
   }
+  const memBlock = mem.length ? `你已经知道我这些长期背景，生成时请考虑它们（据此个性化、别重复问，也别把它们当成今天新增的记忆）：\n${mem.map((m) => '- ' + m).join('\n')}\n\n` : '';
   return `你是我的编程搭子，也是我养的那只小精灵。你希望我不只"会用 AI"、也越来越强，会帮我记住要做的事、也帮我留住值得长期保留的东西。
-下面是我今天在所有 AI 编程工具（${tools}）里发出的提问。读完后，**只输出一个 JSON 对象**（不要 markdown 代码围栏、不要多余文字），严格用下面这些键，把内容分成四类：
+${memBlock}下面是我今天在所有 AI 编程工具（${tools}）里发出的提问。读完后，**只输出一个 JSON 对象**（不要 markdown 代码围栏、不要多余文字），严格用下面这些键，把内容分成四类：
 {
   "summary": "一两句话：今天我主要在做什么、聊了什么",
   "knowledge": [{"term": "技术点名字", "explain": "用 2-3 句把这个知识点讲清楚，让我看完就学到（不是只点名）"}],
   "todos": ["我说过要做/要跟进的事，一条一句（比如'给 X 加测试'、'订机票'）"],
-  "memory": ["值得长期记住的：我的偏好、项目关键决定、重要事实，一条一句"]
+  "memory": ["只放上面还不知道的、今天新出现的值得长期记住的：我的偏好、项目关键决定、重要事实，一条一句"]
 }
 knowledge 最多挑 3 个。没有内容的类别给 []。只依据下面的提问。所有值用中文。
 
@@ -153,6 +156,7 @@ export function mergeGeneration(store, date, parsed, meta = {}) {
   for (const t of parsed.todos) { const n = normText(t); if (n && !haveT.has(n)) { haveT.add(n); s.todos.push({ id: newId(), text: t, done: false, at }); } }
   const haveM = new Set(s.memory.map((m) => normText(m.text)));
   for (const m of parsed.memory) { const n = normText(m); if (n && !haveM.has(n)) { haveM.add(n); s.memory.push({ id: newId(), text: m, at }); } }
+  if (s.memory.length > 80) s.memory = s.memory.slice(-80); // 记忆有上限，别无限膨胀撑爆 prompt
   return s;
 }
 
@@ -234,12 +238,12 @@ function runViaLocalAI(promptText, timeoutMs = 180000) {
 
 // 对外主入口：生成今日成长小结（汇总全部 agent）。返回 { ok, text, count, tools } 或 { ok:false, reason }。
 // reason: no_prompts（今天还没对话）/ no_ai（没装 claude/codex）/ timeout / ai_error / spawn_error / io_error
-export async function generateGrowthSummary({ locale = 'zh', now = Date.now() } = {}) {
+export async function generateGrowthSummary({ locale = 'zh', now = Date.now(), memory = [] } = {}) {
   const raw = await collectTodayPrompts(now);
   if (!raw.length) return { ok: false, reason: 'no_prompts' };
   const items = condensePrompts(raw);
   const tools = [...new Set(raw.map((r) => r.source))];
-  const res = await runViaLocalAI(buildPrompt(items, locale));
+  const res = await runViaLocalAI(buildPrompt(items, locale, memory));
   if (!res.ok) return res;
   return { ok: true, parsed: parseGeneration(res.text), count: raw.length, tools };
 }
