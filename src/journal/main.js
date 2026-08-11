@@ -65,11 +65,11 @@ function todosSection() {
   </section>`;
 }
 
-function pastDays() { return Object.keys(store.days).filter((d) => d !== TODAY).sort().reverse(); }
+function pastDays() { return Object.keys(store.days).sort().reverse(); }
 function pastSection() {
   const days = pastDays();
   if (!days.length) return '';
-  if (!showPast) return `<div class="jr-pastlink" id="pastToggle">${L({ zh: `📖 看往日 · ${days.length} 天`, en: `📖 Past days · ${days.length}` })}</div>`;
+  if (!showPast) return `<div class="jr-pastlink" id="pastToggle">${L({ zh: `📖 看历史 · ${days.length} 天`, en: `📖 History · ${days.length}` })}</div>`;
   const list = days.map((d) => {
     const e = store.days[d] || {};
     const know = asArr(e.knowledge).map((k) => `<div class="jr-know"><b>${esc(k.term)}</b>${k.term && k.explain ? '：' : ''}${esc(k.explain)}</div>`).join('');
@@ -80,7 +80,7 @@ function pastSection() {
     </article>`;
   }).join('');
   return `<section class="jr-block">
-    <div class="jr-sec-h jr-pastlink" id="pastToggle">📖 ${L({ zh: '往日', en: 'Past days' })} <span class="jr-fold">${L({ zh: '收起', en: 'hide' })}</span></div>
+    <div class="jr-sec-h jr-pastlink" id="pastToggle">📖 ${L({ zh: '历史', en: 'History' })} <span class="jr-fold">${L({ zh: '收起', en: 'hide' })}</span></div>
     ${list}
   </section>`;
 }

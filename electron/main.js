@@ -199,7 +199,11 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   ipcMain.handle('journal:generate', async () => {
     const store = await readStore(journalPath());
     // 把已知长期记忆当背景喂进去，让小结越来越懂用户（记忆对用户隐藏，只在后台起作用）
-    const res = await generateGrowthSummary({ locale: appLocale(), memory: (store.memory || []).map((m) => m.text) });
+    const res = await generateGrowthSummary({
+      locale: appLocale(),
+      memory: (store.memory || []).map((m) => m.text),
+      openTodos: (store.todos || []).filter((t) => !t.done).map((t) => t.text), // 已在追踪的待办，别重复列
+    });
     if (!res.ok) return res;
     const date = todayKey();
     const merged = mergeGeneration(store, date, res.parsed, { tools: res.tools, count: res.count, at: Date.now() });

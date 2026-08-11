@@ -90,6 +90,11 @@ describe('buildPrompt', () => {
   it('没有记忆时不加背景块', () => {
     expect(buildPrompt([{ source: 'Codex', text: 'x' }], 'zh', [])).not.toContain('长期背景');
   });
+  it('带上已在追踪的待办，要求别重复', () => {
+    const p = buildPrompt([{ source: 'Codex', text: 'x' }], 'zh', [], ['给支付加测试', '订机票']);
+    expect(p).toContain('已经在追踪');
+    expect(p).toContain('- 给支付加测试');
+  });
   it('要求四类 JSON 键', () => {
     const p = buildPrompt([{ source: 'Codex', text: 'x' }], 'zh');
     expect(p).toContain('"summary"');
