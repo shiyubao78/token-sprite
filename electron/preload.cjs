@@ -3,8 +3,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('tokenSprite', {
   getUsage: () => ipcRenderer.invoke('usage:get'),
   openJournal: () => ipcRenderer.send('journal:open'),
-  journalList: () => ipcRenderer.invoke('journal:list'),
+  journalGet: () => ipcRenderer.invoke('journal:get'),
   journalGenerate: () => ipcRenderer.invoke('journal:generate'),
+  journalSaveLists: (lists) => ipcRenderer.invoke('journal:saveLists', lists),
   quit: () => ipcRenderer.send('app:quit'),
   getAutoLaunch: () => ipcRenderer.invoke('autolaunch:get'),
   setAutoLaunch: (on) => ipcRenderer.invoke('autolaunch:set', on),

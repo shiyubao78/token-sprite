@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractUserText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt, todayKey, readJournal, saveEntry } from './growth.mjs';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
-import { rm } from 'node:fs/promises';
+import { extractUserText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt, todayKey, parseGeneration, normalizeStore, mergeGeneration } from './growth.mjs';
 
 describe('extractUserText', () => {
   it('抽出字符串 content 的用户提问', () => {
@@ -84,30 +81,63 @@ describe('buildPrompt', () => {
     expect(p).toContain('coding buddy');
     expect(p).toContain('1. [Codex] write a regex');
   });
-  it('要求三块结构（提醒/知识点/小结）', () => {
+  it('要求四类 JSON 键', () => {
     const p = buildPrompt([{ source: 'Codex', text: 'x' }], 'zh');
-    expect(p).toContain('## 📌');
-    expect(p).toContain('## 🧠');
-    expect(p).toContain('## 🌱');
+    expect(p).toContain('"summary"');
+    expect(p).toContain('"knowledge"');
+    expect(p).toContain('"todos"');
+    expect(p).toContain('"memory"');
   });
 });
 
-describe('journal 存留', () => {
+describe('parseGeneration', () => {
+  it('解析干净 JSON 四类', () => {
+    const r = parseGeneration('{"summary":"今天写了日记","knowledge":[{"term":"IPC","explain":"进程间通信"}],"todos":["订机票"],"memory":["喜欢简洁"]}');
+    expect(r.summary).toBe('今天写了日记');
+    expect(r.knowledge[0]).toEqual({ term: 'IPC', explain: '进程间通信' });
+    expect(r.todos).toEqual(['订机票']);
+    expect(r.memory).toEqual(['喜欢简洁']);
+  });
+  it('剥掉 ```json 围栏和前后废话', () => {
+    const r = parseGeneration('好的：\n```json\n{"summary":"s","knowledge":[],"todos":[],"memory":[]}\n```');
+    expect(r.summary).toBe('s');
+  });
+  it('解析失败退化为 summary', () => {
+    const r = parseGeneration('这不是 JSON');
+    expect(r.summary).toBe('这不是 JSON');
+    expect(r.todos).toEqual([]);
+  });
+});
+
+describe('normalizeStore', () => {
+  it('新结构原样', () => {
+    expect(normalizeStore({ days: { a: {} }, todos: [1], memory: [] })).toEqual({ days: { a: {} }, todos: [1], memory: [] });
+  });
+  it('旧扁平 {date:{text}} 迁进 days', () => {
+    const s = normalizeStore({ '2026-08-10': { text: 'x' } });
+    expect(s.days['2026-08-10'].text).toBe('x');
+    expect(s.todos).toEqual([]);
+  });
+});
+
+describe('mergeGeneration', () => {
+  const base = { days: {}, todos: [{ id: 'a', text: '订机票', done: false }], memory: [] };
+  const parsed = { summary: 's', knowledge: [{ term: 'k', explain: 'e' }], todos: ['订机票', '加测试'], memory: ['偏好简洁'] };
+  it('当天 summary/knowledge 写进 days', () => {
+    const s = mergeGeneration(base, '2026-08-11', parsed, { tools: ['Codex'], count: 5 });
+    expect(s.days['2026-08-11'].summary).toBe('s');
+    expect(s.days['2026-08-11'].knowledge[0].term).toBe('k');
+  });
+  it('todos 只追加新的（去重已存在的“订机票”）', () => {
+    const s = mergeGeneration(base, '2026-08-11', parsed, {});
+    expect(s.todos.map((t) => t.text)).toEqual(['订机票', '加测试']);
+  });
+  it('memory 追加并带 id', () => {
+    const s = mergeGeneration(base, '2026-08-11', parsed, {});
+    expect(s.memory[0].text).toBe('偏好简洁');
+    expect(typeof s.memory[0].id).toBe('string');
+  });
   it('todayKey 是 YYYY-MM-DD', () => {
     expect(todayKey(Date.parse('2026-08-11T09:00:00'))).toBe('2026-08-11');
-  });
-  it('文件不存在时 readJournal 返回 {}', async () => {
-    expect(await readJournal(join(tmpdir(), 'nope-ts-journal-xyz.json'))).toEqual({});
-  });
-  it('saveEntry 写入后能读回，覆盖当天', async () => {
-    const fp = join(tmpdir(), `ts-journal-test-${process.pid}.json`);
-    await rm(fp, { force: true });
-    await saveEntry(fp, '2026-08-11', { text: 'a', count: 3 });
-    await saveEntry(fp, '2026-08-10', { text: 'b', count: 1 });
-    await saveEntry(fp, '2026-08-11', { text: 'a2', count: 5 }); // 覆盖当天
-    const all = await readJournal(fp);
-    expect(Object.keys(all).sort()).toEqual(['2026-08-10', '2026-08-11']);
-    expect(all['2026-08-11'].text).toBe('a2');
-    await rm(fp, { force: true });
   });
 });

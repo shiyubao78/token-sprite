@@ -59,47 +59,60 @@ export function condensePrompts(items, { maxCount = 60, maxChars = 400 } = {}) {
   }));
 }
 
-// 拼给 AI 的分析指令：输出一篇 Markdown「今日成长日记」，含 提醒/待办 + 知识点讲解 + 暖话。双语。
+// 拼给 AI 的分析指令：把今天的交互分成四类，只输出一个 JSON 对象。双语。
 export function buildPrompt(items, locale = 'zh') {
   const joined = items.map((it, i) => `${i + 1}. [${it.source}] ${it.text.replace(/\n+/g, ' ')}`).join('\n');
   const tools = [...new Set(items.map((it) => it.source))].join(' / ') || 'AI';
   if (locale === 'en') {
-    return `You are my coding buddy — the little sprite I'm raising. You genuinely want me to not just USE AI, but to keep getting stronger myself, and you help me remember what I said I'd do. 💚
-Below are the prompts I sent across all my AI coding tools today (${tools}). Write a short "Growth Journal for today" in Markdown, with exactly these three sections (use ## headers):
-
-## 📌 Remember / To-do
-Pull out things I said I need to do, follow up on, or remember (e.g. "refactor X later", "add tests for Y", "book a flight", "ping someone next week"). List them as \`- [ ]\` checkboxes. If none, say "Nothing to track today".
-
-## 🧠 What to learn
-Pick 1-3 technical points I leaned on AI for most today. For each, actually TEACH the point in 2-3 sentences (not just "learn X" — give me the real substance), so I learn it right here.
-
-## 🌱 Today
-One line: one specific bit of praise, then a gentle nudge not to over-rely.
-
-Keep it concise, specific, warm, positive. Base it only on the prompts below. Reply in English.
+    return `You are my coding buddy — the little sprite I'm raising. You want me to not just USE AI, but get stronger myself, remember what I said I'd do, and keep what matters long-term.
+Below are the prompts I sent across all my AI coding tools today (${tools}). Read them and reply with ONE JSON object ONLY — no markdown code fences, no extra text — with exactly these keys:
+{
+  "summary": "one or two sentences: what I mainly worked on / talked about today",
+  "knowledge": [{"term": "the concept name", "explain": "2-3 sentences that actually teach this concept so I learn it right here"}],
+  "todos": ["things I said I need to do or follow up on, one short line each (e.g. 'add tests for X', 'book a flight')"],
+  "memory": ["things worth keeping long-term: my preferences, key project decisions, important facts, one short line each"]
+}
+Pick at most 3 knowledge items. Use [] for any empty category. Base it only on the prompts below. Values in English.
 
 --- my prompts today (tagged by tool) ---
 ${joined}`;
   }
-  return `你是我的编程搭子，也是我养的那只小精灵。你真心希望我不只"会用 AI"、也越来越强，还会帮我记住我说过要做的事 💚
-下面是我今天在所有 AI 编程工具（${tools}）里发出的提问。请写一篇简短的「今日成长日记」，用 Markdown，**严格分成下面三块**（用 ## 小标题）：
-
-## 📌 该记住 / 待办
-从我今天说过的话里，揪出我提到要做、要跟进、要记住的事（比如"回头重构 X""记得给 Y 加测试""要订机票""下周找某人"），列成 \`- [ ]\` 待办。要是没有，就写"今天没提到待办"。
-
-## 🧠 知识点
-挑我今天最依赖 AI 的 1-3 个技术点，每个用 2-3 句**把知识点本身讲清楚**（不是只说"你该学 X"，而是直接把要点教给我），让我看完就学到。
-
-## 🌱 今日小结
-一句话：先具体夸我一句，再轻轻提醒我别太依赖。
-
-简洁、具体、温暖、正向，只依据下面这些提问判断。全程中文。
+  return `你是我的编程搭子，也是我养的那只小精灵。你希望我不只"会用 AI"、也越来越强，会帮我记住要做的事、也帮我留住值得长期保留的东西。
+下面是我今天在所有 AI 编程工具（${tools}）里发出的提问。读完后，**只输出一个 JSON 对象**（不要 markdown 代码围栏、不要多余文字），严格用下面这些键，把内容分成四类：
+{
+  "summary": "一两句话：今天我主要在做什么、聊了什么",
+  "knowledge": [{"term": "技术点名字", "explain": "用 2-3 句把这个知识点讲清楚，让我看完就学到（不是只点名）"}],
+  "todos": ["我说过要做/要跟进的事，一条一句（比如'给 X 加测试'、'订机票'）"],
+  "memory": ["值得长期记住的：我的偏好、项目关键决定、重要事实，一条一句"]
+}
+knowledge 最多挑 3 个。没有内容的类别给 []。只依据下面的提问。所有值用中文。
 
 --- 我今天的提问（标了来自哪个工具）---
 ${joined}`;
 }
 
-// ---------- 成长日记留存（每日一篇，存在 app 数据目录，不上传） ----------
+// 从 AI 输出里稳健解析出结构化四类（容忍代码围栏/多余文字；解析失败则退化为 summary）。
+export function parseGeneration(text) {
+  const empty = { summary: '', knowledge: [], todos: [], memory: [] };
+  if (!text) return empty;
+  let s = String(text).trim().replace(/^```(?:json)?/i, '').replace(/```\s*$/, '').trim();
+  const i = s.indexOf('{'), j = s.lastIndexOf('}');
+  if (i >= 0 && j > i) s = s.slice(i, j + 1);
+  let obj;
+  try { obj = JSON.parse(s); } catch { return { ...empty, summary: String(text).trim() }; }
+  const arr = (x) => (Array.isArray(x) ? x : []);
+  const str = (x) => (typeof x === 'string' ? x.trim() : '');
+  return {
+    summary: str(obj.summary),
+    knowledge: arr(obj.knowledge).map((k) => ({ term: str(k && k.term), explain: str(k && k.explain) })).filter((k) => k.term || k.explain),
+    todos: arr(obj.todos).map(str).filter(Boolean),
+    memory: arr(obj.memory).map(str).filter(Boolean),
+  };
+}
+
+// ---------- 成长日记留存（结构化四类，存在 app 数据目录，不上传） ----------
+// 存档结构：{ days: { 'YYYY-MM-DD': { summary, knowledge:[{term,explain}], tools, count, at } },
+//            todos: [{id,text,done,at}]（跨天 running），memory: [{id,text,at}]（跨天累积） }
 
 // 本地日期键 YYYY-MM-DD（按本机时区）。
 export function todayKey(now = Date.now()) {
@@ -107,21 +120,40 @@ export function todayKey(now = Date.now()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// 读整本日记（date -> entry）。文件不存在 / 坏了都返回 {}。
-export async function readJournal(filePath) {
-  try {
-    const raw = await readFile(filePath, 'utf8');
-    const obj = JSON.parse(raw);
-    return obj && typeof obj === 'object' ? obj : {};
-  } catch { return {}; }
+function asArr(x) { return Array.isArray(x) ? x : []; }
+function normText(s) { return String(s).toLowerCase().replace(/\s+/g, '').replace(/[。，、．.!?！？；;：:]/g, ''); }
+function newId() { return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+// 兜正结构；兼容旧的扁平 {date:{text}} 存档（迁进 days）。
+export function normalizeStore(raw) {
+  if (raw && typeof raw === 'object' && (raw.days || raw.todos || raw.memory)) {
+    return { days: raw.days && typeof raw.days === 'object' ? raw.days : {}, todos: asArr(raw.todos), memory: asArr(raw.memory) };
+  }
+  const days = {};
+  if (raw && typeof raw === 'object') for (const [k, v] of Object.entries(raw)) if (v && typeof v === 'object') days[k] = v;
+  return { days, todos: [], memory: [] };
 }
 
-// 写入某天的一篇（覆盖当天）。返回整本。
-export async function saveEntry(filePath, dateKey, entry) {
-  const all = await readJournal(filePath);
-  all[dateKey] = entry;
-  try { await writeFile(filePath, JSON.stringify(all, null, 2), 'utf8'); } catch { /* 存储不可用则静默 */ }
-  return all;
+export async function readStore(filePath) {
+  try { return normalizeStore(JSON.parse(await readFile(filePath, 'utf8'))); }
+  catch { return { days: {}, todos: [], memory: [] }; }
+}
+
+export async function writeStore(filePath, store) {
+  try { await writeFile(filePath, JSON.stringify(store, null, 2), 'utf8'); } catch { /* 存储不可用则静默 */ }
+  return store;
+}
+
+// 把一次生成结果并进存档：当天的 summary+knowledge 覆盖写；todos/memory 只追加「新」的（按归一化文本去重）。
+export function mergeGeneration(store, date, parsed, meta = {}) {
+  const at = meta.at || Date.now();
+  const s = { days: { ...(store.days || {}) }, todos: [...asArr(store.todos)], memory: [...asArr(store.memory)] };
+  s.days[date] = { summary: parsed.summary, knowledge: parsed.knowledge, tools: meta.tools || [], count: meta.count || 0, at };
+  const haveT = new Set(s.todos.map((t) => normText(t.text)));
+  for (const t of parsed.todos) { const n = normText(t); if (n && !haveT.has(n)) { haveT.add(n); s.todos.push({ id: newId(), text: t, done: false, at }); } }
+  const haveM = new Set(s.memory.map((m) => normText(m.text)));
+  for (const m of parsed.memory) { const n = normText(m); if (n && !haveM.has(n)) { haveM.add(n); s.memory.push({ id: newId(), text: m, at }); } }
+  return s;
 }
 
 // ---------- IO ----------
@@ -208,5 +240,6 @@ export async function generateGrowthSummary({ locale = 'zh', now = Date.now() } 
   const items = condensePrompts(raw);
   const tools = [...new Set(raw.map((r) => r.source))];
   const res = await runViaLocalAI(buildPrompt(items, locale));
-  return res.ok ? { ok: true, text: res.text, count: raw.length, tools } : res;
+  if (!res.ok) return res;
+  return { ok: true, parsed: parseGeneration(res.text), count: raw.length, tools };
 }

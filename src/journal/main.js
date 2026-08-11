@@ -10,41 +10,17 @@ try {
 
 const root = document.getElementById('journal');
 const api = globalThis.tokenSprite;
+const asArr = (x) => (Array.isArray(x) ? x : []);
+const newId = () => 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// 极简 Markdown 渲染：## 小标题 / - [ ] 待办 / - 列表 / **加粗** / 段落。先转义再套结构，安全。
-function renderMd(md) {
-  const inline = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-  const lines = String(md || '').split('\n');
-  let html = '', inList = false;
-  const closeList = () => { if (inList) { html += '</ul>'; inList = false; } };
-  for (let line of lines) {
-    const t = line.trim();
-    if (!t) { closeList(); continue; }
-    let m;
-    if ((m = t.match(/^#{1,6}\s+(.*)$/))) { closeList(); html += `<h3>${inline(m[1])}</h3>`; }
-    else if ((m = t.match(/^[-*]\s+\[( |x|X)\]\s+(.*)$/))) {
-      closeList(); const done = m[1].toLowerCase() === 'x';
-      html += `<div class="jr-todo ${done ? 'done' : ''}"><span class="jr-box">${done ? '☑' : '☐'}</span><span>${inline(m[2])}</span></div>`;
-    } else if ((m = t.match(/^[-*]\s+(.*)$/))) {
-      if (!inList) { html += '<ul>'; inList = true; } html += `<li>${inline(m[1])}</li>`;
-    } else { closeList(); html += `<p>${inline(t)}</p>`; }
-  }
-  closeList();
-  return html;
-}
+let store = { days: {}, todos: [], memory: [] };
+let genMsg = '';
 
-function entryCard(date, entry) {
-  const tools = (entry.tools || []).join(' / ');
-  const meta = L({ zh: `汇总 ${tools} 共 ${entry.count} 条`, en: `${entry.count} prompts across ${tools}` });
-  return `<article class="jr-entry">
-    <div class="jr-date">${esc(date)} <span class="jr-meta">· ${esc(meta)}</span></div>
-    <div class="jr-body">${renderMd(entry.text)}</div>
-  </article>`;
-}
+function save() { try { api?.journalSaveLists?.({ todos: store.todos, memory: store.memory }); } catch {} }
 
 function errMsg(reason) {
   const m = {
@@ -55,47 +31,114 @@ function errMsg(reason) {
   return m[reason] || L({ zh: '生成失败了，稍后再试～', en: 'Something went wrong. Try again later.' });
 }
 
-let journal = {};
-function renderEntries() {
-  const dates = Object.keys(journal).sort().reverse();
-  const box = document.getElementById('entries');
-  if (!dates.length) {
-    box.innerHTML = `<div class="jr-empty">${L({ zh: '还没有日记。点上面「生成今日小结」，开始记录你的成长轨迹 🌱', en: 'No entries yet. Tap “Generate today’s recap” above to start your growth trail 🌱' })}</div>`;
-    return;
-  }
-  box.innerHTML = dates.map((d) => entryCard(d, journal[d])).join('');
+function todosHtml() {
+  const items = store.todos.map((t) => `
+    <div class="jr-todo ${t.done ? 'done' : ''}">
+      <span class="jr-check" data-toggle="${t.id}">${t.done ? '☑' : '☐'}</span>
+      <span class="jr-todo-text">${esc(t.text)}</span>
+      <span class="jr-del" data-deltodo="${t.id}" title="${L({ zh: '删除', en: 'Delete' })}">✕</span>
+    </div>`).join('');
+  return `<section class="jr-block">
+    <div class="jr-sec-h">✅ ${L({ zh: '待办', en: 'To-do' })}</div>
+    ${items || `<div class="jr-muted">${L({ zh: '还没有待办。写代码时说过要做的事，生成后会自动收进来。', en: 'No to-dos yet. Things you say you’ll do get collected here after you generate.' })}</div>`}
+    <div class="jr-add"><input id="todoAdd" maxlength="120" placeholder="${L({ zh: '加一条待办…回车', en: 'Add a to-do… Enter' })}" /><button id="todoAddBtn">${L({ zh: '添加', en: 'Add' })}</button></div>
+  </section>`;
 }
 
-function view() {
+function memoryHtml() {
+  const items = store.memory.map((m) => `
+    <div class="jr-mem">
+      <span class="jr-dot">•</span>
+      <span class="jr-mem-text">${esc(m.text)}</span>
+      <span class="jr-del" data-delmem="${m.id}" title="${L({ zh: '删除', en: 'Delete' })}">✕</span>
+    </div>`).join('');
+  return `<section class="jr-block">
+    <div class="jr-sec-h">📌 ${L({ zh: '记忆', en: 'Memory' })} <span class="jr-sec-hint">${L({ zh: '值得长期保留的', en: 'worth keeping long-term' })}</span></div>
+    ${items || `<div class="jr-muted">${L({ zh: '还没有长期记忆。偏好、关键决定这类会攒在这。', en: 'No long-term memory yet. Preferences and key decisions collect here.' })}</div>`}
+    <div class="jr-add"><input id="memAdd" maxlength="160" placeholder="${L({ zh: '记一条…回车', en: 'Add a note… Enter' })}" /><button id="memAddBtn">${L({ zh: '添加', en: 'Add' })}</button></div>
+  </section>`;
+}
+
+function dayHtml(date, d) {
+  const tools = (d.tools || []).join(' / ');
+  const meta = d.count ? L({ zh: `汇总 ${tools} 共 ${d.count} 条`, en: `${d.count} prompts · ${tools}` }) : '';
+  const know = asArr(d.knowledge).map((k) => `<div class="jr-know"><b>${esc(k.term)}</b>${k.term && k.explain ? '：' : ''}${esc(k.explain)}</div>`).join('');
+  const legacy = !d.summary && !know && d.text ? `<div class="jr-summary">${esc(d.text)}</div>` : '';
+  return `<article class="jr-entry">
+    <div class="jr-date">${esc(date)}${meta ? ` <span class="jr-meta">· ${esc(meta)}</span>` : ''}</div>
+    ${d.summary ? `<div class="jr-summary">${esc(d.summary)}</div>` : ''}
+    ${know ? `<div class="jr-know-h">🧠 ${L({ zh: '知识点', en: 'What to learn' })}</div>${know}` : ''}
+    ${legacy}
+  </article>`;
+}
+
+function daysHtml() {
+  const dates = Object.keys(store.days).sort().reverse();
+  if (!dates.length) return `<div class="jr-empty">${L({ zh: '点上面「生成今日小结」，开始记录你的成长轨迹 🌱', en: 'Tap “Generate today’s recap” to start your growth trail 🌱' })}</div>`;
+  return dates.map((d) => dayHtml(d, store.days[d])).join('');
+}
+
+function mount() {
   root.innerHTML = `
     <header class="jr-head">
       <div class="jr-title">${L({ zh: '🧠 成长日记', en: '🧠 Growth Journal' })}</div>
       <div class="jr-sub">${L({ zh: '借 AI 的力，长自己的筋骨', en: 'Borrow the AI’s strength. Grow your own.' })}</div>
     </header>
     <button class="jr-gen" id="genBtn">${L({ zh: '生成今日小结 🌱', en: 'Generate today’s recap 🌱' })}</button>
-    <div class="jr-msg" id="genMsg"></div>
-    <div class="jr-entries" id="entries"></div>
+    <div class="jr-msg" id="genMsg">${esc(genMsg)}</div>
+    ${todosHtml()}
+    ${memoryHtml()}
+    <section class="jr-block">
+      <div class="jr-sec-h">📖 ${L({ zh: '日记', en: 'Journal' })}</div>
+      <div class="jr-entries">${daysHtml()}</div>
+    </section>
     <footer class="jr-foot">${L({ zh: '会花一点点 token（用你已在用的那个 AI）。全程本地，数据只去你本来就在用的 AI，不上传第三方。', en: 'Uses a little token (via the AI you already use). Fully local; data only goes to the AI you already use, never a third party.' })}</footer>`;
-
-  const btn = document.getElementById('genBtn');
-  const msg = document.getElementById('genMsg');
-  btn.addEventListener('click', async () => {
-    if (!api?.journalGenerate) { msg.textContent = L({ zh: '桌面版才能生成（要调用你本机的 AI）。', en: 'Desktop app only — it calls your local AI.' }); return; }
-    const orig = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = L({ zh: '小精灵在帮你回顾今天… 🌱', en: 'Your sprite is reviewing your day… 🌱' });
-    msg.textContent = '';
-    try {
-      const r = await api.journalGenerate();
-      if (r && r.ok) { journal[r.date] = r.entry; renderEntries(); }
-      else { msg.textContent = errMsg(r && r.reason); }
-    } catch { msg.textContent = errMsg('ai_error'); }
-    btn.disabled = false; btn.textContent = orig;
-  });
-  renderEntries();
+  wire();
 }
 
-view();
-if (api?.journalList) {
-  api.journalList().then((j) => { journal = j || {}; renderEntries(); }).catch(() => {});
+function wire() {
+  const $ = (s) => root.querySelector(s);
+  const btn = $('#genBtn');
+  btn.addEventListener('click', async () => {
+    if (!api?.journalGenerate) { genMsg = L({ zh: '桌面版才能生成（要调用你本机的 AI）。', en: 'Desktop app only — it calls your local AI.' }); mount(); return; }
+    btn.disabled = true;
+    btn.textContent = L({ zh: '小精灵在帮你回顾今天… 🌱', en: 'Your sprite is reviewing your day… 🌱' });
+    genMsg = '';
+    try {
+      const r = await api.journalGenerate();
+      if (r && r.ok) { store = r.store; genMsg = ''; }
+      else { genMsg = errMsg(r && r.reason); }
+    } catch { genMsg = errMsg('ai_error'); }
+    mount();
+  });
+
+  root.querySelectorAll('[data-toggle]').forEach((el) => el.addEventListener('click', () => {
+    const t = store.todos.find((x) => x.id === el.getAttribute('data-toggle'));
+    if (t) { t.done = !t.done; save(); mount(); }
+  }));
+  root.querySelectorAll('[data-deltodo]').forEach((el) => el.addEventListener('click', () => {
+    store.todos = store.todos.filter((x) => x.id !== el.getAttribute('data-deltodo')); save(); mount();
+  }));
+  root.querySelectorAll('[data-delmem]').forEach((el) => el.addEventListener('click', () => {
+    store.memory = store.memory.filter((x) => x.id !== el.getAttribute('data-delmem')); save(); mount();
+  }));
+
+  const addTodo = () => {
+    const inp = $('#todoAdd'); const v = inp.value.trim();
+    if (!v) return; store.todos.push({ id: newId(), text: v, done: false, at: Date.now() }); save(); mount();
+  };
+  $('#todoAddBtn').addEventListener('click', addTodo);
+  $('#todoAdd').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTodo(); });
+
+  const addMem = () => {
+    const inp = $('#memAdd'); const v = inp.value.trim();
+    if (!v) return; store.memory.push({ id: newId(), text: v, at: Date.now() }); save(); mount();
+  };
+  $('#memAddBtn').addEventListener('click', addMem);
+  $('#memAdd').addEventListener('keydown', (e) => { if (e.key === 'Enter') addMem(); });
+}
+
+mount();
+if (api?.journalGet) {
+  api.journalGet().then((s) => { if (s) store = s; mount(); }).catch(() => {});
 }

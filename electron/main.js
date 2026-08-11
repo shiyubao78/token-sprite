@@ -13,7 +13,7 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { computeLocalUsage } from '../scripts/usage.mjs';
-import { generateGrowthSummary, readJournal, saveEntry, todayKey } from '../scripts/growth.mjs';
+import { generateGrowthSummary, readStore, writeStore, mergeGeneration, todayKey } from '../scripts/growth.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
 import { createUpdateController, parseReleaseFromUrl } from './update-controller.js';
 import { bottomRightBounds, isVisibleOnAnyDisplay } from './window-placement.js';
@@ -195,14 +195,22 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   ipcMain.handle('autolaunch:supported', () => autoLaunchSupported);
   ipcMain.handle('usage:get', () => computeLocalUsage());
   ipcMain.on('journal:open', () => openJournalWindow());
-  ipcMain.handle('journal:list', () => readJournal(journalPath()));
+  ipcMain.handle('journal:get', () => readStore(journalPath()));
   ipcMain.handle('journal:generate', async () => {
     const res = await generateGrowthSummary({ locale: appLocale() });
     if (!res.ok) return res;
     const date = todayKey();
-    const entry = { text: res.text, tools: res.tools, count: res.count, at: Date.now() };
-    await saveEntry(journalPath(), date, entry);
-    return { ok: true, date, entry };
+    const store = await readStore(journalPath());
+    const merged = mergeGeneration(store, date, res.parsed, { tools: res.tools, count: res.count, at: Date.now() });
+    await writeStore(journalPath(), merged);
+    return { ok: true, date, store: merged };
+  });
+  ipcMain.handle('journal:saveLists', async (_e, lists) => {
+    const store = await readStore(journalPath());
+    if (Array.isArray(lists && lists.todos)) store.todos = lists.todos;
+    if (Array.isArray(lists && lists.memory)) store.memory = lists.memory;
+    await writeStore(journalPath(), store);
+    return { ok: true };
   });
   ipcMain.on('app:quit', () => app.quit());
   ipcMain.handle('autolaunch:get', () => {
