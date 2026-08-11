@@ -13,7 +13,7 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { computeLocalUsage } from '../scripts/usage.mjs';
-import { generateGrowthSummary } from '../scripts/growth.mjs';
+import { generateGrowthSummary, readJournal, saveEntry, todayKey } from '../scripts/growth.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
 import { createUpdateController, parseReleaseFromUrl } from './update-controller.js';
 import { bottomRightBounds, isVisibleOnAnyDisplay } from './window-placement.js';
@@ -69,6 +69,23 @@ function createWindow() {
   mainWin = win;
   win.once('ready-to-show', ensureSpriteVisible);
   win.on('closed', () => { if (mainWin === win) mainWin = null; });
+}
+
+// ---- 成长日记独立窗口 ----
+let journalWin = null;
+function journalPath() { return path.join(app.getPath('userData'), 'growth-journal.json'); }
+function openJournalWindow() {
+  if (journalWin && !journalWin.isDestroyed()) { journalWin.show(); journalWin.focus(); return; }
+  journalWin = new BrowserWindow({
+    width: 560, height: 780, minWidth: 420, minHeight: 480,
+    title: appLocale() === 'en' ? 'Growth Journal' : '成长日记',
+    backgroundColor: '#f6f2ea',
+    webPreferences: { preload: path.join(dir, 'preload.cjs') },
+  });
+  journalWin.removeMenu?.();
+  if (DEV_URL) journalWin.loadURL(DEV_URL.replace(/\/$/, '') + '/journal.html');
+  else journalWin.loadFile(path.join(dir, '..', 'dist', 'journal.html'));
+  journalWin.on('closed', () => { journalWin = null; });
 }
 
 function ensureSpriteVisible() {
@@ -177,7 +194,16 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   const autoLaunchSupported = process.platform === 'darwin' || process.platform === 'win32';
   ipcMain.handle('autolaunch:supported', () => autoLaunchSupported);
   ipcMain.handle('usage:get', () => computeLocalUsage());
-  ipcMain.handle('growth:summarize', () => generateGrowthSummary({ locale: appLocale() }));
+  ipcMain.on('journal:open', () => openJournalWindow());
+  ipcMain.handle('journal:list', () => readJournal(journalPath()));
+  ipcMain.handle('journal:generate', async () => {
+    const res = await generateGrowthSummary({ locale: appLocale() });
+    if (!res.ok) return res;
+    const date = todayKey();
+    const entry = { text: res.text, tools: res.tools, count: res.count, at: Date.now() };
+    await saveEntry(journalPath(), date, entry);
+    return { ok: true, date, entry };
+  });
   ipcMain.on('app:quit', () => app.quit());
   ipcMain.handle('autolaunch:get', () => {
     return autoLaunchEnabled();

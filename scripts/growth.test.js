@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { extractUserText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt } from './growth.mjs';
+import { extractUserText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt, todayKey, readJournal, saveEntry } from './growth.mjs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { rm } from 'node:fs/promises';
 
 describe('extractUserText', () => {
   it('抽出字符串 content 的用户提问', () => {
@@ -80,5 +83,31 @@ describe('buildPrompt', () => {
     const p = buildPrompt([{ source: 'Codex', text: 'write a regex' }], 'en');
     expect(p).toContain('coding buddy');
     expect(p).toContain('1. [Codex] write a regex');
+  });
+  it('要求三块结构（提醒/知识点/小结）', () => {
+    const p = buildPrompt([{ source: 'Codex', text: 'x' }], 'zh');
+    expect(p).toContain('## 📌');
+    expect(p).toContain('## 🧠');
+    expect(p).toContain('## 🌱');
+  });
+});
+
+describe('journal 存留', () => {
+  it('todayKey 是 YYYY-MM-DD', () => {
+    expect(todayKey(Date.parse('2026-08-11T09:00:00'))).toBe('2026-08-11');
+  });
+  it('文件不存在时 readJournal 返回 {}', async () => {
+    expect(await readJournal(join(tmpdir(), 'nope-ts-journal-xyz.json'))).toEqual({});
+  });
+  it('saveEntry 写入后能读回，覆盖当天', async () => {
+    const fp = join(tmpdir(), `ts-journal-test-${process.pid}.json`);
+    await rm(fp, { force: true });
+    await saveEntry(fp, '2026-08-11', { text: 'a', count: 3 });
+    await saveEntry(fp, '2026-08-10', { text: 'b', count: 1 });
+    await saveEntry(fp, '2026-08-11', { text: 'a2', count: 5 }); // 覆盖当天
+    const all = await readJournal(fp);
+    expect(Object.keys(all).sort()).toEqual(['2026-08-10', '2026-08-11']);
+    expect(all['2026-08-11'].text).toBe('a2');
+    await rm(fp, { force: true });
   });
 });

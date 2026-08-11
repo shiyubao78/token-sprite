@@ -245,19 +245,4 @@ export function achievementsHTML(vm) {
     <div class="source-note" style="margin-top:8px">${L({ zh: '达成成就得券，用券抽蛋。全用你的真实用量判定。', en: 'Earn tickets from achievements and draw eggs. All judged on your real usage.' })}</div>`;
 }
 
-export function growthHTML() {
-  return `<button class="close nodrag" data-close aria-label="${L({ zh: '关闭', en: 'Close' })}">✕</button>
-    <h2>${L({ zh: '🧠 成长小结', en: '🧠 Growth Recap' })}</h2>
-    <div class="growth-intro">${L({
-      zh: '别只烧 token——也让它帮你长本事。点一下，小精灵会把你今天在各 AI 工具里的提问，交给你<b>本机的 Claude / Codex</b> 回顾一遍，给你一份温暖的"哪儿可以自己更强"小结。',
-      en: 'Don\'t just burn tokens — grow from them. Tap below and your sprite hands today\'s prompts (across your AI tools) to <b>your local Claude / Codex</b> for a warm recap of where you could level up yourself.',
-    })}</div>
-    <button class="growth-btn nodrag" id="growthGen">${L({ zh: '生成今日小结 🌱', en: 'Generate today\'s recap 🌱' })}</button>
-    <div class="growth-result" id="growthResult"></div>
-    <div class="source-note" style="margin-top:10px">${L({
-      zh: '会花一点点 token（用你已经在用的那个 AI）。全程本地，数据只去你本来就在用的 AI，不上传第三方。',
-      en: 'Uses a little token (via the AI you already use). Fully local; data only goes to the AI you already use, never a third party.',
-    })}</div>`;
-}
-
 export { speciesByKey };

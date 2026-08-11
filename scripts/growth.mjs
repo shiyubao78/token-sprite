@@ -59,30 +59,69 @@ export function condensePrompts(items, { maxCount = 60, maxChars = 400 } = {}) {
   }));
 }
 
-// 拼给 AI 的分析指令：温暖的成长教练口吻，先夸一句、再轻提醒、最后一个成长点。双语。
+// 拼给 AI 的分析指令：输出一篇 Markdown「今日成长日记」，含 提醒/待办 + 知识点讲解 + 暖话。双语。
 export function buildPrompt(items, locale = 'zh') {
   const joined = items.map((it, i) => `${i + 1}. [${it.source}] ${it.text.replace(/\n+/g, ' ')}`).join('\n');
   const tools = [...new Set(items.map((it) => it.source))].join(' / ') || 'AI';
   if (locale === 'en') {
-    return `You are my coding buddy — the little sprite I'm raising. You genuinely want me to not just USE AI, but to keep getting stronger myself. 💚
-Below are the prompts I sent across all my AI coding tools today (${tools}). In a warm, encouraging, non-preachy voice, under 170 words, talk to me like a friend:
-1) First, one specific bit of praise for today's effort or progress (no clichés).
-2) Where I leaned on AI a bit today (things I kept asking) — nudge me gently.
-3) Pick ONE thing today most worth understanding myself, and why it'll make me faster.
-Be warm, specific, positive. Base it only on the prompts below.
+    return `You are my coding buddy — the little sprite I'm raising. You genuinely want me to not just USE AI, but to keep getting stronger myself, and you help me remember what I said I'd do. 💚
+Below are the prompts I sent across all my AI coding tools today (${tools}). Write a short "Growth Journal for today" in Markdown, with exactly these three sections (use ## headers):
+
+## 📌 Remember / To-do
+Pull out things I said I need to do, follow up on, or remember (e.g. "refactor X later", "add tests for Y", "book a flight", "ping someone next week"). List them as \`- [ ]\` checkboxes. If none, say "Nothing to track today".
+
+## 🧠 What to learn
+Pick 1-3 technical points I leaned on AI for most today. For each, actually TEACH the point in 2-3 sentences (not just "learn X" — give me the real substance), so I learn it right here.
+
+## 🌱 Today
+One line: one specific bit of praise, then a gentle nudge not to over-rely.
+
+Keep it concise, specific, warm, positive. Base it only on the prompts below. Reply in English.
 
 --- my prompts today (tagged by tool) ---
 ${joined}`;
   }
-  return `你是我的编程搭子，也是我养的那只小精灵。你真心希望我不只是"会用 AI"，而是自己也越来越强 💚
-下面是我今天在所有 AI 编程工具（${tools}）里发出的提问。请用**温暖、鼓励、不说教**的语气，在 170 字内，像朋友一样跟我说：
-1）先具体夸一句我今天的努力或进展（别客套）；
-2）我今天在哪些地方有点依赖 AI（反复问的），轻轻提醒我；
-3）挑今天最值得我自己搞懂的**一个**点，说说学会它以后能怎么更省力。
-温柔、具体、正向，只依据下面这些提问判断。
+  return `你是我的编程搭子，也是我养的那只小精灵。你真心希望我不只"会用 AI"、也越来越强，还会帮我记住我说过要做的事 💚
+下面是我今天在所有 AI 编程工具（${tools}）里发出的提问。请写一篇简短的「今日成长日记」，用 Markdown，**严格分成下面三块**（用 ## 小标题）：
+
+## 📌 该记住 / 待办
+从我今天说过的话里，揪出我提到要做、要跟进、要记住的事（比如"回头重构 X""记得给 Y 加测试""要订机票""下周找某人"），列成 \`- [ ]\` 待办。要是没有，就写"今天没提到待办"。
+
+## 🧠 知识点
+挑我今天最依赖 AI 的 1-3 个技术点，每个用 2-3 句**把知识点本身讲清楚**（不是只说"你该学 X"，而是直接把要点教给我），让我看完就学到。
+
+## 🌱 今日小结
+一句话：先具体夸我一句，再轻轻提醒我别太依赖。
+
+简洁、具体、温暖、正向，只依据下面这些提问判断。全程中文。
 
 --- 我今天的提问（标了来自哪个工具）---
 ${joined}`;
+}
+
+// ---------- 成长日记留存（每日一篇，存在 app 数据目录，不上传） ----------
+
+// 本地日期键 YYYY-MM-DD（按本机时区）。
+export function todayKey(now = Date.now()) {
+  const d = new Date(now);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// 读整本日记（date -> entry）。文件不存在 / 坏了都返回 {}。
+export async function readJournal(filePath) {
+  try {
+    const raw = await readFile(filePath, 'utf8');
+    const obj = JSON.parse(raw);
+    return obj && typeof obj === 'object' ? obj : {};
+  } catch { return {}; }
+}
+
+// 写入某天的一篇（覆盖当天）。返回整本。
+export async function saveEntry(filePath, dateKey, entry) {
+  const all = await readJournal(filePath);
+  all[dateKey] = entry;
+  try { await writeFile(filePath, JSON.stringify(all, null, 2), 'utf8'); } catch { /* 存储不可用则静默 */ }
+  return all;
 }
 
 // ---------- IO ----------

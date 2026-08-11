@@ -38,6 +38,12 @@ export default defineConfig({
   plugins: [localUsagePlugin()],
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        journal: 'journal.html', // 成长日记独立窗口
+      },
+    },
   },
   test: {
     environment: 'jsdom',

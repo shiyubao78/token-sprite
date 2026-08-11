@@ -264,13 +264,6 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .evo-btn { width: 100%; margin-top: 12px; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; }
 .evo-btn:disabled { background: #e7e0d0; color: var(--muted); border-color: var(--line); cursor: default; }
 
-/* 成长小结 */
-.growth-intro { font-size: 12px; line-height: 1.65; color: var(--muted); margin: 2px 0 12px; }
-.growth-btn { width: 100%; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; }
-.growth-btn:disabled { background: #e7e0d0; color: var(--muted); border-color: var(--line); cursor: default; }
-.growth-result { display: none; white-space: pre-wrap; font-size: 12.5px; line-height: 1.75; color: var(--ink); background: #fbf7ef; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-top: 12px; }
-.growth-result.show { display: block; }
-
 /* 羁绊 */
 .bond-badge { align-self: center; margin-top: 3px; font-size: 11px; font-weight: 600; color: #b3568a; background: #fbeef4; border: 1px solid #f3d6e4; padding: 3px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
 .bond-badge:active { transform: scale(.96); }
