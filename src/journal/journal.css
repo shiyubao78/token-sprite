@@ -53,7 +53,9 @@ body {
 }
 
 /* 今日知识点 */
-.jr-loading { color: var(--accent-ink); font-size: 14px; padding: 6px 0 10px; }
+.jr-loading { color: var(--accent-ink); font-size: 14px; padding: 6px 0 10px; animation: jr-pulse 1.4s ease-in-out infinite; }
+.jr-loading-hint { margin-top: 5px; font-size: 12.5px; font-weight: 400; color: var(--muted); line-height: 1.6; }
+@keyframes jr-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .62; } }
 .jr-know { font-size: 13.5px; line-height: 1.75; margin: 6px 0; }
 .jr-know b { color: var(--accent-ink); }
 .jr-regen { margin-top: 12px; width: 100%; border: 1px solid var(--accent); background: #eaf7f0; color: var(--accent-ink); border-radius: 10px; padding: 10px; font-size: 13.5px; font-weight: 700; cursor: pointer; }

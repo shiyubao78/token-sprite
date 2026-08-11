@@ -40,7 +40,7 @@ function todaySection() {
   const d = store.days[TODAY];
   const know = d ? asArr(d.knowledge) : [];
   let body;
-  if (busy) body = `<div class="jr-loading">${L({ zh: '小精灵在帮你回顾今天… 🌱', en: 'Your sprite is reviewing your day… 🌱' })}</div>`;
+  if (busy) body = `<div class="jr-loading"><b>${L({ zh: '正在生成今日摘要… 🌱', en: 'Generating today’s recap… 🌱' })}</b><div class="jr-loading-hint">${L({ zh: '小精灵在读今天的对话、交给你本机的 AI 分析，大概 20–40 秒，先别关窗～', en: 'Reading today’s chats and asking your local AI — about 20–40s, keep this window open ~' })}</div></div>`;
   else if (know.length) body = know.map((k) => `<div class="jr-know"><b>${esc(k.term)}</b>${k.term && k.explain ? '：' : ''}${esc(k.explain)}</div>`).join('');
   else body = `<div class="jr-muted">${genMsg ? esc(genMsg) : L({ zh: '还没生成今天的小结。', en: 'Today’s recap not generated yet.' })}</div>`;
   const label = busy ? L({ zh: '生成中…', en: 'Generating…' }) : (d ? L({ zh: '🔄 重新生成今日', en: '🔄 Regenerate today' }) : L({ zh: '生成今日小结 🌱', en: 'Generate today 🌱' }));

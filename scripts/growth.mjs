@@ -73,7 +73,7 @@ ${memBlock}${todoBlock}Below are the prompts I sent across all my AI coding tool
 {
   "summary": "one or two sentences: what I mainly worked on / talked about today",
   "knowledge": [{"term": "the concept name", "explain": "2-3 sentences that actually teach this concept so I learn it right here"}],
-  "todos": ["ONLY NEW things I said I need to do that aren't already tracked above, one short line each (e.g. 'add tests for X', 'book a flight')"],
+  "todos": ["ONLY NEW things I said I need to do that aren't already tracked above; MERGE several small items about the same thing into ONE higher-level to-do (e.g. 'commit & release these changes' rather than listing each change), one short line each (e.g. 'add tests for X', 'book a flight')"],
   "memory": ["ONLY NEW things worth keeping long-term that aren't already known above: my preferences, key project decisions, important facts, one short line each"]
 }
 Pick at most 3 knowledge items. Use [] for any empty category. Base it only on the prompts below. Values in English.
@@ -88,7 +88,7 @@ ${memBlock}${todoBlock}下面是我今天在所有 AI 编程工具（${tools}）
 {
   "summary": "一两句话：今天我主要在做什么、聊了什么",
   "knowledge": [{"term": "技术点名字", "explain": "用 2-3 句把这个知识点讲清楚，让我看完就学到（不是只点名）"}],
-  "todos": ["只放今天新出现、且上面还没在追踪的待办，一条一句（比如'给 X 加测试'、'订机票'）"],
+  "todos": ["只放今天新出现、且上面还没在追踪的待办；**关于同一件事的多个小项要合并成一条更概括的**（比如'把这些改动 git 发版'，别逐条列每个改动），一条一句（如'给 X 加测试'、'订机票'）"],
   "memory": ["只放上面还不知道的、今天新出现的值得长期记住的：我的偏好、项目关键决定、重要事实，一条一句"]
 }
 knowledge 最多挑 3 个。没有内容的类别给 []。只依据下面的提问。所有值用中文。
