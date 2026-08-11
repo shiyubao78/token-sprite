@@ -45,6 +45,7 @@ Got duplicate eggs of the same species? **Merge** them in the incubator—progre
 - **看得见用量和花费 / See usage and cost**：用量洞察面板显示今日/近 7 天写了多少 token、按工具占比、活跃时段，还能折算成**约多少钱**（美元、粗略估算），当作「你的用量值多少钱」的参考。 / A panel breaks down tokens by day, tool, and hour, and converts them into a **rough dollar value** of what you've used.
 - **桌面常驻 / Always on your desktop**：悬浮置顶、自由拖动，也能缩成侧边探头。 / Always on top, draggable, and able to peek quietly from the screen edge.
 - **孵化收集 / Hatch and collect**：成就 → 抽蛋 → 进化 → 图鉴，让每次写代码都有期待。 / Achievements unlock eggs; eggs evolve into creatures for your collection.
+- **借 AI 的力，长自己的筋骨 / Grow yourself, not just the pet**：**成长日记**用**你本机的 AI** 回顾今天和 AI 的对话，把值得学的知识点讲给你、把你说过要做的事收成可编辑的待办，还能每天回看——用 AI 帮你长本事，而不只是烧 token。 / The **Growth Journal** reviews today's AI-coding chats through *your own local AI* and gives you what's worth learning (explained), editable to-dos, and a daily history — so you grow your own skills, not just burn tokens.
 - **全本地私密 / Private by design**：只读本机日志，用量绝不上传；仅正式版会向 GitHub 查询有无新版本。 / Usage stays on your machine and is never uploaded; only released builds check GitHub for new versions.
 
 ## 🏆 成就与抽蛋 / Achievements & Hatching
@@ -98,6 +99,7 @@ Fully local, no login — one floating window: rename, draw, hatch, collect, ear
 | 🏆 成就 / Achievements | 达成条件得券，全用真实 token 用量判定 / Earn tickets by hitting milestones, all judged on real token usage |
 | 📊 用量洞察 / Usage | 今日 / 最近 7 天用量、按工具占比、活跃时段，还有花费估算 / Today & 7-day usage, per-tool split, active hours, plus a rough cost estimate |
 | 💞 羁绊 / Bond | 化形后开启，写代码 + 逗它越处越亲，5 级解锁暖心回报 / Unlocks after final form; coding and play deepen a 5-level bond |
+| 🧠 成长日记 / Growth Journal | 独立窗口：今日知识点、可编辑待办、每日回看，由你本机的 AI 生成，全程本地 / A separate window: takeaways, editable to-dos, and daily history — by your own local AI, fully local |
 
 ## 📊 用量洞察与花费 / Usage & Cost Insights
 
@@ -106,6 +108,22 @@ Open **Usage Insights** from the menu to see how many tokens you wrote today and
 
 化形之后，陪伴不止：随着你写代码和逗它，**羁绊**会一路升级，解锁更亲昵的反应。<br />
 After it reaches its final form, the bond continues: coding and playful pokes level up your **bond**, unlocking warmer reactions over time.
+
+## 🧠 成长日记 / Growth Journal
+
+烧 token 不该等于把脑子外包出去。打开**成长日记**，小精灵会用**你本机的 Claude / Codex** 回顾你今天和 AI 的对话，给你：<br />
+Burning tokens shouldn't mean outsourcing your brain. Open the **Growth Journal** and your sprite reviews today's AI-coding chats — through *your own local Claude / Codex* — and gives back:
+
+- **知识点 / Takeaways**：你依赖 AI 的地方，把要点直接讲给你，看完就学到。 / the concepts you leaned on, actually explained.
+- **待办 / To-dos**：你说过要做的事（发版、加测试、订机票），可编辑、可一键勾掉；重新生成会刷新、但不覆盖你动过的。 / editable and one-tap done; regenerating refreshes without overwriting what you touched.
+- **每日回看 / Daily history**：全部存在本地，攒成你的成长轨迹。 / persists locally, a trail of how you grow.
+
+全程只走你已经在用的那个 AI，不上传任何第三方。<br />
+Everything runs through the AI you already use; nothing is uploaded to a third party.
+
+<p align="center">
+<img src="assets/readme/growth-journal.png" width="640" alt="成长日记：今日知识点、可编辑待办、每日回看 / Growth Journal: takeaways, editable to-dos, daily history" />
+</p>
 
 ## 🚀 快速开始 / Quick Start
 
