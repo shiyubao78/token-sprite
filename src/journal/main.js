@@ -46,7 +46,7 @@ function todaySection() {
   else body = `<div class="jr-muted">${genMsg ? esc(genMsg) : L({ zh: '还没生成今天的小结。', en: 'Today’s recap not generated yet.' })}</div>`;
   const label = busy ? L({ zh: '生成中…', en: 'Generating…' }) : (d ? L({ zh: '🔄 重新生成今日', en: '🔄 Regenerate today' }) : L({ zh: '生成今日小结 🌱', en: 'Generate today 🌱' }));
   return `<section class="jr-block">
-    <div class="jr-sec-h">🧠 ${L({ zh: '今日知识点', en: 'Today’s takeaways' })} <span class="jr-sec-hint">${L({ zh: '借 AI 的力，长自己的筋骨', en: 'grow your own strength' })}</span></div>
+    <div class="jr-sec-h">💡 ${L({ zh: '今日知识点', en: 'Today’s takeaways' })}</div>
     ${body}
     <button class="jr-regen ${busy ? 'busy' : ''}" id="genBtn" ${busy ? 'disabled' : ''}>${label}</button>
   </section>`;
