@@ -4,9 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>成长日记 / Growth Journal</title>
+    <style>
+      html, body { margin: 0; background: #f6f2ea; height: 100%; }
+      /* 开窗即现的可爱加载态：不依赖 JS/CSS 打包，第一帧就能画 */
+      .boot { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;
+        font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; color: #8f836d; }
+      .boot-emoji { font-size: 60px; animation: bootbob 1.1s ease-in-out infinite; }
+      .boot-text { margin-top: 16px; font-size: 15px; letter-spacing: .3px; }
+      .boot-dots::after { content: '…'; animation: bootdots 1.4s steps(4, end) infinite; }
+      @keyframes bootbob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-12px) rotate(3deg); } }
+      @keyframes bootdots { 0% { content: ''; } 25% { content: '·'; } 50% { content: '··'; } 75% { content: '···'; } }
+    </style>
   </head>
   <body>
     <div id="journal"></div>
+    <script>
+      // 立即（模块加载前）铺上可爱加载态，语言跟随存档/系统
+      (function () {
+        var zh = /^zh/i.test(navigator.language || 'zh');
+        try { var s = (JSON.parse(localStorage.getItem('token-sprite:pet:v1') || '{}').settings) || {}; if (s.locale) zh = s.locale !== 'en'; } catch (e) {}
+        document.getElementById('journal').innerHTML =
+          '<div class="boot"><div class="boot-emoji">🌱</div><div class="boot-text">' +
+          (zh ? '小精灵在翻开你的成长日记' : 'Opening your growth journal') +
+          '<span class="boot-dots"></span></div></div>';
+      })();
+    </script>
     <script type="module" src="/src/journal/main.js"></script>
   </body>
 </html>
