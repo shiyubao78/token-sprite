@@ -14,6 +14,7 @@
     "preview": "vite preview",
     "sync": "node scripts/sync.mjs",
     "ops": "node scripts/ops-dashboard.mjs",
+    "ops:auto": "node scripts/ops-autorun.mjs",
     "electron": "electron .",
     "desktop": "cross-env TS_DEV_URL=http://localhost:5173 electron .",
     "pack": "npm run build && electron-builder --mac dir --universal",
