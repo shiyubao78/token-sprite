@@ -80,9 +80,17 @@ function openJournalWindow() {
     width: 560, height: 780, minWidth: 420, minHeight: 480,
     title: appLocale() === 'en' ? 'Growth Journal' : '成长日记',
     backgroundColor: '#f6f2ea',
+    show: false, // 等页面画好再露面，省掉一段空白窗；窗口一出现就是加载态
     webPreferences: { preload: path.join(dir, 'preload.cjs') },
   });
   journalWin.removeMenu?.();
+  const showJournal = () => {
+    if (!journalWin || journalWin.isDestroyed() || journalWin.isVisible()) return;
+    journalWin.show();
+    journalWin.focus();
+  };
+  journalWin.once('ready-to-show', showJournal);
+  setTimeout(showJournal, 1500); // 兜底：加载异常也别让窗口永远不出现
   if (DEV_URL) journalWin.loadURL(DEV_URL.replace(/\/$/, '') + '/journal.html');
   else journalWin.loadFile(path.join(dir, '..', 'dist', 'journal.html'));
   journalWin.on('closed', () => { journalWin = null; });

@@ -21,6 +21,7 @@
     <script>
       // 立即（模块加载前）铺上可爱加载态，语言跟随存档/系统
       (function () {
+        window.__bootAt = Date.now(); // 给主模块算最小展示时间用
         var zh = /^zh/i.test(navigator.language || 'zh');
         try { var s = (JSON.parse(localStorage.getItem('token-sprite:pet:v1') || '{}').settings) || {}; if (s.locale) zh = s.locale !== 'en'; } catch (e) {}
         document.getElementById('journal').innerHTML =

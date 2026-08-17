@@ -1,5 +1,6 @@
 import './journal.css';
 import { L, setLocale, detectLocale } from '../config/i18n.js';
+import { bootWaitMs } from '../domain/bootDelay.js';
 
 // 语言：跟随桌宠存档里的选择（同源 localStorage 共享），否则跟随系统。
 try {
@@ -156,8 +157,11 @@ function wire() {
 }
 
 // 进窗口：先拉存档铺上（待办/记忆），今天还没生成过就自动生成一次。
+// 打包后的脚本几十毫秒就跑完，直接 mount 会把开窗加载态瞬间盖掉，所以先让它显示够久。
 async function init() {
   if (api?.journalGet) { try { const s = await api.journalGet(); if (s) store = s; } catch {} }
+  const wait = bootWaitMs(globalThis.__bootAt, Date.now());
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
   mount();
   if (api?.journalGenerate && !store.days[TODAY]) generate();
 }
