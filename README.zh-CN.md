@@ -19,6 +19,11 @@ Write code, earn real tokens, hatch mystery eggs, evolve through five stages, an
 
 **macOS · Windows · Linux** · 本地读取 / Local-only · 不上传 / Nothing uploaded
 
+### [⬇️ 下载 macOS 版 / Download for macOS](https://github.com/shiyubao78/token-sprite/releases/latest)
+
+第一次打开请**右键点图标 → 选「打开」**——双击会被 macOS 拦下，因为这个版本没有 Apple 签名证书。只需这一次。[看 30 秒安装图解 ↓](#macos-普通用户安装--install-on-macos)<br />
+First launch: **right-click the app → Open** — double-clicking gets blocked, because these builds aren't signed. You only do this once.
+
 </div>
 
 ---
@@ -132,8 +137,18 @@ Requires [Node.js](https://nodejs.org/) 20+ and runs on **macOS, Windows, and Li
 
 ### macOS 普通用户安装 / Install on macOS
 
-普通用户请从 GitHub Releases 下载最新的 `.zip`，解压后把 **Token 小精灵**拖进“应用程序”。当前为未签名版本，首次打开右键点图标选“打开”通过一次系统提示即可。源码方式主要面向开发者。<br />
-Download the latest `.zip` from GitHub Releases, unzip it, and drag **Token Sprite** into Applications. Current builds are unsigned, so right-click the app and choose “Open” once to pass Gatekeeper. The source workflow below is mainly for developers.
+<div align="center">
+<img src="assets/readme/install-macos.png" width="900" alt="三步安装：下载解压、拖进应用程序、右键点图标选打开 / Three steps: download and unzip, drag into Applications, right-click and choose Open" />
+</div>
+
+1. 从 [Releases](https://github.com/shiyubao78/token-sprite/releases/latest) 下载最新的 `.zip`，双击解压。
+2. 把 **Token 小精灵**拖进「应用程序」文件夹。
+3. **右键点图标 → 选「打开」**，弹窗里再点一次「打开」。
+
+第 3 步是最多人卡住的地方。如果你直接双击，macOS 会拦住并且只给「移到废纸篓」——别点。右键绕一次，之后就永久生效。
+
+**为什么会这样？** 给 Mac 应用签名要向 Apple 交每年 $99 的开发者费，这个项目还没交。全部代码开源，你可以自己翻、自己编译。源码方式主要面向开发者。<br />
+Download the latest `.zip` from [Releases](https://github.com/shiyubao78/token-sprite/releases/latest), unzip it, and drag **Token Sprite** into Applications. Then **right-click the app → Open** and confirm — double-clicking gets blocked because these builds aren't signed. You only do this once.
 
 有新版时，正式版会弹窗提醒；菜单栏的小精灵图标 → **检查更新** 也会打开下载页，下载新版 `.zip` 解压覆盖安装即可，成长数据保留。<br />
 When a new version is available, released builds show a reminder. The menu-bar icon → **Check for Updates** opens the download page; grab the new `.zip`, unzip, and reinstall over the old one—your growth data is kept.

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1560px; background: #f6f2ea; color: #3d3730;
+    font: 15px/1.6 -apple-system, "PingFang SC", "Helvetica Neue", sans-serif; padding: 56px 60px 52px; }
+  .head { text-align: center; margin-bottom: 44px; }
+  .head h1 { font-size: 42px; letter-spacing: -.5px; }
+  .head p { font-size: 19px; color: #8f836d; margin-top: 10px; }
+
+  .steps { display: flex; gap: 20px; margin-bottom: 40px; }
+  .step { flex: 1; background: #fff; border-radius: 18px; padding: 26px 28px; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+  .num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+    border-radius: 50%; background: #6aa84f; color: #fff; font-size: 17px; font-weight: 700; margin-bottom: 12px; }
+  .step h3 { font-size: 22px; margin-bottom: 6px; }
+  .step p { font-size: 16px; color: #8f836d; }
+  .step .flow { display: flex; align-items: center; gap: 12px; margin-top: 16px; font-size: 34px; }
+  .step .flow .arrow { font-size: 22px; color: #c3b9a5; }
+  .step img.appicon { width: 46px; height: 46px; border-radius: 10px; }
+
+  .hero { background: #fff; border-radius: 22px; padding: 34px 38px 38px; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+  .hero-h { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+  .hero-h h2 { font-size: 27px; }
+  .hero-h .tag { background: #fdf1dd; color: #b07d33; font-size: 14px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+  .hero-sub { color: #8f836d; font-size: 17px; margin-bottom: 26px; }
+
+  .compare { display: flex; gap: 26px; align-items: stretch; }
+  .col { flex: 1; border-radius: 16px; padding: 22px 24px 26px; }
+  .col.bad { background: #fdf0ec; border: 1.5px solid #f0d5cb; }
+  .col.good { background: #f1f7ed; border: 1.5px solid #cfe3c2; }
+  .col-h { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .col.bad .col-h { color: #c0563a; }
+  .col.good .col-h { color: #4b8236; }
+  .col-s { font-size: 15px; color: #8f836d; margin-bottom: 18px; }
+  .stage { display: flex; justify-content: center; align-items: center; min-height: 232px; }
+
+  /* 仿 macOS 系统警告弹窗 */
+  .sheet { width: 300px; background: #fbfbfb; border-radius: 13px; padding: 20px 20px 16px;
+    box-shadow: 0 12px 34px rgba(0,0,0,.20); text-align: center; }
+  .sheet img { width: 58px; height: 58px; border-radius: 12px; margin-bottom: 12px; }
+  .sheet .t { font-size: 13.5px; font-weight: 700; line-height: 1.45; }
+  .sheet .d { font-size: 11.5px; color: #6f6a63; margin-top: 7px; line-height: 1.5; }
+  .sheet .btns { display: flex; flex-direction: column; gap: 7px; margin-top: 15px; }
+  .btn { border-radius: 7px; font-size: 12.5px; padding: 6px 0; border: 1px solid #d8d5d0; background: #fff; }
+  .btn.blue { background: #0a64ff; color: #fff; border-color: #0a64ff; font-weight: 600; }
+
+  /* 仿 macOS 右键菜单 */
+  .ctx-wrap { position: relative; display: flex; align-items: flex-start; gap: 0; }
+  .ctx-icon { width: 64px; height: 64px; border-radius: 13px; }
+  .ctx { width: 196px; background: rgba(250,250,250,.98); border-radius: 8px; padding: 5px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.22); border: .5px solid rgba(0,0,0,.10); margin: 26px 0 0 -14px; }
+  .ctx div { font-size: 12.5px; padding: 4px 10px; border-radius: 5px; color: #23201c; }
+  .ctx div.on { background: #0a64ff; color: #fff; font-weight: 600; }
+  .ctx .sep { height: 1px; background: #e2dfda; margin: 4px 8px; padding: 0; border-radius: 0; }
+  .cursor { position: absolute; left: 26px; top: 74px; font-size: 22px; transform: rotate(-8deg); }
+
+  .caption { text-align: center; font-size: 15.5px; margin-top: 16px; line-height: 1.5; }
+  .col.bad .caption { color: #c0563a; }
+  .col.good .caption { color: #4b8236; font-weight: 600; }
+
+  .why { margin-top: 28px; background: #fdf6ec; border-left: 4px solid #e0a355; border-radius: 0 12px 12px 0;
+    padding: 18px 24px; font-size: 16px; color: #7a6a52; line-height: 1.75; }
+  .why b { color: #3d3730; }
+</style></head>
+<body>
+  <div class="head">
+    <h1>🌱 macOS 装好只要 30 秒</h1>
+    <p>第一次打开记得<b>右键</b>——双击会被系统拦下来</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h3>下载并解压</h3>
+      <p>从 Releases 下载 <code>.zip</code>，双击解压</p>
+      <div class="flow"><span>📦</span><span class="arrow">→</span><img class="appicon" src="../../build/icon-1024.png" alt=""/></div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <h3>拖进「应用程序」</h3>
+      <p>把小精灵拖进 Applications 文件夹</p>
+      <div class="flow"><img class="appicon" src="../../build/icon-1024.png" alt=""/><span class="arrow">→</span><span>📁</span></div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <h3>右键点图标 → 选「打开」</h3>
+      <p>只需这一次，之后双击就能开</p>
+      <div class="flow"><span>🖱️</span><span class="arrow">→</span><span>✅</span></div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-h"><h2>第 3 步是关键</h2><span class="tag">卡在这里的人最多</span></div>
+    <div class="hero-sub">小精灵没买 Apple 的签名证书，所以 macOS 默认不让它开。右键绕一次就好，一次之后永久生效。</div>
+
+    <div class="compare">
+      <div class="col bad">
+        <div class="col-h">✗ 双击打开</div>
+        <div class="col-s">系统直接拦住，只给你「移到废纸篓」</div>
+        <div class="stage">
+          <div class="sheet">
+            <img src="../../build/icon-1024.png" alt=""/>
+            <div class="t">未能打开“Token 小精灵”，因为无法验证开发者</div>
+            <div class="d">此 App 可能会损害您的 Mac 安全或泄露隐私。</div>
+            <div class="btns">
+              <div class="btn">移到废纸篓</div>
+              <div class="btn">取消</div>
+            </div>
+          </div>
+        </div>
+        <div class="caption">看到这个别慌，也<b>别点「移到废纸篓」</b></div>
+      </div>
+
+      <div class="col good">
+        <div class="col-h">✓ 右键 → 打开</div>
+        <div class="col-s">右键点图标，菜单第一项就是「打开」</div>
+        <div class="stage">
+          <div class="ctx-wrap">
+            <img class="ctx-icon" src="../../build/icon-1024.png" alt=""/>
+            <div class="ctx">
+              <div class="on">打开</div>
+              <div>显示包内容</div>
+              <div class="sep"></div>
+              <div>移到废纸篓</div>
+              <div>显示简介</div>
+            </div>
+            <div class="cursor">🖱️</div>
+          </div>
+        </div>
+        <div class="caption">右键菜单里选「打开」→ 弹窗点「打开」→ 装好了</div>
+      </div>
+    </div>
+
+    <div class="why">
+      <b>为什么会被拦？</b>给 Mac 应用签名要向 Apple 交每年 $99 的开发者费，这个项目还没交。这不代表它不安全——<b>全部代码开源</b>，你可以自己翻、自己编译。小精灵全程本地运行，不联网、不上传任何数据（只有正式版会去 GitHub 查一下有没有新版本）。
+    </div>
+  </div>
+</body></html>

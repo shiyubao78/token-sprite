@@ -16,6 +16,10 @@ Write code, earn real tokens, hatch mystery eggs, evolve through five stages, an
 
 **macOS · Windows · Linux** · Local-only · Nothing uploaded
 
+### [⬇️ Download for macOS](https://github.com/shiyubao78/token-sprite/releases/latest)
+
+First launch: **right-click the app → Open** — double-clicking gets blocked, because these builds aren't signed with an Apple certificate. You only do this once. [See the 30-second guide ↓](#install-on-macos)
+
 </div>
 
 ---
@@ -118,7 +122,17 @@ Requires [Node.js](https://nodejs.org/) 20+ and runs on **macOS, Windows, and Li
 
 ### Install on macOS
 
-Download the latest `.zip` from [Releases](https://github.com/shiyubao78/token-sprite/releases), unzip it, and drag **Token Sprite** into Applications. Current builds are unsigned, so right-click the app and choose **Open** once to pass Gatekeeper.
+<div align="center">
+<img src="assets/readme/install-macos-en.png" width="900" alt="Three steps: download and unzip, drag into Applications, then right-click the icon and choose Open" />
+</div>
+
+1. Download the latest `.zip` from [Releases](https://github.com/shiyubao78/token-sprite/releases/latest) and double-click to unzip.
+2. Drag **Token Sprite** into your Applications folder.
+3. **Right-click the app → Open**, then confirm **Open** in the dialog.
+
+Step 3 is where people get stuck. If you double-click instead, macOS blocks it and offers only *Move to Trash* — don't. Right-click once and you're past it permanently.
+
+**Why does this happen?** Signing a Mac app requires Apple's $99/year developer membership, which this project hasn't paid for. The entire source is public, so you can read it or build it yourself.
 
 When a new version is available, released builds show a reminder. The menu-bar icon → **Check for Updates** opens the download page; grab the new `.zip`, unzip, and reinstall over the old one — your growth data is kept.
 
