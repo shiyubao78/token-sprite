@@ -1,11 +1,12 @@
 // 一次性脚本：载入 dev 应用(localhost:5173)，注入一份"演示存档"，逐个面板高清截图到 PNG。
-// 用法：npx electron scripts/capture-overview.cjs <输出目录>
+// 用法：npx electron scripts/capture-overview.cjs <输出目录> [zh|en]
 const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
 const URL = 'http://localhost:5173';
 const OUTDIR = process.argv[2];
+const LOCALE = process.argv[3] === 'en' ? 'en' : 'zh';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const now = Date.now();
@@ -28,7 +29,7 @@ const DEMO = {
   activePetSpecies: 'flower',
   activeDates: [],
   nightDates: [],
-  settings: { usdPerMillion: 1.3 },
+  settings: { usdPerMillion: 1.3, locale: LOCALE },
   bond: { startedAt: 0, interactPoints: 80, todayInteract: 0, day: '', level: 3 },
 };
 
@@ -115,13 +116,19 @@ app.whenReady().then(async () => {
   // main（整个 #app）
   await waitSel('.petstage');
   await shot('main', '#app');
-  await panel('menu', ['#menuBtn'], '给它起个名字');
-  await panel('gacha', ['#tkBadge'], '达成成就攒券');
-  await panel('incubator', ['#menuBtn', '#incubatorBtn'], '点蛋看详情');
-  await panel('collection', ['#menuBtn', '#dexBtn'], '点已获得的品种');
-  await panel('achievements', ['#menuBtn', '#achBtn'], '用券抽蛋');
-  await panel('usage', ['#menuBtn', '#usageBtn'], '活跃时段');
-  await panel('bond', ['#bondBadge'], '亲密度');
+  const M = LOCALE === 'en'
+    ? { menu: 'Give it a name', gacha: 'draw eggs of different rarities', incubator: 'tap an egg for details',
+        collection: 'Tap one you own', achievements: 'All judged on your real usage',
+        usage: 'Active hours', bond: 'pts to' }
+    : { menu: '给它起个名字', gacha: '达成成就攒券', incubator: '点蛋看详情', collection: '点已获得的品种',
+        achievements: '用券抽蛋', usage: '活跃时段', bond: '亲密度' };
+  await panel('menu', ['#menuBtn'], M.menu);
+  await panel('gacha', ['#tkBadge'], M.gacha);
+  await panel('incubator', ['#menuBtn', '#incubatorBtn'], M.incubator);
+  await panel('collection', ['#menuBtn', '#dexBtn'], M.collection);
+  await panel('achievements', ['#menuBtn', '#achBtn'], M.achievements);
+  await panel('usage', ['#menuBtn', '#usageBtn'], M.usage);
+  await panel('bond', ['#bondBadge'], M.bond);
 
   await closeSheets();
   console.log('done');

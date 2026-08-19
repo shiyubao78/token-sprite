@@ -18,12 +18,14 @@ function mk(o) {
 }
 
 // 5 段羁绊：达到 min 分即该等级。name/unlock 双语，调用点仍用 .name / .unlock。
+// unlock 只描述真实存在的变化——每级有一组专属台词（见 main.js 的 INTERACT_LINES），
+// 别在这里承诺还没做的功能（昵称、纪念日等），用户升上来发现没有会掉好感。
 export const BOND_LEVELS = [
   mk({ level: 1, min: 0, _name: T('初识', 'Acquainted'), _unlock: T('刚认识，慢慢熟悉中', 'Just met — warming up') }),
-  mk({ level: 2, min: 20, _name: T('熟络', 'Familiar'), _unlock: T('会更主动跟你打招呼', 'Greets you more often') }),
-  mk({ level: 3, min: 60, _name: T('亲近', 'Close'), _unlock: T('开始用昵称叫你', 'Starts calling you by name') }),
+  mk({ level: 2, min: 20, _name: T('熟络', 'Familiar'), _unlock: T('说话热络起来', 'Warms up, chattier') }),
+  mk({ level: 3, min: 60, _name: T('亲近', 'Close'), _unlock: T('越来越黏你', 'Gets clingy with you') }),
   mk({ level: 4, min: 150, _name: T('依赖', 'Attached'), _unlock: T('有了专属口头禅', 'Has a catchphrase just for you') }),
-  mk({ level: 5, min: 300, _name: T('羁绊', 'Bonded'), _unlock: T('纪念日特别反应 + 专属称号', 'Anniversary surprises + a special title') }),
+  mk({ level: 5, min: 300, _name: T('羁绊', 'Bonded'), _unlock: T('把你当最好的搭子', 'Calls you its best partner') }),
 ];
 
 function ensureBond(state) {
