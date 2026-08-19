@@ -23,7 +23,8 @@
     "verify:update-artifacts": "node scripts/verify-update-artifacts.mjs",
     "pack:win": "npm run build && electron-builder --win",
     "pack:linux": "npm run build && electron-builder --linux",
-    "test": "vitest run"
+    "test": "vitest run",
+    "release:mac": "node scripts/publish-release.mjs"
   },
   "devDependencies": {
     "@electron/notarize": "^2.5.0",
