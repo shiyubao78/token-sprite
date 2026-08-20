@@ -19,10 +19,16 @@ Write code, earn real tokens, hatch mystery eggs, evolve through five stages, an
 
 **macOS · Windows · Linux** · 本地读取 / Local-only · 不上传 / Nothing uploaded
 
-### [⬇️ 下载 macOS 版 / Download for macOS](https://github.com/shiyubao78/token-sprite/releases/latest)
+### 🤖 让你的 AI Agent 帮你装 / Let your AI agent install it
 
-第一次打开请**右键点图标 → 选「打开」**——双击会被 macOS 拦下，因为这个版本没有 Apple 签名证书。只需这一次。[看 30 秒安装图解 ↓](#macos-普通用户安装--install-on-macos)<br />
-First launch: **right-click the app → Open** — double-clicking gets blocked, because these builds aren't signed. You only do this once.
+把这句话发给 Claude Code、Codex 或任何能操作终端的 Agent：
+
+> **帮我安装并运行 github.com/shiyubao78/token-sprite**
+
+它会读仓库里的 `AGENTS.md`，直接装成常驻 app——不用下载、不用解压、也不会被系统拦。<br />
+It reads `AGENTS.md` and installs it as a real app — no download, no unzip, no Gatekeeper prompt.
+
+**[⬇️ 或者自己下载安装](https://github.com/shiyubao78/token-sprite/releases/latest)**：第一次打开要**右键点图标 → 选「打开」**（未签名，只需这一次）。[看 30 秒图解 ↓](#macos-普通用户安装--install-on-macos)
 
 </div>
 

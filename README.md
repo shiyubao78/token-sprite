@@ -16,9 +16,15 @@ Write code, earn real tokens, hatch mystery eggs, evolve through five stages, an
 
 **macOS · Windows · Linux** · Local-only · Nothing uploaded
 
-### [⬇️ Download for macOS](https://github.com/shiyubao78/token-sprite/releases/latest)
+### 🤖 Let your AI agent install it
 
-First launch: **right-click the app → Open** — double-clicking gets blocked, because these builds aren't signed with an Apple certificate. You only do this once. [See the 30-second guide ↓](#install-on-macos)
+Paste this to Claude Code, Codex, or any terminal-capable agent:
+
+> **install and run github.com/shiyubao78/token-sprite**
+
+It reads `AGENTS.md` in the repo and installs it as a real app — no download, no unzip, no Gatekeeper prompt.
+
+**[⬇️ Or download it yourself](https://github.com/shiyubao78/token-sprite/releases/latest)** — first launch needs **right-click → Open** (unsigned build, just once). [30-second guide ↓](#install-on-macos)
 
 </div>
 

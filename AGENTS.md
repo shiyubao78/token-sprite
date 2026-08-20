@@ -2,7 +2,33 @@
 
 给 AI coding agent（Claude Code / Codex 等）读的项目说明。人也能照着看。
 
-## 怎么运行（最重要）
+## 用户说「帮我安装」时，装成常驻 app（最重要）
+
+**别用 `npm start` 交差。**`npm start` 是开发态（`electron .`），终端一关桌宠就没了、也不会开机自启，
+用户第二天开机会发现宠物不见了。用户要的是"装上"，不是"跑一下"。
+
+macOS：
+
+```bash
+git clone https://github.com/shiyubao78/token-sprite.git
+cd token-sprite && npm install
+npm run pack                                    # 约 2-3 分钟，产物在 release/mac-universal/
+rm -rf "/Applications/Token小精灵.app"
+cp -R "release/mac-universal/Token小精灵.app" /Applications/
+xattr -dr com.apple.quarantine "/Applications/Token小精灵.app"   # 未签名，去掉隔离标记免得被系统拦
+open -a "/Applications/Token小精灵.app"
+pgrep -f "Token小精灵.app/Contents/MacOS" || echo "没起来，去看报错"
+```
+
+Windows：`npm run pack:win` → 运行 `release/` 里的 NSIS 安装包（或直接用免安装 exe）。
+Linux：`npm run pack:linux` → 给 `release/*.AppImage` 加执行权限后运行。
+
+装完告诉用户三件事：① 桌宠在桌面右下角 ② 打包版默认开机自启，可在菜单栏图标里关
+③ 成长数据存在 `~/Library/Application Support/token-sprite/`，以后重装/覆盖都不会丢。
+
+只有用户明确说"我想改代码 / 开发 / 试一下"时，才用下面的源码运行方式。
+
+## 怎么运行（开发用）
 
 Node.js 20+，macOS / Windows / Linux 均可。仓库根目录：
 
