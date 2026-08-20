@@ -159,7 +159,8 @@ function render() {
   document.body.classList.toggle('collapsed', collapsed);
   if (collapsed) {
     app.innerHTML = peekHTML(vm);
-    document.getElementById('peek')?.addEventListener('click', () => setCollapsed(false));
+    // 展开交给统一的 mouseup 处理（区分轻点和拖动），这里不再单独绑 click——
+    // 否则拖完松手也会当成点击，一拖就展开了。
     return;
   }
   app.innerHTML = mainHTML(vm);
@@ -461,7 +462,7 @@ let drag = null;
 document.addEventListener('mousedown', (e) => {
   if (e.button !== 0) return;
   if (e.target.closest('button, input, .sheet-mask, .evolve-mask')) return;
-  if (!e.target.closest('.petstage, .dragbar')) return;
+  if (!e.target.closest('.petstage, .dragbar, .peek')) return;
   drag = { mx: e.screenX, my: e.screenY, wx: 0, wy: 0, ready: false, moved: false };
   if (globalThis.tokenSprite?.getWindowPos) {
     globalThis.tokenSprite.getWindowPos().then(([x, y]) => { if (drag) { drag.wx = x; drag.wy = y; drag.ready = true; } });
@@ -476,7 +477,12 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('mouseup', () => {
   if (!drag) return;
   const tap = !drag.moved; drag = null;
-  if (tap) interact();
+  if (tap) {
+    if (collapsed) setCollapsed(false); // 收起态轻点=展开
+    else interact();                    // 展开态轻点=逗它
+  } else if (collapsed) {
+    globalThis.tokenSprite?.snapEdge?.(); // 拖完吸到最近的边
+  }
 });
 
 render();

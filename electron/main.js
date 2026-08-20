@@ -10,6 +10,7 @@ import {
   shell,
   Tray,
 } from 'electron';
+import { nearestEdge, dockedBounds } from './dock.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { computeLocalUsage } from '../scripts/usage.mjs';
@@ -26,6 +27,7 @@ const PEEK = { w: 56, h: 104 };
 let mainWin = null;
 let tray = null;
 let collapsed = false;
+let dockSide = 'right'; // 收起态停在哪一边，跟着用户拖动走
 let updateController = {
   enabled: false,
   start() {},
@@ -120,14 +122,11 @@ function recallSprite() {
   mainWin.focus();
 }
 
-// 收起=贴右边缘缩成探头；展开=还原全尺寸，都保持当前竖直位置
-function setCollapsed(win, collapsed) {
-  const wa = screen.getDisplayNearestPoint(win.getBounds()).workArea;
-  const size = collapsed ? PEEK : FULL;
+// 收起=贴边缘缩成探头；展开=还原全尺寸。都保持当前竖直位置，并贴用户上次拖到的那一边。
+function setCollapsed(win, isCollapsed) {
   const cur = win.getBounds();
-  const y = Math.min(Math.max(cur.y, wa.y), wa.y + wa.height - size.h);
-  const x = wa.x + wa.width - size.w;
-  win.setBounds({ x, y, width: size.w, height: size.h });
+  const wa = screen.getDisplayNearestPoint(cur).workArea;
+  win.setBounds(dockedBounds(dockSide, isCollapsed ? PEEK : FULL, cur.y, wa));
 }
 
 function autoLaunchEnabled() {
@@ -235,10 +234,19 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   ipcMain.on('window:setPos', (e, x, y) => {
     BrowserWindow.fromWebContents(e.sender)?.setPosition(Math.round(x), Math.round(y));
   });
-  ipcMain.on('window:setCollapsed', (e, collapsed) => {
+  // 收起态拖完松手：吸到最近的那条边，并记住这一边
+  ipcMain.on('window:snapEdge', (e) => {
+    const w = BrowserWindow.fromWebContents(e.sender);
+    if (!w || !collapsed) return;
+    const b = w.getBounds();
+    const wa = screen.getDisplayNearestPoint(b).workArea;
+    dockSide = nearestEdge(b.x, b.width, wa);
+    w.setBounds(dockedBounds(dockSide, PEEK, b.y, wa));
+  });
+  ipcMain.on('window:setCollapsed', (e, next) => {
     const w = BrowserWindow.fromWebContents(e.sender);
     if (w) {
-      collapsed = !!collapsed;
+      collapsed = !!next; // 注意别用 collapsed 当参数名，会遮住上面的模块变量
       setCollapsed(w, collapsed);
     }
   });
