@@ -197,6 +197,12 @@ if (!hasSingleInstanceLock) app.quit();
 else app.on('second-instance', recallSprite);
 
 if (hasSingleInstanceLock) app.whenReady().then(() => {
+  // 开发态跑起来的桌宠是终端的子进程，终端/agent 会话一结束它就没了，也不会开机自启。
+  // 这行提示是给「用 npm start 当安装交差」的人和 agent 看的。
+  if (!app.isPackaged) {
+    console.log('\n⚠️  这是开发态：关掉这个终端（或 agent 会话结束）桌宠就会退出，也不会开机自启。');
+    console.log('   要装成常驻 app：npm run install:local\n');
+  }
   // 开机自启：macOS / Windows 原生支持；Linux 用 XDG autostart，个别桌面环境可能不生效
   const autoLaunchSupported = process.platform === 'darwin' || process.platform === 'win32';
   ipcMain.handle('autolaunch:supported', () => autoLaunchSupported);

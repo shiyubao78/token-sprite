@@ -25,7 +25,8 @@
     "pack:linux": "npm run build && electron-builder --linux",
     "test": "vitest run",
     "release:mac": "node scripts/publish-release.mjs",
-    "shots:overview": "node scripts/shots-overview.mjs"
+    "shots:overview": "node scripts/shots-overview.mjs",
+    "install:local": "npm run pack && bash scripts/install-local.sh"
   },
   "devDependencies": {
     "@electron/notarize": "^2.5.0",

@@ -12,13 +12,10 @@ macOS：
 ```bash
 git clone https://github.com/shiyubao78/token-sprite.git
 cd token-sprite && npm install
-npm run pack                                    # 约 2-3 分钟，产物在 release/mac-universal/
-rm -rf "/Applications/Token小精灵.app"
-cp -R "release/mac-universal/Token小精灵.app" /Applications/
-xattr -dr com.apple.quarantine "/Applications/Token小精灵.app"   # 未签名，去掉隔离标记免得被系统拦
-open -a "/Applications/Token小精灵.app"
-pgrep -f "Token小精灵.app/Contents/MacOS" || echo "没起来，去看报错"
+npm run install:local     # 打包 → 退掉旧的 → 装进 /Applications → 打开 → 核对进程都在这一条里
 ```
+
+（约 2-3 分钟，脚本最后会打印 `✅ 已安装并重新打开 vX.Y.Z`；没看到这行就是没成，去看报错。）
 
 Windows：`npm run pack:win` → 运行 `release/` 里的 NSIS 安装包（或直接用免安装 exe）。
 Linux：`npm run pack:linux` → 给 `release/*.AppImage` 加执行权限后运行。
@@ -42,7 +39,10 @@ npm run pack:mac:release  # macOS universal DMG、ZIP、blockmap、latest-mac.ym
 ```
 
 - `npm start` = `npm run build`（Vite 构建）+ `electron .`（启动桌面壳）。退出：点桌宠 `⋯` → 退出，或使用 macOS 菜单栏入口。
-- **更新到最新版**（用户让 Agent 帮忙升级时）：源码安装 → `git pull` 拉最新 + `npm install` + 重新 `npm start`；下载安装版 → 从 GitHub Releases 取最新 zip 解压，覆盖 `/Applications` 里的旧 app。**成长数据在用户数据目录**（`~/Library/Application Support/Token小精灵/`，源码开发态是 `token-sprite/`），覆盖 / 重装都不受影响。
+- **更新到最新版**（用户让 Agent 帮忙升级时）：**同样别用 `npm start` 收尾**——那样更新完桌宠会跟着你的终端会话一起消失，用户会以为是闪退。
+  - 装过正式版的用户其实不用你动手：app 自己会查 GitHub 有没有新版并提示。
+  - 需要你帮忙时，走和安装一样的路子：`git pull` + `npm install` + `npm run install:local`（同上，一条命令搞定打包和覆盖安装）。
+  - **成长数据在用户数据目录**（打包版 `~/Library/Application Support/token-sprite/`），覆盖 / 重装都不受影响，放心覆盖。
 - 开发热更新：`npm run dev`（终端1）+ `npm run desktop`（终端2，electron 指向 localhost:5173，用 cross-env 设环境变量以兼容 Windows）。
 - 打包（在目标系统本机跑）：`npm run pack`（mac → `release/mac-universal/Token小精灵.app`）/ `pack:win`（Windows → 免安装 exe + NSIS）/ `pack:linux`（Linux → AppImage）。三系统一键出包用 `.github/workflows/build.yml`（仅 Actions 手动触发）。测试：`npm test`。
 - macOS 发布（当前方案 B，未签名、手动）：先更新 `package.json` 版本；本地 `npm run pack:mac:release` 出 zip（企业机 `hdiutil` 常因安全软件"资源忙"建 DMG 失败，用 zip 即可，手动安装/更新完全够用）；再 `gh release create v<x.y.z> release/*.zip`（标签与版本一致）。`.github/workflows/release.yml` 已改为手动触发（`workflow_dispatch`）——配好 Apple 签名 Secrets 后可改回打标签自动签名发布。没有仓库所有者明确授权，不得发布。

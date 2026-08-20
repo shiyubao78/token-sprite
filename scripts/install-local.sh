@@ -4,9 +4,10 @@
 # 数据在 ~/Library/Application Support/token-sprite（独立于 .app），覆盖安装不受影响。
 set -e
 cd "$(dirname "$0")/.."
+[ "$(uname)" = "Darwin" ] || { echo "❌ 这个脚本只支持 macOS。Windows 用 npm run pack:win，Linux 用 npm run pack:linux"; exit 1; }
 APP_SRC="release/mac-universal/Token小精灵.app"
 APP_DST="/Applications/Token小精灵.app"
-[ -d "$APP_SRC" ] || { echo "❌ 没找到构建产物 $APP_SRC，先跑 npm run pack:mac:release"; exit 1; }
+[ -d "$APP_SRC" ] || { echo "❌ 没找到构建产物 $APP_SRC，先跑 npm run pack"; exit 1; }
 echo "· 退出旧版…"; osascript -e 'quit app "Token小精灵"' 2>/dev/null || true; sleep 1
 echo "· 覆盖安装…"; ditto "$APP_SRC" "$APP_DST"
 echo "· 重新打开…"; open "$APP_DST"; sleep 2
