@@ -51,7 +51,7 @@ Got duplicate eggs of the same species? **Merge** them in the incubator—progre
 
 ## ✨ 为什么特别 / Why It’s Different
 
-- **真实劳动养出来 / Powered by real work**：读取本地 AI 编程工具的真实 Token 用量，写多少就长多少。 / It grows from your actual local AI-coding usage.
+- **真实劳动养出来 / Powered by real work**：读取本地 AI 编程工具的真实 Token 用量，用多少就长多少。**不限于写代码**——你拿 Claude Code / Codex 写 PRD、做 demo、写 skill、查资料，一样在喂它。 / It grows from your actual local AI-tool usage — **not just coding**: writing PRDs, building demos, authoring skills all count.
 - **会陪你 / A companion, not a counter**：连续工作会劝你休息，深夜会提醒早点睡，久别重逢会向你招手；化形后还会和你结下**羁绊**，越写越亲。 / It nudges you to rest, sleep, and come back—and after final form it forms a growing **bond** with you the more you code.
 - **看得见用量和花费 / See usage and cost**：用量洞察面板显示今日/近 7 天写了多少 token、按工具占比、活跃时段，还能折算成**约多少钱**（美元、粗略估算），当作「你的用量值多少钱」的参考。 / A panel breaks down tokens by day, tool, and hour, and converts them into a **rough dollar value** of what you've used.
 - **桌面常驻 / Always on your desktop**：悬浮置顶、自由拖动，也能缩成侧边探头。 / Always on top, draggable, and able to peek quietly from the screen edge.

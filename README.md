@@ -44,7 +44,7 @@ Got duplicate eggs of the same species? **Merge** them in the incubator — prog
 
 ## ✨ Why It's Different
 
-- **Powered by real work** — it grows from your actual local AI-coding token usage. Write more, grow more.
+- **Powered by real work** — it grows from your actual local AI-tool token usage. **Not just coding**: writing PRDs, building demos, authoring skills, digging through docs — if you asked Claude Code or Codex, it counts.
 - **A companion, not a counter** — it nudges you to rest, reminds you to sleep late at night, and waves when you return. After its final form it forms a growing **bond** with you the more you code.
 - **See usage and cost** — a Usage Insights panel breaks tokens down by day, tool, and hour, and converts them into a **rough dollar value** of what you've used.
 - **Grow yourself, not just the pet** — the **Growth Journal** reviews today's AI-coding chats through *your own local AI* and hands you what's worth learning (explained), the to-dos you mentioned (editable), and a daily history — so you use AI to level up your own skills, not just burn tokens.
