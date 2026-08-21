@@ -24,7 +24,7 @@ Paste this to Claude Code, Codex, or any terminal-capable agent:
 
 It reads `AGENTS.md` in the repo and installs it as a real app — no download, no unzip, no Gatekeeper prompt.
 
-**[⬇️ Or download it yourself](https://github.com/shiyubao78/token-sprite/releases/latest)** — first launch needs **right-click → Open** (unsigned build, just once). [30-second guide ↓](#install-on-macos)
+Prefer doing it by hand? **[⬇️ Download the app](https://github.com/shiyubao78/token-sprite/releases/latest)** — first launch needs **right-click → Open** (unsigned build, just once).
 
 </div>
 
@@ -126,7 +126,31 @@ Everything runs through the AI you already use; nothing is uploaded to a third p
 
 Requires [Node.js](https://nodejs.org/) 20+ and runs on **macOS, Windows, and Linux**.
 
-### Install on macOS
+### 🤖 Let your agent install it (recommended)
+
+You're already using Claude Code / Codex — skip the download entirely. Send it this:
+
+> **Install and run github.com/shiyubao78/token-sprite for me.**
+
+The repo ships an [AGENTS.md](AGENTS.md), so your agent clones it, builds it, installs it into
+Applications and launches it — **a real app that survives closing your terminal and starts on login**.
+
+You'll see `✅ 已安装并重新打开 vX.Y.Z` when it's done. No line, no install — ask your agent to check the error.
+
+### 🔄 Let your agent update it
+
+One line again — your growth data is kept:
+
+> **Update token-sprite to the latest version for me.**
+
+It runs `git pull` + `npm install`, and the installed app updates itself automatically
+(`npm install` triggers a reinstall). Your data lives in `~/Library/Application Support/token-sprite/`,
+outside the app bundle, so reinstalls never touch it.
+
+<details>
+<summary><b>⬇️ Prefer to install it yourself?</b></summary>
+
+<br />
 
 <div align="center">
 <img src="assets/readme/install-macos-en.png" width="900" alt="Three steps: download and unzip, drag into Applications, then right-click the icon and choose Open" />
@@ -136,32 +160,39 @@ Requires [Node.js](https://nodejs.org/) 20+ and runs on **macOS, Windows, and Li
 2. Drag **Token Sprite** into your Applications folder.
 3. **Right-click the app → Open**, then confirm **Open** in the dialog.
 
-Step 3 is where people get stuck. If you double-click instead, macOS blocks it and offers only *Move to Trash* — don't. Right-click once and you're past it permanently.
+Step 3 is where people get stuck. If you double-click instead, macOS blocks it and offers only
+*Move to Trash* — don't. Right-click once and you're past it permanently.
 
-**Why does this happen?** Signing a Mac app requires Apple's $99/year developer membership, which this project hasn't paid for. The entire source is public, so you can read it or build it yourself.
+**Why does this happen?** Signing a Mac app requires Apple's $99/year developer membership, which this
+project hasn't paid for. The entire source is public, so you can read it or build it yourself.
 
-When a new version is available, released builds show a reminder. The menu-bar icon → **Check for Updates** opens the download page; grab the new `.zip`, unzip, and reinstall over the old one — your growth data is kept.
+Released builds notify you when a new version is out; the menu-bar icon → **Check for Updates** opens
+the download page. Your growth data is kept across reinstalls.
 
-If your sprite disappears, choose **Recall Sprite** from its menu-bar icon. It also returns automatically after display changes or wake when its window is fully off-screen.
+</details>
 
-### Run from source
+<details>
+<summary><b>🛠 Want to hack on it? Run from source</b></summary>
+
+<br />
 
 ```bash
 git clone https://github.com/shiyubao78/token-sprite.git
 cd token-sprite
 npm install
-npm start
+npm start        # dev mode — closing the terminal kills it, and it won't start on login
 ```
 
-Once started, your sprite appears in the bottom-right corner of the desktop.
+`npm start` is for development only. To install it for real:
 
-### 🤖 Let your agent install it
+```bash
+npm run install:local   # build + install into Applications + launch + verify, in one command
+```
 
-Send this directly to Codex, Claude Code, or any terminal-capable agent:
+If your sprite disappears, choose **Recall Sprite** from the menu-bar icon. It also returns
+automatically after display changes or wake when its window is fully off-screen.
 
-> Install and run github.com/shiyubao78/token-sprite for me.
-
-The repository includes `AGENTS.md` and `CLAUDE.md`, so an agent can clone, install, and launch it for you. To upgrade later, just ask it to update token-sprite — your growth data is kept.
+</details>
 
 ## 🧩 How It Works
 

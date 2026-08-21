@@ -28,7 +28,7 @@ Write code, earn real tokens, hatch mystery eggs, evolve through five stages, an
 它会读仓库里的 `AGENTS.md`，直接装成常驻 app——不用下载、不用解压、也不会被系统拦。<br />
 It reads `AGENTS.md` and installs it as a real app — no download, no unzip, no Gatekeeper prompt.
 
-**[⬇️ 或者自己下载安装](https://github.com/shiyubao78/token-sprite/releases/latest)**：第一次打开要**右键点图标 → 选「打开」**（未签名，只需这一次）。[看 30 秒图解 ↓](#macos-普通用户安装--install-on-macos)
+想自己动手？**[⬇️ 也能下载安装包](https://github.com/shiyubao78/token-sprite/releases/latest)**：第一次打开要**右键点图标 → 选「打开」**（未签名，只需这一次）。
 
 </div>
 
@@ -141,7 +141,39 @@ Everything runs through the AI you already use; nothing is uploaded to a third p
 需要 [Node.js](https://nodejs.org/) 20+，支持 **macOS、Windows 与 Linux**。<br />
 Requires [Node.js](https://nodejs.org/) 20+ and runs on **macOS, Windows, and Linux**.
 
-### macOS 普通用户安装 / Install on macOS
+### 🤖 让 Agent 帮你装（推荐）/ Let Your Agent Install It (recommended)
+
+你既然在用 Claude Code / Codex，就别自己下载解压了。把这句发给它：<br />
+You're already using Claude Code / Codex — skip the download. Just send it this:
+
+> **帮我安装并运行 github.com/shiyubao78/token-sprite**<br />
+> **Install and run github.com/shiyubao78/token-sprite for me.**
+
+仓库里有 [AGENTS.md](AGENTS.md)，Agent 会照着它克隆、打包、装进「应用程序」并启动——
+**装成常驻 app，关掉终端也在，还会开机自启**。<br />
+The repo ships an [AGENTS.md](AGENTS.md), so your agent clones, builds, installs it into Applications and launches it —
+**a real app that survives closing your terminal and starts on login**.
+
+装完你会看到它打印 `✅ 已安装并重新打开 vX.Y.Z`，桌宠就在桌面右下角。
+没看到这行就是没装成，让 Agent 去看报错。<br />
+You'll see `✅ 已安装并重新打开 vX.Y.Z` when it's done. No line, no install — ask your agent to check the error.
+
+### 🔄 让 Agent 帮你更新 / Let Your Agent Update It
+
+同样一句话，成长数据不会丢：<br />
+One line again — your growth data is kept:
+
+> **帮我把 token-sprite 更新到最新版**<br />
+> **Update token-sprite to the latest version for me.**
+
+Agent 会 `git pull` + `npm install`，**装好的版本会自动跟着更新**（`npm install` 会触发重装）。
+成长数据存在 `~/Library/Application Support/token-sprite/`，覆盖安装不受影响。<br />
+It runs `git pull` + `npm install`; the installed app updates itself automatically. Your data lives outside the app bundle and survives reinstalls.
+
+<details>
+<summary><b>⬇️ 不用 Agent？也可以自己下载安装 / Prefer to install it yourself</b></summary>
+
+<br />
 
 <div align="center">
 <img src="assets/readme/install-macos.png" width="900" alt="三步安装：下载解压、拖进应用程序、右键点图标选打开 / Three steps: download and unzip, drag into Applications, right-click and choose Open" />
@@ -151,50 +183,39 @@ Requires [Node.js](https://nodejs.org/) 20+ and runs on **macOS, Windows, and Li
 2. 把 **Token 小精灵**拖进「应用程序」文件夹。
 3. **右键点图标 → 选「打开」**，弹窗里再点一次「打开」。
 
-第 3 步是最多人卡住的地方。如果你直接双击，macOS 会拦住并且只给「移到废纸篓」——别点。右键绕一次，之后就永久生效。
+第 3 步是最多人卡住的地方。直接双击的话，macOS 会拦住并且只给「移到废纸篓」——别点。右键绕一次，之后永久生效。
 
-**为什么会这样？** 给 Mac 应用签名要向 Apple 交每年 $99 的开发者费，这个项目还没交。全部代码开源，你可以自己翻、自己编译。源码方式主要面向开发者。<br />
-Download the latest `.zip` from [Releases](https://github.com/shiyubao78/token-sprite/releases/latest), unzip it, and drag **Token Sprite** into Applications. Then **right-click the app → Open** and confirm — double-clicking gets blocked because these builds aren't signed. You only do this once.
+**为什么会被拦？** 给 Mac 应用签名要向 Apple 交每年 $99 的开发者费，这个项目还没交。全部代码开源，你可以自己翻、自己编译。<br />
+Download the latest `.zip` from [Releases](https://github.com/shiyubao78/token-sprite/releases/latest), unzip, drag **Token Sprite** into Applications, then **right-click → Open** and confirm. Unsigned build, so you only do this once.
 
-有新版时，正式版会弹窗提醒；菜单栏的小精灵图标 → **检查更新** 也会打开下载页，下载新版 `.zip` 解压覆盖安装即可，成长数据保留。<br />
-When a new version is available, released builds show a reminder. The menu-bar icon → **Check for Updates** opens the download page; grab the new `.zip`, unzip, and reinstall over the old one—your growth data is kept.
+有新版时正式版会弹窗提醒；菜单栏图标 → **检查更新** 也能打开下载页。成长数据保留。<br />
+Released builds notify you of new versions; the menu-bar icon → **Check for Updates** opens the download page. Your growth data is kept.
 
-如果小精灵不在桌面上，点击菜单栏的小精灵图标 → **召回小精灵**。显示器拔插、分辨率变化或睡眠恢复后，如果窗口完全跑出屏幕，应用也会自动把它带回来。<br />
-If your sprite disappears, choose **Recall Sprite** from its menu-bar icon. It also returns automatically after display changes or wake when its window is fully off-screen.
+</details>
 
-### 从源码运行 / Run from source
+<details>
+<summary><b>🛠 想改代码？从源码跑 / Want to hack on it? Run from source</b></summary>
+
+<br />
 
 ```bash
 git clone https://github.com/shiyubao78/token-sprite.git
 cd token-sprite
 npm install
-npm start
+npm start        # 开发态：关掉终端桌宠就没了，也不会开机自启
 ```
 
-启动后，小精灵会出现在桌面右下角。<br />
-Once started, your sprite appears in the bottom-right corner of the desktop.
+`npm start` 只适合开发调试。**想让它常驻，用这个**：<br />
+`npm start` is for development only. To install it for real:
 
-### 🤖 一句话让 Agent 帮你装 / Let Your Agent Install It
+```bash
+npm run install:local   # 打包 + 装进「应用程序」+ 启动 + 核对，一条命令
+```
 
-把下面这句话直接发给 Codex、Claude Code 或其他能操作终端的 Agent：<br />
-Send this directly to Codex, Claude Code, or any terminal-capable agent:
+如果小精灵不在桌面上，点菜单栏图标 → **召回小精灵**。显示器拔插、分辨率变化或睡眠恢复后窗口跑出屏幕，应用也会自动把它带回来。<br />
+If your sprite disappears, choose **Recall Sprite** from the menu-bar icon.
 
-> 帮我安装并运行 github.com/shiyubao78/token-sprite<br />
-> Install and run github.com/shiyubao78/token-sprite for me.
-
-仓库内置 `AGENTS.md` 与 `CLAUDE.md`，Agent 可以自动完成克隆、安装与启动。<br />
-The repository includes `AGENTS.md` and `CLAUDE.md`, so an agent can clone, install, and launch it for you.
-
-### 🔄 一句话让 Agent 帮你更新 / Let Your Agent Update It
-
-想升级到最新版，同样发一句话给 Agent 即可，成长数据会保留：<br />
-To upgrade to the latest version, just send your agent one line—your growth data is kept:
-
-> 帮我把 token-sprite 更新到最新版<br />
-> Update token-sprite to the latest version for me.
-
-源码方式安装的，Agent 会 `git pull` 最新代码并重装启动；下载安装版的，Agent 会取最新 Release 覆盖旧版。<br />
-For source installs the agent runs `git pull` and reinstalls; for downloaded builds it fetches the latest release and replaces the old app.
+</details>
 
 ## 🧩 工作原理 / How It Works
 
