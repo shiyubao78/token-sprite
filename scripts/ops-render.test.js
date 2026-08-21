@@ -62,15 +62,19 @@ describe('summarize', () => {
 });
 
 describe('insights', () => {
-  it('下载远少于 clone 时给出「大家在拿源码跑」的提醒', () => {
+  it('下载远少于 clone 时，说明主路径是 agent 安装（而不是当成问题）', () => {
     const s = summarize({ raw: baseRaw, history: { days: {}, snapshots: [] } });
-    const texts = insights(s).map((i) => i.text).join('');
-    expect(texts).toContain('拿源码跑');
+    const hit = insights(s).find((i) => i.text.includes('主路径'));
+    expect(hit).toBeTruthy();
+    expect(hit.tone).toBe('good'); // 这是正常现象，不是警告
+    expect(hit.text).toContain('别拿下载数判断死活');
   });
 
-  it('最新版 0 下载时单独点出来', () => {
+  it('最新版 0 下载时给出解释，不渲染成坏消息', () => {
     const s = summarize({ raw: baseRaw, history: { days: {}, snapshots: [] } });
-    expect(insights(s).some((i) => i.text.includes('v0.4.2') && i.text.includes('0 下载'))).toBe(true);
+    const hit = insights(s).find((i) => i.text.includes('v0.4.2'));
+    expect(hit.text).toContain('不代表没人用');
+    expect(hit.tone).toBe('info');
   });
 
   it('第一次跑时提示要每天抓', () => {

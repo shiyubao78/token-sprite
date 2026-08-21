@@ -70,14 +70,15 @@ export function insights(s) {
   const out = [];
 
   if (s.cloneUniques14 > 0 && s.totalDownloads * 5 < s.cloneUniques14) {
+    const ratio = s.totalDownloads ? Math.round(s.cloneUniques14 / s.totalDownloads) : s.cloneUniques14;
     out.push({
-      tone: 'warn',
-      text: `大家在拿源码跑，不是装应用：14 天有 <b>${num(s.cloneUniques14)} 人</b> clone 了代码，但安装包累计只被下载 <b>${num(s.totalDownloads)} 次</b>。想让普通用户用起来，得把「下载即用」这条路做顺（README 首屏放下载按钮 + 讲清 macOS 首次打开怎么绕过拦截）。`,
+      tone: 'good',
+      text: `<b>主路径是「让 agent 装」</b>：14 天 <b>${num(s.cloneUniques14)} 人</b>拿走代码，安装包只被下载 <b>${num(s.totalDownloads)} 次</b>（差 ${num(ratio)} 倍）。你的用户都在用 AI 编程工具，一句「帮我装 github.com/…」比下载解压顺得多——所以<b>看 clone 数，别拿下载数判断死活</b>。`,
     });
   }
 
   if (s.latestDownloads === 0 && s.totalDownloads > 0) {
-    out.push({ tone: 'warn', text: `最新版 <b>${esc(s.latestTag)}</b> 目前 0 下载——新版本发出去了，但没人取。` });
+    out.push({ tone: 'info', text: `最新版 <b>${esc(s.latestTag)}</b> 下载数是 0。走 agent 安装的人本来就不下载安装包，这个数字低不代表没人用。` });
   }
 
   if (s.cloneTrend.pct !== null) {
@@ -128,8 +129,8 @@ function barChart(days, n = 30) {
 function funnel(s) {
   const steps = [
     { k: '逛过页面', v: s.viewUniques14, hint: '14 天独立访客' },
-    { k: '拿走代码', v: s.cloneUniques14, hint: '14 天独立 clone' },
-    { k: '下载安装包', v: s.totalDownloads, hint: '开站至今累计' },
+    { k: '让 agent 装', v: s.cloneUniques14, hint: '14 天独立 clone · 主路径' },
+    { k: '下载安装包', v: s.totalDownloads, hint: '开站至今累计 · 少数派' },
   ];
   const max = Math.max(1, ...steps.map((x) => x.v));
   const bars = steps.map((x) => `<div class="fn-row">
@@ -228,7 +229,7 @@ export function renderDashboard({ raw, history, repo }) {
     ${insights(s).map((i) => `<div class="ins ${i.tone}">${i.text}</div>`).join('') || '<div class="empty">暂无结论</div>'}
   </section>
 
-  <section><h2>🔻 从看到到装上，人是怎么漏掉的</h2>${funnel(s)}</section>
+  <section><h2>🔻 看到之后，人走了哪条路</h2>${funnel(s)}</section>
 
   <section><h2>📈 每日趋势</h2>${barChart(history.days || {})}</section>
 
@@ -239,7 +240,9 @@ export function renderDashboard({ raw, history, repo }) {
   <section><h2>📖 这些数字怎么读</h2>
     <div class="note">
       <b>「安装了多少人」拿不到精确值</b>——小精灵全程本地、不联网、不埋点，所以谁装了、装完有没有在用，程序不会往外报。这是产品承诺，看板不打算破坏它。<br/>
-      因此这里用两个能看见的口径逼近：<b>拿走代码的人</b>（独立 clone 数，偏开发者）和 <b>安装包下载次数</b>（偏普通用户）。真实安装数介于两者之间，且一定比它们小（有人下了没装，有人 clone 只是看看）。<br/>
+      能看见的是两条路：<b>让 agent 装</b>（独立 clone 数）和 <b>下载安装包</b>。这两条是<b>并列</b>的，不是漏斗上下游——用户二选一。<br/>
+      目标用户都在用 AI 编程工具，所以绝大多数走前者，<b>clone 数才是获客量的主要口径</b>；下载数低是正常的，不代表没人用。<br/>
+      注意 clone 数含水分（CI、镜像站、脚本也会 clone，也有人只是看看代码没装），把它当<b>上限</b>看。<br/>
       <b>GitHub 流量只保留 14 天</b>，所以这个脚本每天跑一次、把数据存进本地 <code>ops-data/history.json</code>，长期趋势才攒得出来。<br/>
       想要真实的安装数和活跃数，唯一办法是应用里加匿名上报（要联网 + 一台服务器）——那会动到「全本地不联网」这个卖点，需要你先拍板。
     </div>
