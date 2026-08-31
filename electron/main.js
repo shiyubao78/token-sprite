@@ -12,8 +12,8 @@ import {
 } from 'electron';
 import { nearestEdge, dockedBounds } from './dock.js';
 import path from 'node:path';
+import { fork } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { computeLocalUsage } from '../scripts/usage.mjs';
 import { generateGrowthSummary, readStore, writeStore, mergeGeneration, todayKey } from '../scripts/growth.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
 import { createUpdateController, parseReleaseFromUrl } from './update-controller.js';
@@ -166,6 +166,41 @@ function createTray() {
   tray.on('click', recallSprite);
 }
 
+// 用量扫描放到子进程里跑：日志解析是同步的，几个 GB 的日志会把主进程卡死十几秒。
+// 拿上一次的结果兜底，这样即使某次超时，界面也有数可显示，不会闪空。
+const EMPTY_USAGE = {
+  total: 0, recentTokens: 0, todayTokens: 0, lastActivityAt: 0,
+  breakdown: [], daily: {}, hourly: new Array(24).fill(0),
+};
+let lastUsage = null;         // 上一次算成功的结果
+let usageInFlight = null;
+
+function computeUsageOutOfProcess() {
+  if (usageInFlight) return usageInFlight; // 上一轮还没算完就别再开一个
+  usageInFlight = new Promise((resolve) => {
+    const done = (value) => { usageInFlight = null; resolve(value || EMPTY_USAGE); };
+    let child;
+    try {
+      child = fork(path.join(dir, '..', 'scripts', 'usage-worker.mjs'), [], {
+        env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
+        stdio: 'ignore',
+      });
+    } catch {
+      return done(lastUsage); // 起不了子进程就用上次的，别让界面拿到空数据
+    }
+    const timer = setTimeout(() => { try { child.kill(); } catch {} done(lastUsage); }, 90000);
+    child.on('message', (msg) => {
+      clearTimeout(timer);
+      if (msg && msg.ok && msg.data) lastUsage = msg.data;
+      try { child.kill(); } catch {}
+      done(lastUsage);
+    });
+    child.on('error', () => { clearTimeout(timer); done(lastUsage); });
+    child.on('exit', () => { clearTimeout(timer); done(lastUsage); });
+  });
+  return usageInFlight;
+}
+
 const RELEASE_REPO = 'shiyubao78/token-sprite';
 
 // 查最新 Release：走 github.com 网页重定向（不碰限流的 api.github.com）。
@@ -206,7 +241,7 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   // 开机自启：macOS / Windows 原生支持；Linux 用 XDG autostart，个别桌面环境可能不生效
   const autoLaunchSupported = process.platform === 'darwin' || process.platform === 'win32';
   ipcMain.handle('autolaunch:supported', () => autoLaunchSupported);
-  ipcMain.handle('usage:get', () => computeLocalUsage());
+  ipcMain.handle('usage:get', () => computeUsageOutOfProcess());
   ipcMain.on('journal:open', () => openJournalWindow());
   ipcMain.handle('journal:get', () => readStore(journalPath()));
   ipcMain.handle('journal:generate', async () => {

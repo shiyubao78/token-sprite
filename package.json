@@ -54,6 +54,7 @@
       "build/tray-icon.png",
       "dist/**",
       "scripts/usage.mjs",
+      "scripts/usage-worker.mjs",
       "scripts/growth.mjs",
       "package.json"
     ],
