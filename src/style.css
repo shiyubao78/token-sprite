@@ -302,3 +302,11 @@ body.collapsed #app { width: 56px; padding: 0; gap: 0; }
 .u-set-v { display: inline-flex; align-items: center; gap: 3px; color: var(--muted); white-space: nowrap; }
 .u-set input { width: 66px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font-size: 12.5px; text-align: right; }
 .u-set input:focus { outline: none; border-color: #63bd8b; }
+
+/* 拖东西到桌宠身上时的反馈：它凑上来准备吃 */
+body.feeding .sprite, body.feeding .egg, body.feeding .peek-sprite {
+  transform: scale(1.12) translateY(-2px);
+  filter: drop-shadow(0 0 10px rgba(122, 178, 94, .55));
+  transition: transform .12s ease, filter .12s ease;
+}
+body.feeding #app { outline: 2px dashed rgba(122, 178, 94, .55); outline-offset: -6px; border-radius: 16px; }

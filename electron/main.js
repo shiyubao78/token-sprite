@@ -14,7 +14,7 @@ import { nearestEdge, dockedBounds } from './dock.js';
 import path from 'node:path';
 import { fork } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { generateGrowthSummary, readStore, writeStore, mergeGeneration, todayKey } from '../scripts/growth.mjs';
+import { generateGrowthSummary, readStore, writeStore, mergeGeneration, todayKey, appendFed, pendingFedTexts, clearFed } from '../scripts/growth.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
 import { createUpdateController, parseReleaseFromUrl } from './update-controller.js';
 import { bottomRightBounds, isVisibleOnAnyDisplay } from './window-placement.js';
@@ -244,6 +244,16 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   ipcMain.handle('usage:get', () => computeUsageOutOfProcess());
   ipcMain.on('journal:open', () => openJournalWindow());
   ipcMain.handle('journal:get', () => readStore(journalPath()));
+  // 拖到桌宠身上的文本：先收进队列，等下次生成小结时一起消化。
+  // 不当场调 AI——那要十几秒，喂个东西卡一下体验就毁了。
+  ipcMain.handle('journal:ingest', async (e, text, source) => {
+    const clean = String(text || '').trim();
+    if (!clean) return { ok: false, reason: 'empty' };
+    const store = await readStore(journalPath());
+    const next = appendFed(store, clean, source || 'drop');
+    await writeStore(journalPath(), next);
+    return { ok: true, pending: (next.fed || []).length };
+  });
   ipcMain.handle('journal:generate', async () => {
     const store = await readStore(journalPath());
     // 把已知长期记忆当背景喂进去，让小结越来越懂用户（记忆对用户隐藏，只在后台起作用）
@@ -252,10 +262,12 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
       memory: (store.memory || []).map((m) => m.text),
       // 已在追踪的待办里，别把「今天待刷新的 AI 待办」算进去（那批会被替换），只把要保留的当背景喂给 AI 别重复
       openTodos: (store.todos || []).filter((t) => !t.done && !(t.from === 'ai' && t.day === todayKey())).map((t) => t.text),
+      fed: pendingFedTexts(store), // 拖进来的内容和当天对话一起分析
     });
     if (!res.ok) return res;
     const date = todayKey();
-    const merged = mergeGeneration(store, date, res.parsed, { tools: res.tools, count: res.count, at: Date.now() });
+    // 消化完就清掉投喂队列，别下次再分析一遍
+    const merged = clearFed(mergeGeneration(store, date, res.parsed, { tools: res.tools, count: res.count, at: Date.now() }));
     await writeStore(journalPath(), merged);
     return { ok: true, date, store: merged };
   });

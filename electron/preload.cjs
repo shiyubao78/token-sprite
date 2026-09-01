@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('tokenSprite', {
   journalGet: () => ipcRenderer.invoke('journal:get'),
   journalGenerate: () => ipcRenderer.invoke('journal:generate'),
   journalSaveLists: (lists) => ipcRenderer.invoke('journal:saveLists', lists),
+  journalIngest: (text, source) => ipcRenderer.invoke('journal:ingest', text, source),
   quit: () => ipcRenderer.send('app:quit'),
   getAutoLaunch: () => ipcRenderer.invoke('autolaunch:get'),
   setAutoLaunch: (on) => ipcRenderer.invoke('autolaunch:set', on),

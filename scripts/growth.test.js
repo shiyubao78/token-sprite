@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractUserText, extractAssistantText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt, todayKey, parseGeneration, normalizeStore, mergeGeneration } from './growth.mjs';
+import { extractUserText, extractAssistantText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt, todayKey, parseGeneration, normalizeStore, mergeGeneration, appendFed, pendingFedTexts, clearFed, FED_MAX_CHARS, FED_MAX_ITEMS } from './growth.mjs';
 
 describe('extractUserText', () => {
   it('抽出字符串 content 的用户提问', () => {
@@ -134,7 +134,7 @@ describe('parseGeneration', () => {
 
 describe('normalizeStore', () => {
   it('新结构原样', () => {
-    expect(normalizeStore({ days: { a: {} }, todos: [1], memory: [] })).toEqual({ days: { a: {} }, todos: [1], memory: [] });
+    expect(normalizeStore({ days: { a: {} }, todos: [1], memory: [] })).toEqual({ days: { a: {} }, todos: [1], memory: [], fed: [] });
   });
   it('旧扁平 {date:{text}} 迁进 days', () => {
     const s = normalizeStore({ '2026-08-10': { text: 'x' } });
@@ -175,5 +175,62 @@ describe('mergeGeneration', () => {
   });
   it('todayKey 是 YYYY-MM-DD', () => {
     expect(todayKey(Date.parse('2026-08-11T09:00:00'))).toBe('2026-08-11');
+  });
+});
+
+describe('投喂（拖到桌宠身上的内容）', () => {
+  it('喂进去的内容进队列，等下次生成时消化', () => {
+    const s = appendFed({ days: {}, todos: [], memory: [] }, '  今天聊了 CAP 定理  ', 'drop', 1000);
+    expect(s.fed).toHaveLength(1);
+    expect(s.fed[0].text).toBe('今天聊了 CAP 定理'); // 首尾空白要去掉
+    expect(s.fed[0].source).toBe('drop');
+    expect(pendingFedTexts(s)).toEqual(['今天聊了 CAP 定理']);
+  });
+
+  it('空内容不收（拖了张图片进来之类）', () => {
+    const base = { days: {}, todos: [], memory: [], fed: [] };
+    expect(appendFed(base, '   ').fed).toHaveLength(0);
+    expect(appendFed(base, '').fed).toHaveLength(0);
+    expect(appendFed(base, null).fed).toHaveLength(0);
+  });
+
+  it('单条过长会截断，别撑爆后面的 prompt', () => {
+    const s = appendFed({ fed: [] }, 'x'.repeat(FED_MAX_CHARS + 500));
+    expect(s.fed[0].text).toHaveLength(FED_MAX_CHARS);
+  });
+
+  it('攒太多只留最近的', () => {
+    let s = { fed: [] };
+    for (let i = 0; i < FED_MAX_ITEMS + 10; i++) s = appendFed(s, `第 ${i} 条`, 'drop', 1000 + i);
+    expect(s.fed).toHaveLength(FED_MAX_ITEMS);
+    expect(s.fed.at(-1).text).toBe(`第 ${FED_MAX_ITEMS + 9} 条`); // 留的是最新的
+  });
+
+  it('消化完清空，不会下次再分析一遍', () => {
+    const s = appendFed({ fed: [] }, '一段内容');
+    expect(pendingFedTexts(clearFed(s))).toEqual([]);
+  });
+
+  it('老存档（没有 fed 字段）读进来不炸', () => {
+    const s = normalizeStore({ days: { '2026-08-01': {} }, todos: [], memory: [] });
+    expect(s.fed).toEqual([]);
+    expect(pendingFedTexts(s)).toEqual([]);
+  });
+
+  it('生成小结后 fed 不会被 mergeGeneration 弄丢', () => {
+    const s = appendFed({ days: {}, todos: [], memory: [] }, '喂进来的');
+    const merged = mergeGeneration(s, '2026-08-25', { summary: 's', knowledge: [], todos: [], memory: [] });
+    expect(merged.fed).toHaveLength(1); // 清空是 clearFed 的职责，merge 不该顺手丢掉
+  });
+
+  it('喂进来的内容会进到给 AI 的 prompt 里', () => {
+    const p = buildPrompt([{ source: 'claude-code', text: 'hi' }], 'zh', [], [], [], ['网页版聊的：CAP 定理']);
+    expect(p).toContain('CAP 定理');
+    expect(p).toContain('手动喂进来');
+  });
+
+  it('没有投喂时 prompt 里不出现那一段', () => {
+    const p = buildPrompt([{ source: 'claude-code', text: 'hi' }], 'zh', [], [], [], []);
+    expect(p).not.toContain('手动喂进来');
   });
 });

@@ -61,7 +61,7 @@ export function condensePrompts(items, { maxCount = 60, maxChars = 400 } = {}) {
 }
 
 // 拼给 AI 的分析指令：把今天的交互分成四类，只输出一个 JSON 对象。带上已知长期记忆当背景。双语。
-export function buildPrompt(items, locale = 'zh', memory = [], openTodos = [], done = []) {
+export function buildPrompt(items, locale = 'zh', memory = [], openTodos = [], done = [], fed = []) {
   const joined = items.map((it, i) => `${i + 1}. [${it.source}] ${it.text.replace(/\n+/g, ' ')}`).join('\n');
   const tools = [...new Set(items.map((it) => it.source))].join(' / ') || 'AI';
   const mem = asArr(memory).map((m) => String(m).trim()).filter(Boolean);
@@ -82,7 +82,10 @@ ${memBlock}${todoBlock}${doneBlock}Below are the prompts I sent across all my AI
 Pick at most 3 knowledge items. Use [] for any empty category. Base it only on the prompts below. Values in English.
 
 --- my prompts today (tagged by tool) ---
-${joined}`;
+${joined}${fed.length ? `
+
+--- pasted in by hand (from web-based AI or other tools; treat these the same as the prompts above) ---
+${fed.map((f) => '· ' + f).join('\n')}` : ''}`;
   }
   const memBlock = mem.length ? `你已经知道我这些长期背景，生成时请考虑它们（据此个性化、别重复问，也别把它们当成今天新增的记忆）：\n${mem.map((m) => '- ' + m).join('\n')}\n\n` : '';
   const todoBlock = tdo.length ? `我已经在追踪下面这些待办，**别再列出来了（哪怕换个说法也不行）**，只从今天挑真正新出现的待办：\n${tdo.map((t) => '- ' + t).join('\n')}\n\n` : '';
@@ -98,7 +101,10 @@ ${memBlock}${todoBlock}${doneBlock}下面是我今天在所有 AI 编程工具�
 knowledge 最多挑 3 个。没有内容的类别给 []。只依据下面的提问。所有值用中文。
 
 --- 我今天的提问（标了来自哪个工具）---
-${joined}`;
+${joined}${fed.length ? `
+
+--- 我手动喂进来的内容（来自网页版 AI 或别的工具，和上面的提问同等对待）---
+${fed.map((f) => '· ' + f).join('\n')}` : ''}`;
 }
 
 // 从 AI 输出里稳健解析出结构化四类（容忍代码围栏/多余文字；解析失败则退化为 summary）。
@@ -136,12 +142,42 @@ function newId() { return 't' + Date.now().toString(36) + Math.random().toString
 
 // 兜正结构；兼容旧的扁平 {date:{text}} 存档（迁进 days）。
 export function normalizeStore(raw) {
-  if (raw && typeof raw === 'object' && (raw.days || raw.todos || raw.memory)) {
-    return { days: raw.days && typeof raw.days === 'object' ? raw.days : {}, todos: asArr(raw.todos), memory: asArr(raw.memory) };
+  if (raw && typeof raw === 'object' && (raw.days || raw.todos || raw.memory || raw.fed)) {
+    return {
+      days: raw.days && typeof raw.days === 'object' ? raw.days : {},
+      todos: asArr(raw.todos), memory: asArr(raw.memory), fed: asArr(raw.fed),
+    };
   }
   const days = {};
   if (raw && typeof raw === 'object') for (const [k, v] of Object.entries(raw)) if (v && typeof v === 'object') days[k] = v;
-  return { days, todos: [], memory: [] };
+  return { days, todos: [], memory: [], fed: [] };
+}
+
+// ---- 投喂：拖到桌宠身上的文本先存起来，等下次生成小结时一起消化 ----
+// 为什么不当场分析：那要等十几秒调 AI，喂个东西卡一下体验就毁了。
+export const FED_MAX_CHARS = 4000;  // 单条太长会撑爆 prompt，截断
+export const FED_MAX_ITEMS = 50;    // 攒太多也没意义，留最近的
+
+export function appendFed(store, text, source = 'drop', now = Date.now()) {
+  const clean = String(text || '').trim();
+  if (!clean) return store;                       // 空的不收
+  const s = normalizeStore(store);
+  const item = {
+    id: 'f' + now.toString(36) + Math.random().toString(36).slice(2, 6),
+    text: clean.slice(0, FED_MAX_CHARS),
+    source, at: now,
+  };
+  return { ...s, fed: [...s.fed, item].slice(-FED_MAX_ITEMS) };
+}
+
+// 待消化的文本（生成小结时喂给 AI）
+export function pendingFedTexts(store) {
+  return normalizeStore(store).fed.map((f) => f.text).filter(Boolean);
+}
+
+// 消化完就清掉，避免重复分析
+export function clearFed(store) {
+  return { ...normalizeStore(store), fed: [] };
 }
 
 export async function readStore(filePath) {
@@ -159,7 +195,7 @@ export async function writeStore(filePath, store) {
 // 记忆只追加「新」的（按归一化文本去重）。
 export function mergeGeneration(store, date, parsed, meta = {}) {
   const at = meta.at || Date.now();
-  const s = { days: { ...(store.days || {}) }, todos: [...asArr(store.todos)], memory: [...asArr(store.memory)] };
+  const s = { days: { ...(store.days || {}) }, todos: [...asArr(store.todos)], memory: [...asArr(store.memory)], fed: asArr(store.fed) };
   s.days[date] = { summary: parsed.summary, knowledge: parsed.knowledge, tools: meta.tools || [], count: meta.count || 0, at };
   s.todos = s.todos.filter((t) => !(t.from === 'ai' && t.day === date && !t.done)); // 清掉今天旧的 AI 待办，换最新的
   const haveT = new Set(s.todos.map((t) => normText(t.text)));
@@ -250,13 +286,14 @@ function runViaLocalAI(promptText, timeoutMs = 180000) {
 
 // 对外主入口：生成今日成长小结（汇总全部 agent）。返回 { ok, text, count, tools } 或 { ok:false, reason }。
 // reason: no_prompts（今天还没对话）/ no_ai（没装 claude/codex）/ timeout / ai_error / spawn_error / io_error
-export async function generateGrowthSummary({ locale = 'zh', now = Date.now(), memory = [], openTodos = [] } = {}) {
+export async function generateGrowthSummary({ locale = 'zh', now = Date.now(), memory = [], openTodos = [], fed = [] } = {}) {
   const raw = await collectTodayPrompts(now);
-  if (!raw.length) return { ok: false, reason: 'no_prompts' };
+  // 只用网页版 AI 的人本地没有任何 CLI 日志，喂进来的就是他们的全部输入——不能因为 raw 为空就拒绝
+  if (!raw.length && !fed.length) return { ok: false, reason: 'no_prompts' };
   const items = condensePrompts(raw);
   const done = condensePrompts(await collectTodayDone(now), { maxCount: 50, maxChars: 180 }).map((d) => `[${d.source}] ${d.text}`);
   const tools = [...new Set(raw.map((r) => r.source))];
-  const res = await runViaLocalAI(buildPrompt(items, locale, memory, openTodos, done));
+  const res = await runViaLocalAI(buildPrompt(items, locale, memory, openTodos, done, fed));
   if (!res.ok) return res;
   return { ok: true, parsed: parseGeneration(res.text), count: raw.length, tools };
 }

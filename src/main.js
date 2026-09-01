@@ -457,6 +457,42 @@ function openAchievements() {
   openSheet(achievementsHTML(deriveVm()));
 }
 
+// 拖东西喂它：选中网页上的文字拖到桌宠身上，或者拖个文本文件进来。
+// 网页版 AI（豆包/ChatGPT 等）的对话在服务端，本地读不到，只能靠这条路收进来。
+// 收进来先攒着，等下次生成成长小结时一起消化——当场调 AI 要十几秒，喂个东西不该卡。
+const FEED_MAX_FILE = 1 << 20; // 1MB，再大多半不是对话
+
+async function textFromDrop(dt) {
+  const plain = dt.getData('text/plain');
+  if (plain && plain.trim()) return plain;
+  const file = dt.files && dt.files[0];
+  if (!file) return '';
+  if (file.size > FEED_MAX_FILE) return '';
+  // 只吃文本类；二进制读出来是乱码，喂给 AI 纯属浪费
+  if (file.type && !/^text\/|json|markdown/.test(file.type)) return '';
+  try { return await file.text(); } catch { return ''; }
+}
+
+function setFeedHint(on) {
+  document.body.classList.toggle('feeding', on);
+}
+
+document.addEventListener('dragover', (e) => { e.preventDefault(); setFeedHint(true); });
+document.addEventListener('dragleave', (e) => { if (!e.relatedTarget) setFeedHint(false); });
+document.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  setFeedHint(false);
+  if (!globalThis.tokenSprite?.journalIngest) return; // 浏览器里跑没有这个能力
+  const text = await textFromDrop(e.dataTransfer);
+  if (!text.trim()) { setBubble(L({ zh: '这个我嚼不动…', en: 'Can’t chew that…' })); return; }
+  const sprite = document.querySelector('.sprite, .egg');
+  if (sprite) { sprite.classList.remove('eating'); void sprite.offsetWidth; sprite.classList.add('eating'); }
+  const r = await globalThis.tokenSprite.journalIngest(text, 'drop').catch(() => null);
+  setBubble(r && r.ok
+    ? L({ zh: '吃到啦，记进成长日记 🌱', en: 'Yum — saved to your journal 🌱' })
+    : L({ zh: '没吃进去，再试一次？', en: 'Didn’t go down, try again?' }));
+});
+
 // 拖拽（按住蛋/宠物拖窗口，轻点=互动）
 let drag = null;
 document.addEventListener('mousedown', (e) => {
