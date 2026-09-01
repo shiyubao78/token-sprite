@@ -7,7 +7,7 @@
 **烧的是 token，长的是脑子。**<br />
 **Every token you write helps it grow.**
 
-把真实的 AI 编程用量变成一只住在桌面角落、一路破壳进化的小精灵——化形后和你结下羁绊，还顺手告诉你写了多少、花了多少。<br />
+把真实的 AI 用量变成一只住在桌面角落、一路破壳进化的小精灵——化形后和你结下羁绊，还每天帮你复盘学到了什么。用网页版 AI 也能用。<br />
 Turn your real AI-coding usage into a tiny desktop companion that hatches, evolves, and bonds with you—while showing how much you have written and roughly spent.
 
 <img src="assets/readme/hatching-hero-wide.png" width="900" alt="Token 小精灵横版孵化主视觉、五段进化与六只神秘精灵 / Token Sprite wide hatching hero, five-stage evolution, and six mystery creatures" />
@@ -56,7 +56,7 @@ Got duplicate eggs of the same species? **Merge** them in the incubator—progre
 - **看得见用量和花费 / See usage and cost**：用量洞察面板显示今日/近 7 天写了多少 token、按工具占比、活跃时段，还能折算成**约多少钱**（美元、粗略估算），当作「你的用量值多少钱」的参考。 / A panel breaks down tokens by day, tool, and hour, and converts them into a **rough dollar value** of what you've used.
 - **桌面常驻 / Always on your desktop**：悬浮置顶、自由拖动，也能缩成侧边探头。 / Always on top, draggable, and able to peek quietly from the screen edge.
 - **孵化收集 / Hatch and collect**：成就 → 抽蛋 → 进化 → 图鉴，让每次写代码都有期待。 / Achievements unlock eggs; eggs evolve into creatures for your collection.
-- **借 AI 的力，长自己的筋骨 / Grow yourself, not just the pet**：**成长日记**用**你本机的 AI** 回顾今天和 AI 的对话，把值得学的知识点讲给你、把你说过要做的事收成可编辑的待办，还能每天回看——用 AI 帮你长本事，而不只是烧 token。 / The **Growth Journal** reviews today's AI-coding chats through *your own local AI* and gives you what's worth learning (explained), editable to-dos, and a daily history — so you grow your own skills, not just burn tokens.
+- **借 AI 的力，长自己的筋骨 / Grow yourself, not just the pet**：**成长日记**回顾你今天和 AI 的对话，把值得学的知识点讲给你、把你说过要做的事收成可编辑的待办，还能每天回看。**没装 Claude Code / Codex 也能用**——把指令粘给你正在聊的任何 AI，拿回答复制回来就行。 / The **Growth Journal** gives you what's worth learning (explained), editable to-dos, and a daily history. **No Claude Code / Codex needed** — paste one prompt into whatever AI you already use and bring its answer back.
 - **全本地私密 / Private by design**：只读本机日志，用量绝不上传；仅正式版会向 GitHub 查询有无新版本。 / Usage stays on your machine and is never uploaded; only released builds check GitHub for new versions.
 
 ## 🏆 成就与抽蛋 / Achievements & Hatching
@@ -110,7 +110,7 @@ Fully local, no login — one floating window: rename, draw, hatch, collect, ear
 | 🏆 成就 / Achievements | 达成条件得券，全用真实 token 用量判定 / Earn tickets by hitting milestones, all judged on real token usage |
 | 📊 用量洞察 / Usage | 今日 / 最近 7 天用量、按工具占比、活跃时段，还有花费估算 / Today & 7-day usage, per-tool split, active hours, plus a rough cost estimate |
 | 💞 羁绊 / Bond | 化形后开启，写代码 + 逗它越处越亲，5 级解锁暖心回报 / Unlocks after final form; coding and play deepen a 5-level bond |
-| 🧠 成长日记 / Growth Journal | 独立窗口：今日知识点、可编辑待办、每日回看，由你本机的 AI 生成，全程本地 / A separate window: takeaways, editable to-dos, and daily history — by your own local AI, fully local |
+| 🧠 成长日记 / Growth Journal | 独立窗口：今日知识点、可编辑待办、每日回看。本机有 Claude/Codex 就自动生成；没有就借你在用的 AI，拖拽或 ⌘⇧V 收回来 / Takeaways, editable to-dos, daily history — auto via local CLI, or borrow any AI you use |
 
 ## 📊 用量洞察与花费 / Usage & Cost Insights
 
@@ -135,6 +135,27 @@ Everything runs through the AI you already use; nothing is uploaded to a third p
 <p align="center">
 <img src="assets/readme/growth-journal.png" width="640" alt="成长日记：今日知识点、可编辑待办、每日回看 / Growth Journal: takeaways, editable to-dos, daily history" />
 </p>
+
+### 🍃 没装 Claude Code / Codex？照样能用 / No CLI installed? Still works
+
+只用网页版豆包 / ChatGPT 也行——**借它自己的力**：<br />
+Only use web-based AI? Borrow its own strength:
+
+1. 成长日记里点 **「复制指令」** / Click **Copy prompt** in the journal
+2. 粘到你正在聊的那个 AI / Paste it into the AI you're already chatting with
+3. 把它的回答复制回来，按 **⌘⇧V** 或**拖到桌宠身上** / Bring its answer back — press **⌘⇧V** or drop it on the sprite
+
+它的对话里本来就有你今天聊的内容，所以**你不用复制任何原始对话**，粘回来就直接进日记。<br />
+Its context already holds today's conversation, so you never copy the chat itself — just bring the answer back.
+
+### 🥢 随手投喂 / Feed it anything
+
+看到值得记的东西——**选中拖到桌宠身上**，或复制后按 **⌘⇧V**。它会攒着，下次生成小结时一起消化。<br />
+Select and **drag onto the sprite**, or copy and hit **⌘⇧V**. It keeps them until the next recap.
+
+> 快捷键只在你按下那一刻读剪贴板，**不做后台监听**。<br />
+> The shortcut reads your clipboard only at the moment you press it — never in the background.
+
 
 ## 🚀 快速开始 / Quick Start
 
