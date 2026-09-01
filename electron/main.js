@@ -16,7 +16,7 @@ import { nearestEdge, dockedBounds } from './dock.js';
 import path from 'node:path';
 import { fork } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { generateGrowthSummary, readStore, writeStore, mergeGeneration, todayKey, appendFed, pendingFedTexts, clearFed } from '../scripts/growth.mjs';
+import { generateGrowthSummary, readStore, writeStore, mergeGeneration, todayKey, appendFed, pendingFedTexts, clearFed, buildPortablePrompt, looksLikeGeneration, parseGeneration } from '../scripts/growth.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
 import { createUpdateController, parseReleaseFromUrl } from './update-controller.js';
 import { bottomRightBounds, isVisibleOnAnyDisplay } from './window-placement.js';
@@ -271,10 +271,24 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
     const clean = String(text || '').trim();
     if (!clean) return { ok: false, reason: 'empty' };
     const store = await readStore(journalPath());
+
+    // 粘回来的是别的 AI 按我们的指令生成好的结果 → 直接进日记，不用本机 AI 再算一遍。
+    // 这条路是给本机没装 Claude/Codex CLI 的人的（只用网页版的），否则他们永远生成不了。
+    if (looksLikeGeneration(clean)) {
+      const date = todayKey();
+      const merged = mergeGeneration(store, date, parseGeneration(clean), { tools: ['external'], count: 0, at: Date.now() });
+      await writeStore(journalPath(), merged); // 注意不清 fed：喂进来的素材还没被消化，留着
+      if (journalWin && !journalWin.isDestroyed()) journalWin.webContents.send('journal:updated');
+      return { ok: true, kind: 'result', date };
+    }
+
     const next = appendFed(store, clean, source || 'drop');
     await writeStore(journalPath(), next);
-    return { ok: true, pending: (next.fed || []).length };
+    return { ok: true, kind: 'material', pending: (next.fed || []).length };
   });
+
+  // 让别的 AI 帮忙生成时用的指令（单一来源，界面从这里取）
+  ipcMain.handle('journal:portablePrompt', () => buildPortablePrompt(appLocale()));
   ipcMain.handle('journal:generate', async () => {
     const store = await readStore(journalPath());
     // 把已知长期记忆当背景喂进去，让小结越来越懂用户（记忆对用户隐藏，只在后台起作用）

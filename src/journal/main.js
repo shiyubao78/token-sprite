@@ -25,6 +25,7 @@ let busy = false;
 let genMsg = '';
 let editing = null; // 正在编辑文字的待办 id
 let showPast = false;
+let portableMsg = ''; // 复制指令后的提示文案
 
 // 只存待办（记忆不对用户开放、由生成在后台维护，别覆盖）。
 function save() { try { api?.journalSaveLists?.({ todos: store.todos }); } catch {} }
@@ -46,10 +47,16 @@ function todaySection() {
   else if (know.length) body = know.map((k) => `<div class="jr-know"><b>${esc(k.term)}</b>${k.term && k.explain ? '：' : ''}${esc(k.explain)}</div>`).join('');
   else body = `<div class="jr-muted">${genMsg ? esc(genMsg) : L({ zh: '还没生成今天的小结。', en: 'Today’s recap not generated yet.' })}</div>`;
   const label = busy ? L({ zh: '生成中…', en: 'Generating…' }) : (d ? L({ zh: '🔄 重新生成今日', en: '🔄 Regenerate today' }) : L({ zh: '生成今日小结 🌱', en: 'Generate today 🌱' }));
+  // 本机没装 Claude/Codex CLI 的人（只用网页版豆包/ChatGPT），走"借别的 AI"这条路
+  const borrow = `<div class="jr-borrow">
+    <span>${portableMsg || L({ zh: '本机没有 Claude / Codex？让你正在用的 AI 帮你总结', en: 'No Claude / Codex on this machine? Let the AI you already use do it' })}</span>
+    <button class="jr-borrow-btn" id="portableBtn">${L({ zh: '复制指令', en: 'Copy prompt' })}</button>
+  </div>`;
   return `<section class="jr-block">
     <div class="jr-sec-h">💡 ${L({ zh: '今日知识点', en: 'Today’s takeaways' })}</div>
     ${body}
     <button class="jr-regen ${busy ? 'busy' : ''}" id="genBtn" ${busy ? 'disabled' : ''}>${label}</button>
+    ${borrow}
   </section>`;
 }
 
@@ -153,6 +160,20 @@ function wire() {
 
   $('#pastToggle')?.addEventListener('click', () => { showPast = !showPast; mount(); });
 
+  // 复制一段通用指令，粘到任何 AI 里都能用——对方的上下文里本来就有今天聊的内容，
+  // 所以不用复制任何原始对话，把它吐回的 JSON 收回来就行。
+  $('#portableBtn')?.addEventListener('click', async () => {
+    const text = await api?.journalPortablePrompt?.().catch(() => '');
+    if (!text) { portableMsg = L({ zh: '拿不到指令，桌面版才有这个功能', en: 'Desktop app only' }); mount(); return; }
+    try { await navigator.clipboard.writeText(text); }
+    catch { portableMsg = L({ zh: '复制失败，请手动复制', en: 'Copy failed' }); mount(); return; }
+    portableMsg = L({
+      zh: '已复制 ✓ 粘到你正在聊的 AI 里，再把它的回答复制回来，按 ⌘⇧V 或拖到桌宠身上',
+      en: 'Copied ✓ Paste it into the AI you\'re chatting with, then bring its answer back — press ⌘⇧V or drop it on the sprite',
+    });
+    mount();
+  });
+
   if (editing) { const inp = root.querySelector('[data-editid]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }
 }
 
@@ -165,4 +186,11 @@ async function init() {
   mount();
   if (api?.journalGenerate && !store.days[TODAY]) generate();
 }
+// 从别的 AI 粘回结果后，主进程会通知刷新
+api?.onJournalUpdated?.(async () => {
+  if (api?.journalGet) { try { const s = await api.journalGet(); if (s) store = s; } catch {} }
+  portableMsg = '';
+  mount();
+});
+
 init();

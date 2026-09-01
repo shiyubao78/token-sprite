@@ -108,6 +108,45 @@ ${fed.map((f) => '· ' + f).join('\n')}` : ''}`;
 }
 
 // 从 AI 输出里稳健解析出结构化四类（容忍代码围栏/多余文字；解析失败则退化为 summary）。
+// 给别的 AI 用的可移植指令：本机没装 Claude/Codex CLI 的人（只用网页版豆包/ChatGPT 的），
+// 把这段粘进他正在聊的那个对话框即可——对方的上下文里本来就有今天聊的内容，
+// 所以不需要用户复制任何原始对话，拿回它吐的 JSON 粘回来就行。
+export function buildPortablePrompt(locale = 'zh') {
+  if (locale === 'en') {
+    return `Look back over everything we talked about today, then reply with ONE JSON object ONLY — no markdown code fences, no extra text:
+{
+  "summary": "one or two sentences: what I mainly worked on / talked about today",
+  "knowledge": [{"term": "the concept name", "explain": "2-3 sentences that actually teach it, so I learn it right here"}],
+  "todos": ["things I said I'd do but haven't, one short line each"],
+  "memory": ["worth remembering long-term: my preferences, key decisions, important facts"]
+}
+Pick at most 3 knowledge items. Use [] for any empty category.`;
+  }
+  return `请回顾我们今天聊过的全部内容，然后**只输出一个 JSON 对象**（不要 markdown 代码围栏、不要多余文字）：
+{
+  "summary": "一两句话：我今天主要在做什么、聊了什么",
+  "knowledge": [{"term": "知识点名字", "explain": "用 2-3 句把它讲清楚，让我看完就真学到（不是只点个名）"}],
+  "todos": ["我说过要做但还没做的事，一条一句"],
+  "memory": ["值得长期记住的：我的偏好、关键决定、重要事实，一条一句"]
+}
+knowledge 最多挑 3 个。没有内容的类别给 []。所有值用中文。`;
+}
+
+// 粘回来的到底是「AI 分析结果」还是「原始素材」？
+// 不能靠 parseGeneration 判断——它解析失败时会把整段塞进 summary 当兜底，永远"成功"。
+export function looksLikeGeneration(text) {
+  if (!text) return false;
+  let s = String(text).trim().replace(/^```(?:json)?/i, '').replace(/```\s*$/, '').trim();
+  const i = s.indexOf('{'), j = s.lastIndexOf('}');
+  if (i < 0 || j <= i) return false;
+  try {
+    const obj = JSON.parse(s.slice(i, j + 1));
+    if (!obj || typeof obj !== 'object') return false;
+    // 认准我们要的键，别把用户随手粘的普通 JSON 当成小结
+    return ('summary' in obj) || ('knowledge' in obj && Array.isArray(obj.knowledge));
+  } catch { return false; }
+}
+
 export function parseGeneration(text) {
   const empty = { summary: '', knowledge: [], todos: [], memory: [] };
   if (!text) return empty;

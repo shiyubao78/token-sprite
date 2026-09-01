@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractUserText, extractAssistantText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt, todayKey, parseGeneration, normalizeStore, mergeGeneration, appendFed, pendingFedTexts, clearFed, FED_MAX_CHARS, FED_MAX_ITEMS } from './growth.mjs';
+import { extractUserText, extractAssistantText, extractCodexUserText, isRealUserPrompt, isToday, condensePrompts, buildPrompt, todayKey, parseGeneration, normalizeStore, mergeGeneration, appendFed, pendingFedTexts, clearFed, FED_MAX_CHARS, FED_MAX_ITEMS, buildPortablePrompt, looksLikeGeneration } from './growth.mjs';
 
 describe('extractUserText', () => {
   it('抽出字符串 content 的用户提问', () => {
@@ -232,5 +232,36 @@ describe('投喂（拖到桌宠身上的内容）', () => {
   it('没有投喂时 prompt 里不出现那一段', () => {
     const p = buildPrompt([{ source: 'claude-code', text: 'hi' }], 'zh', [], [], [], []);
     expect(p).not.toContain('手动喂进来');
+  });
+});
+
+describe('借别的 AI 生成（本机没有 CLI 的人）', () => {
+  it('指令里带齐四个字段，粘到任何 AI 都能执行', () => {
+    const p = buildPortablePrompt('zh');
+    for (const k of ['summary', 'knowledge', 'todos', 'memory']) expect(p).toContain(k);
+    expect(p).toContain('只输出一个 JSON 对象');
+    expect(buildPortablePrompt('en')).toContain('ONE JSON object ONLY');
+  });
+
+  it('认得出 AI 吐回来的分析结果', () => {
+    expect(looksLikeGeneration('{"summary":"今天写了拖拽喂食","knowledge":[]}')).toBe(true);
+    expect(looksLikeGeneration('```json\n{"summary":"x","knowledge":[]}\n```')).toBe(true); // 带代码围栏
+    expect(looksLikeGeneration('好的，这是结果：\n{"knowledge":[{"term":"CAP"}]}')).toBe(true); // 前面有废话
+  });
+
+  it('普通文本不会被误判成结果（那样会把素材当小结入库）', () => {
+    expect(looksLikeGeneration('今天在豆包里聊了 CAP 定理')).toBe(false);
+    expect(looksLikeGeneration('')).toBe(false);
+    expect(looksLikeGeneration('{"foo":"bar"}')).toBe(false);      // 是 JSON 但不是我们的结构
+    expect(looksLikeGeneration('{ 这不是合法 json }')).toBe(false);
+  });
+
+  it('识别出来的结果能被 parseGeneration 正常解析', () => {
+    const raw = '```json\n{"summary":"聊了缓存","knowledge":[{"term":"LRU","explain":"最近最少使用"}],"todos":["加测试"],"memory":[]}\n```';
+    expect(looksLikeGeneration(raw)).toBe(true);
+    const g = parseGeneration(raw);
+    expect(g.summary).toBe('聊了缓存');
+    expect(g.knowledge[0].term).toBe('LRU');
+    expect(g.todos).toEqual(['加测试']);
   });
 });
