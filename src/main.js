@@ -485,13 +485,24 @@ document.addEventListener('drop', async (e) => {
   if (!globalThis.tokenSprite?.journalIngest) return; // 浏览器里跑没有这个能力
   const text = await textFromDrop(e.dataTransfer);
   if (!text.trim()) { setBubble(L({ zh: '这个我嚼不动…', en: 'Can’t chew that…' })); return; }
+  showFed(await globalThis.tokenSprite.journalIngest(text, 'drop').catch(() => null));
+});
+
+// 吃东西的动画 + 气泡：拖进来和按快捷键共用同一套反馈
+function showFed(r) {
   const sprite = document.querySelector('.sprite, .egg');
   if (sprite) { sprite.classList.remove('eating'); void sprite.offsetWidth; sprite.classList.add('eating'); }
-  const r = await globalThis.tokenSprite.journalIngest(text, 'drop').catch(() => null);
-  setBubble(r && r.ok
-    ? L({ zh: '吃到啦，记进成长日记 🌱', en: 'Yum — saved to your journal 🌱' })
-    : L({ zh: '没吃进去，再试一次？', en: 'Didn’t go down, try again?' }));
-});
+  if (r && r.ok) {
+    setBubble(L({ zh: '吃到啦，记进成长日记 🌱', en: 'Yum — saved to your journal 🌱' }));
+  } else if (r && r.reason === 'empty') {
+    setBubble(L({ zh: '剪贴板是空的哦', en: 'Nothing on your clipboard' }));
+  } else {
+    setBubble(L({ zh: '没吃进去，再试一次？', en: 'Didn’t go down, try again?' }));
+  }
+}
+
+// ⌘⇧V：复制一段话后按一下，直接喂给它（比选中再拖省事）
+globalThis.tokenSprite?.onFed?.(showFed);
 
 // 拖拽（按住蛋/宠物拖窗口，轻点=互动）
 let drag = null;

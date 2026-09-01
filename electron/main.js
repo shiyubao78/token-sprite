@@ -1,6 +1,8 @@
 import {
   app,
   BrowserWindow,
+  clipboard,
+  globalShortcut,
   dialog,
   ipcMain,
   Menu,
@@ -246,6 +248,25 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   ipcMain.handle('journal:get', () => readStore(journalPath()));
   // 拖到桌宠身上的文本：先收进队列，等下次生成小结时一起消化。
   // 不当场调 AI——那要十几秒，喂个东西卡一下体验就毁了。
+  // 复制 + 快捷键：比"选中再拖"门槛低得多，复制是所有人的肌肉记忆。
+  // 只在按下快捷键那一刻读剪贴板——不做后台监听，不碰你平时复制的任何东西。
+  const feedFromClipboard = async () => {
+    const text = (clipboard.readText() || '').trim();
+    const win = mainWin && !mainWin.isDestroyed() ? mainWin : null;
+    if (!text) { win?.webContents.send('journal:fed', { ok: false, reason: 'empty' }); return; }
+    try {
+      const store = await readStore(journalPath());
+      const next = appendFed(store, text, 'clipboard');
+      await writeStore(journalPath(), next);
+      win?.webContents.send('journal:fed', { ok: true, pending: (next.fed || []).length });
+    } catch {
+      win?.webContents.send('journal:fed', { ok: false, reason: 'error' });
+    }
+  };
+  try {
+    globalShortcut.register('CommandOrControl+Shift+V', feedFromClipboard);
+  } catch { /* 快捷键被别的应用占了就算了，拖拽那条路还在 */ }
+
   ipcMain.handle('journal:ingest', async (e, text, source) => {
     const clean = String(text || '').trim();
     if (!clean) return { ok: false, reason: 'empty' };
@@ -327,3 +348,7 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
 
 app.on('before-quit', () => updateController.dispose());
 app.on('window-all-closed', () => app.quit());
+
+app.on('will-quit', () => {
+  try { globalShortcut.unregisterAll(); } catch {}
+});
