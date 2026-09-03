@@ -2,6 +2,7 @@ import './style.css';
 import { computeMood, pickBubble, ACTIVE_MS, RETURN_IDLE_MS, BURST_TOKENS } from './domain/mood.js';
 import { incubation, incubationStage, evolution, stageName } from './domain/incubation.js';
 import { drawFromTicket, ensureStarter, setActiveEgg, settleHatch, mergeDuplicates, mergeableGroups, normalizeSpecies } from './domain/incubator.js';
+import { resolveStage } from './domain/stage.js';
 import { evaluateAchievements, computeStreak, todayStr } from './domain/achievements.js';
 import { petInteract, settleBondLevel, bondView, activateBond, BOND_LEVELS } from './domain/bond.js';
 import { usageStats } from './domain/usageStats.js';
@@ -77,7 +78,14 @@ function deriveVm() {
 
   let mode, egg = null, pet = null;
   const activeEgg = (state.eggs || []).find((e) => e.id === state.activeEggId);
-  if (activeEgg) {
+  // 显示什么由 stageMode 决定，不再被"有没有蛋在孵"一票否决
+  const stage = resolveStage({
+    stageMode: state.stageMode,
+    hasActiveEgg: !!activeEgg,
+    collection: state.collection,
+    activePetSpecies: state.activePetSpecies,
+  });
+  if (activeEgg && stage === 'incubating') {
     const sp = speciesByKey(activeEgg.species) || SPECIES[0];
     const inc = incubation(activeEgg.fed, sp.rarity);
     const stageNo = incubationStage(inc.fraction);
@@ -389,6 +397,7 @@ function openIncubator() {
     btn.addEventListener('click', (e) => {
       e.stopPropagation(); // 别触发行的"打开详情"
       setActiveEgg(state, btn.getAttribute('data-set'), growthTotal());
+      state.stageMode = 'auto'; // 明确要看这颗蛋
       savePet(state);
       close();
       render();
@@ -437,6 +446,7 @@ function openEvolution(egg) {
   const { mask } = openSheet(evolutionHTML(evolutionVm(egg)));
   mask.querySelector('#evoActivate')?.addEventListener('click', () => {
     setActiveEgg(state, egg.id, growthTotal());
+    state.stageMode = 'auto';
     savePet(state);
     document.querySelectorAll('.sheet-mask').forEach((m) => m.remove()); // 关掉详情+孵化器
     render();
@@ -445,9 +455,23 @@ function openEvolution(egg) {
 
 function openCollection() {
   const { mask, close } = openSheet(collectionHTML(deriveVm()));
+  // 没获得的也给个说法：点了没反应会让人以为是坏了，而不是"还没孵出来"
+  mask.querySelectorAll('[data-locked]').forEach((cell) => {
+    cell.addEventListener('click', () => {
+      const note = mask.querySelector('#dexNote');
+      if (!note) return;
+      note.textContent = L({
+        zh: '这只还没孵出来——继续用 AI 干活，攒够 token 就能遇到它。',
+        en: 'Not hatched yet — keep using your AI and it will show up.',
+      });
+      note.classList.add('dex-note-hit');
+      setTimeout(() => note.classList.remove('dex-note-hit'), 1200);
+    });
+  });
   mask.querySelectorAll('[data-battle]').forEach((cell) => {
     cell.addEventListener('click', () => {
       state.activePetSpecies = cell.getAttribute('data-battle');
+      state.stageMode = 'pet'; // 让它真的回到桌面，即使还有蛋在孵
       savePet(state); close(); render();
     });
   });

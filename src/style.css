@@ -310,3 +310,7 @@ body.feeding .sprite, body.feeding .egg, body.feeding .peek-sprite {
   transition: transform .12s ease, filter .12s ease;
 }
 body.feeding #app { outline: 2px dashed rgba(122, 178, 94, .55); outline-offset: -6px; border-radius: 16px; }
+
+/* 点了锁着的格子时，把底部说明闪一下，让人知道"点到了、只是还没获得" */
+.dex-note-hit { color: #7a5c2e; transition: color .15s ease; }
+.dex-cell.locked { cursor: pointer; }

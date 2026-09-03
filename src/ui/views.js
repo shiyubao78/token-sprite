@@ -217,7 +217,7 @@ export function evolutionHTML(vm) {
 export function collectionHTML(vm) {
   const cells = SPECIES.map((s) => {
     const owned = vm.collection[s.key];
-    return `<div class="dex-cell ${owned ? 'owned nodrag' : 'locked'}" ${owned ? `data-battle="${s.key}"` : ''}>
+    return `<div class="dex-cell ${owned ? 'owned nodrag' : 'locked'} nodrag" ${owned ? `data-battle="${s.key}"` : `data-locked="${s.rarity}"`}>
       <div class="dex-pic" style="--rc:${RARITY[s.rarity].color}">
         ${owned ? `<img src="${adultUrl(s.folder)}" alt="${esc(s.name)}" />` : '<span class="qm">?</span>'}
         ${owned && owned.count > 1 ? `<span class="cnt">×${owned.count}</span>` : ''}
@@ -229,7 +229,7 @@ export function collectionHTML(vm) {
   }).join('');
   return `<button class="close nodrag" data-close aria-label="${L({ zh: '关闭', en: 'Close' })}">✕</button><h2>${L({ zh: '图鉴', en: 'Collection' })} · ${vm.ownedCount}/${SPECIES.length}</h2>
     <div class="dex-grid">${cells}</div>
-    <div class="source-note" style="margin-top:8px">${L({ zh: '点已获得的品种，让它陪你。', en: 'Tap one you own to make it your companion.' })}</div>`;
+    <div class="source-note" id="dexNote" style="margin-top:8px">${L({ zh: '点已获得的品种，让它陪你。', en: 'Tap one you own to make it your companion.' })}</div>`;
 }
 
 export function achievementsHTML(vm) {
