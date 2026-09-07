@@ -28,7 +28,8 @@
     "shots:overview": "node scripts/shots-overview.mjs",
     "install:local": "npm run pack && bash scripts/install-local.sh",
     "postinstall": "node scripts/postinstall.mjs",
-    "update": "git pull && npm install"
+    "update": "git pull && npm install",
+    "doctor": "node scripts/doctor.mjs"
   },
   "devDependencies": {
     "@electron/notarize": "^2.5.0",
