@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  bottomRightBounds,
-  clampBoundsToWorkArea,
-  isVisibleOnAnyDisplay,
-  rectsIntersect,
-} from './window-placement.js';
+import { bottomRightBounds, clampBoundsToWorkArea, isVisibleOnAnyDisplay, rectsIntersect, pickInitialBounds } from './window-placement.js';
 
 describe('rectsIntersect', () => {
   it('窗口部分露出时仍算可见', () => {
@@ -87,5 +82,29 @@ describe('clampBoundsToWorkArea', () => {
       { x: 50, y: 60, width: 236, height: 348 },
       { x: -20, y: -30, width: 100, height: 120 },
     )).toEqual({ x: -20, y: -30, width: 236, height: 348 });
+  });
+});
+
+describe('pickInitialBounds', () => {
+  const areas = [{ x: 0, y: 25, width: 1440, height: 875 }];
+  const size = { width: 236, height: 348 };
+  const fallback = { x: 1180, y: 528, width: 236, height: 348 };
+
+  it('上次的位置还在屏幕上，就回到原处', () => {
+    expect(pickInitialBounds({ x: 100, y: 200 }, fallback, areas, size))
+      .toEqual({ x: 100, y: 200, width: 236, height: 348 });
+  });
+
+  it('首次运行没有记录，用默认角落', () => {
+    expect(pickInitialBounds(null, fallback, areas, size)).toEqual(fallback);
+    expect(pickInitialBounds({}, fallback, areas, size)).toEqual(fallback);
+  });
+
+  it('外接屏拔了、上次的位置已经不存在，回退到默认位置（不然桌宠就消失在虚空里）', () => {
+    expect(pickInitialBounds({ x: 4000, y: 1200 }, fallback, areas, size)).toEqual(fallback);
+  });
+
+  it('坏数据不会让它开在 NaN 位置', () => {
+    expect(pickInitialBounds({ x: 'abc', y: null }, fallback, areas, size)).toEqual(fallback);
   });
 });

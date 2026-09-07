@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { generateGrowthSummary, readStore, writeStore, mergeGeneration, todayKey, appendFed, pendingFedTexts, clearFed, buildPortablePrompt, looksLikeGeneration, parseGeneration } from '../scripts/growth.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
 import { createUpdateController, parseReleaseFromUrl } from './update-controller.js';
-import { bottomRightBounds, isVisibleOnAnyDisplay } from './window-placement.js';
+import { bottomRightBounds, isVisibleOnAnyDisplay, pickInitialBounds } from './window-placement.js';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const DEV_URL = process.env.TS_DEV_URL || '';
@@ -46,8 +46,30 @@ function fullBoundsFor(display = cursorDisplay()) {
   return bottomRightBounds(display.workArea, { width: FULL.w, height: FULL.h });
 }
 
+// 记住桌宠停在哪，重启后回到原处（外接显示器拔插后若那个位置没了，回退到默认角落）
+function winStatePath() { return path.join(app.getPath('userData'), 'window-state.json'); }
+function saveWindowState() {
+  if (!mainWin || mainWin.isDestroyed()) return;
+  try {
+    const b = mainWin.getBounds();
+    writeFileSync(winStatePath(), JSON.stringify({ x: b.x, y: b.y }));
+  } catch { /* 存不了就下次开在默认位置，不影响使用 */ }
+}
+let saveWinTimer = null;
+function scheduleSaveWindowState() {
+  clearTimeout(saveWinTimer);
+  saveWinTimer = setTimeout(saveWindowState, 800); // 拖动过程中别一直写盘
+}
+
 function createWindow() {
-  const initialBounds = fullBoundsFor();
+  let saved = null;
+  try { saved = JSON.parse(readFileSync(winStatePath(), 'utf8')); } catch { /* 首次运行没有 */ }
+  const initialBounds = pickInitialBounds(
+    saved,
+    fullBoundsFor(),
+    screen.getAllDisplays().map((d) => d.workArea),
+    { width: FULL.w, height: FULL.h },
+  );
   const win = new BrowserWindow({
     width: FULL.w,
     height: FULL.h,
@@ -73,6 +95,7 @@ function createWindow() {
   else win.loadFile(path.join(dir, '..', 'dist', 'index.html'));
   mainWin = win;
   win.once('ready-to-show', ensureSpriteVisible);
+  win.on('moved', scheduleSaveWindowState);
   win.on('closed', () => { if (mainWin === win) mainWin = null; });
 }
 
@@ -330,6 +353,7 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
   ipcMain.handle('window:getPos', (e) => BrowserWindow.fromWebContents(e.sender)?.getPosition() || [0, 0]);
   ipcMain.on('window:setPos', (e, x, y) => {
     BrowserWindow.fromWebContents(e.sender)?.setPosition(Math.round(x), Math.round(y));
+    scheduleSaveWindowState();
   });
   // 收起态拖完松手：吸到最近的那条边，并记住这一边
   ipcMain.on('window:snapEdge', (e) => {
