@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveStage, ownsSpecies } from './stage.js';
+import { resolveStage, ownsSpecies, shouldShowBond } from './stage.js';
 
 const owned = { flower: { count: 1, firstAt: 1 } };
 
@@ -48,5 +48,20 @@ describe('resolveStage', () => {
     expect(resolveStage({
       stageMode: undefined, hasActiveEgg: true, collection: owned, activePetSpecies: 'flower',
     })).toBe('incubating');
+  });
+});
+
+describe('shouldShowBond', () => {
+  it('显示已化形精灵时才挂羁绊徽章', () => {
+    expect(shouldShowBond('pet', true)).toBe(true);
+  });
+
+  it('在孵蛋的界面上不挂——蛋还没破壳，谈不上羁绊', () => {
+    expect(shouldShowBond('incubating', true)).toBe(false);
+  });
+
+  it('羁绊还没激活时哪都不显示', () => {
+    expect(shouldShowBond('pet', false)).toBe(false);
+    expect(shouldShowBond('incubating', false)).toBe(false);
   });
 });

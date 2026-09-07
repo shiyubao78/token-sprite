@@ -18,3 +18,9 @@ export function resolveStage({ stageMode, hasActiveEgg, collection, activePetSpe
   if (hasActiveEgg) return 'incubating';
   return 'pet'; // 没有在养的蛋时保持原有行为（没拥有任何精灵时上层用首个品种兜底）
 }
+
+// 羁绊是「你和已化形精灵的关系」。主界面显示在孵的蛋时不该挂羁绊徽章——
+// 一颗 0% 的新蛋下面写着「Lv.1 初识 10%」，语义是错乱的。
+export function shouldShowBond(stage, bondActive) {
+  return stage === 'pet' && !!bondActive;
+}
