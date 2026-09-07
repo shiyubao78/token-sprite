@@ -19,7 +19,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { generateGrowthSummary, readStore, writeStore, mergeGeneration, todayKey, appendFed, pendingFedTexts, clearFed, buildPortablePrompt, looksLikeGeneration, parseGeneration } from '../scripts/growth.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
-import { createUpdateController, parseReleaseFromUrl } from './update-controller.js';
+import { createUpdateController, parseReleaseFromUrl, parseVersionFromYml } from './update-controller.js';
 import { bottomRightBounds, isVisibleOnAnyDisplay, pickInitialBounds } from './window-placement.js';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -232,10 +232,22 @@ const RELEASE_REPO = 'shiyubao78/token-sprite';
 // 查最新 Release：走 github.com 网页重定向（不碰限流的 api.github.com）。
 // 跟随重定向到 .../releases/tag/<ver>，从最终 URL 解析版本；无 Release 时重定向到列表页→返回 null。
 async function fetchLatestRelease() {
-  const res = await fetch(`https://github.com/${RELEASE_REPO}/releases/latest`, {
-    redirect: 'follow',
-    headers: { 'User-Agent': 'token-sprite' },
-  });
+  const page = `https://github.com/${RELEASE_REPO}/releases/latest`;
+  // 先拉 latest-mac.yml：版本号是明确字段，且这个 asset 的下载次数正好等于
+  // 「多少客户端在检查更新」——一个不需要服务器、不上传任何用户数据的活跃度指标。
+  try {
+    const res = await fetch(`${page}/download/latest-mac.yml`, {
+      redirect: 'follow',
+      headers: { 'User-Agent': 'token-sprite', 'Cache-Control': 'no-cache' },
+    });
+    if (res.ok) {
+      const version = parseVersionFromYml(await res.text());
+      if (version) return { version, url: page };
+    }
+  } catch { /* 网络不好就走下面的老路子 */ }
+
+  // 回退：没有 yml 的平台（Windows/Linux）或拉取失败时，解析网页重定向
+  const res = await fetch(page, { redirect: 'follow', headers: { 'User-Agent': 'token-sprite' } });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub ${res.status}`);
   return parseReleaseFromUrl(res.url);

@@ -55,6 +55,9 @@ export function summarize({ raw, history }) {
     assets,
     daysTracked: Object.keys(days).length,
     snapshotCount: snaps.length,
+    checkins: cur.updateCheckins ?? 0,
+    // 昨天到今天新增的检查次数：装了正式版且开着 app 的人才会产生
+    checkinsDelta: (cur.updateCheckins ?? 0) - (snaps.at(-2)?.updateCheckins ?? cur.updateCheckins ?? 0),
   };
 }
 
@@ -221,6 +224,8 @@ export function renderDashboard({ raw, history, repo }) {
       <div class="n">最近 7 天 ${num(s.clone7)} 人${s.cloneTrend.pct === null ? '' : ` · <span class="${s.cloneTrend.up ? 'up' : 'down'}">${s.cloneTrend.up ? '↑' : '↓'}${Math.abs(s.cloneTrend.pct)}%</span>`}</div></div>
     <div class="card"><div class="k">安装包下载（累计）</div><div class="v">${num(s.totalDownloads)}</div>
       <div class="n">最新版 ${esc(s.latestTag)} · ${num(s.latestDownloads)} 次</div></div>
+    <div class="card"><div class="k">还在用的人（估）</div><div class="v">${s.checkinsDelta > 0 ? '~' + num(Math.max(1, Math.round(s.checkinsDelta / 4))) : '—'}</div>
+      <div class="n">今日检查更新 ${num(s.checkinsDelta)} 次 · 累计 ${num(s.checkins)}</div></div>
     <div class="card"><div class="k">Star</div><div class="v">${num(s.stars)}</div>
       <div class="n">${s.starsDelta > 0 ? `<span class="up">↑ 本周 +${s.starsDelta}</span> · ` : ''}${num(s.forks)} 个 fork</div></div>
   </div>
@@ -243,6 +248,7 @@ export function renderDashboard({ raw, history, repo }) {
       能看见的是两条路：<b>让 agent 装</b>（独立 clone 数）和 <b>下载安装包</b>。这两条是<b>并列</b>的，不是漏斗上下游——用户二选一。<br/>
       目标用户都在用 AI 编程工具，所以绝大多数走前者，<b>clone 数才是获客量的主要口径</b>；下载数低是正常的，不代表没人用。<br/>
       注意 clone 数含水分（CI、镜像站、脚本也会 clone，也有人只是看看代码没装），把它当<b>上限</b>看。<br/>
+      <b>「还在用的人」是怎么估的</b>：装了正式版的 app 每 6 小时会拉一次 <code>latest-mac.yml</code> 查有没有新版，GitHub 会统计这个文件被下载了多少次。所以它的日增 ÷ 4（每天最多查 4 次）≈ 还在开着 app 的人数。这不需要服务器、也不往外传任何用户数据，就是个普通 GET——但代价是<b>只能估个量级</b>：开一整天的人算 4 次，只开一小时的算 1 次，CDN 缓存还可能漏计。<br/>
       <b>GitHub 流量只保留 14 天</b>，所以这个脚本每天跑一次、把数据存进本地 <code>ops-data/history.json</code>，长期趋势才攒得出来。<br/>
       想要真实的安装数和活跃数，唯一办法是应用里加匿名上报（要联网 + 一台服务器）——那会动到「全本地不联网」这个卖点，需要你先拍板。
     </div>

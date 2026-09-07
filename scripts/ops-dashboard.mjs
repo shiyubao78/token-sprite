@@ -77,9 +77,17 @@ function merge(history, raw) {
   const totalDownloads = raw.releases.reduce(
     (s, r) => s + (r.assets || []).reduce((a, x) => a + (x.download_count || 0), 0), 0);
 
+  // latest-mac.yml 的下载次数 = 客户端检查更新的次数。
+  // 装了正式版的 app 每 6 小时拉一次这个文件，所以它的日增反映「有多少人还在用」——
+  // 不需要服务器，也不往外传任何用户数据。
+  const updateCheckins = raw.releases.reduce(
+    (s, r) => s + (r.assets || []).filter((a) => a.name === 'latest-mac.yml')
+      .reduce((n, a) => n + (a.download_count || 0), 0), 0);
+
   const snap = {
     date: today(),
     at: new Date().toISOString(),
+    updateCheckins,
     stars: raw.repo.stargazers_count,
     forks: raw.repo.forks_count,
     watchers: raw.repo.subscribers_count,

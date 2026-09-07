@@ -126,3 +126,13 @@ export function createUpdateController({
 
   return { enabled: !!isEnabled, start, check, dispose };
 }
+
+// 从 latest-mac.yml 里读版本号。用它而不是解析网页重定向有两个好处：
+// ① yml 里 version 是明确字段，比从 URL 末尾抠字符串稳；
+// ② 这是个 release asset，GitHub 会统计下载次数——于是「有多少客户端在检查更新」
+//    就有了数，不需要自建服务器，也不用往外传任何用户数据（就是个普通 GET）。
+export function parseVersionFromYml(text) {
+  if (!text) return null;
+  const m = String(text).match(/^version:\s*['"]?([0-9][^'"\s]*)['"]?\s*$/m);
+  return m ? m[1] : null;
+}

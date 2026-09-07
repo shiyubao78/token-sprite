@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createUpdateController, compareVersions, parseReleaseFromUrl } from './update-controller.js';
+import { createUpdateController, compareVersions, parseReleaseFromUrl, parseVersionFromYml } from './update-controller.js';
 
 function fakeDialog(response = 0) {
   return { showMessageBox: vi.fn().mockResolvedValue({ response }) };
@@ -182,5 +182,26 @@ describe('说过「稍后」就别再骚扰', () => {
     const { controller, writeSnooze } = makeSnooze({ dialog: fakeDialog(0) });
     await controller.check();
     expect(writeSnooze).not.toHaveBeenCalled();
+  });
+});
+
+describe('parseVersionFromYml', () => {
+  it('从 latest-mac.yml 里读出版本号', () => {
+    expect(parseVersionFromYml('version: 0.6.0\nfiles:\n  - url: a.zip\n')).toBe('0.6.0');
+  });
+
+  it('带引号也认', () => {
+    expect(parseVersionFromYml("version: '1.2.3'\n")).toBe('1.2.3');
+  });
+
+  it('读不出来时返回 null，让调用方回退到老方式', () => {
+    expect(parseVersionFromYml('')).toBe(null);
+    expect(parseVersionFromYml(null)).toBe(null);
+    expect(parseVersionFromYml('files:\n  - url: a.zip\n')).toBe(null);
+    expect(parseVersionFromYml('<html>404</html>')).toBe(null); // 拿到网页而不是 yml
+  });
+
+  it('不会把 releaseDate 之类的字段误当成版本', () => {
+    expect(parseVersionFromYml("releaseDate: '2026-08-25T10:00:00Z'\nversion: 0.6.0\n")).toBe('0.6.0');
   });
 });
