@@ -15,6 +15,7 @@ import {
 import { nearestEdge, dockedBounds } from './dock.js';
 import path from 'node:path';
 import { fork } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { generateGrowthSummary, readStore, writeStore, mergeGeneration, todayKey, appendFed, pendingFedTexts, clearFed, buildPortablePrompt, looksLikeGeneration, parseGeneration } from '../scripts/growth.mjs';
 import { createTrayMenuTemplate } from './tray-menu.js';
@@ -219,6 +220,8 @@ async function fetchLatestRelease() {
 
 function initializeUpdates() {
   // 正式打包版才检查更新（开发态保持不联网）；轻量提醒无需签名，各系统通用。
+  // 「稍后」的记录落盘，重启后依然生效——否则重开一次 app 又开始弹
+  const snoozePath = () => path.join(app.getPath('userData'), 'update-snooze.json');
   updateController = createUpdateController({
     currentVersion: app.getVersion(),
     fetchLatest: fetchLatestRelease,
@@ -226,6 +229,12 @@ function initializeUpdates() {
     openExternal: (url) => shell.openExternal(url),
     isEnabled: app.isPackaged,
     locale: appLocale(),
+    readSnooze: () => {
+      try { return JSON.parse(readFileSync(snoozePath(), 'utf8')); } catch { return null; }
+    },
+    writeSnooze: (version, at) => {
+      try { writeFileSync(snoozePath(), JSON.stringify({ version, at })); } catch { /* 存不了就下次再提醒，无所谓 */ }
+    },
   });
 }
 

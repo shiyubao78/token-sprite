@@ -50,6 +50,11 @@ export function createUpdateController({
   locale = 'zh',
   startupDelayMs = 30_000,
   intervalMs = 6 * 60 * 60 * 1000,
+  // 用户点过「稍后」的版本，在这段时间内不再自动弹（主动检查不受限）
+  snoozeMs = 24 * 60 * 60 * 1000,
+  readSnooze = () => null,   // () => { version, at } | null
+  writeSnooze = () => {},    // (version, at) => void
+  nowFn = Date.now,
   setTimeoutFn = setTimeout,
   setIntervalFn = setInterval,
   clearTimeoutFn = clearTimeout,
@@ -59,6 +64,13 @@ export function createUpdateController({
   let startupTimer = null;
   let intervalTimer = null;
   let checking = false;
+
+  function isSnoozed(version) {
+    try {
+      const s = readSnooze();
+      return !!(s && s.version === version && nowFn() - (s.at || 0) < snoozeMs);
+    } catch { return false; }
+  }
 
   async function show(options) {
     return dialog.showMessageBox({ type: 'info', defaultId: 0, cancelId: 1, noLink: true, ...options });
@@ -71,12 +83,16 @@ export function createUpdateController({
       const latest = await fetchLatest();
       const hasNewer = latest && latest.version && compareVersions(currentVersion, latest.version) < 0;
       if (hasNewer) {
+        // 说过「稍后」就别再没完没了地弹——每 6 小时一次、重启还弹，很快就从提醒变成骚扰。
+        // 但用户自己点「检查更新」时必须照常回应。
+        if (!userInitiated && isSnoozed(latest.version)) return;
         const { response } = await show({
           buttons: [tx.download, tx.later],
           message: tx.newVersion(latest.version),
           detail: tx.newDetail,
         });
         if (response === 0) await openExternal(latest.url);
+        else writeSnooze(latest.version, nowFn()); // 点了「稍后」，记下来
       } else if (userInitiated) {
         await show({ buttons: [tx.gotIt], cancelId: 0, message: tx.latest });
       }

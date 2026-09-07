@@ -122,3 +122,65 @@ describe('轻量更新提醒', () => {
     expect(clearIntervalFn).toHaveBeenCalledWith(2);
   });
 });
+
+describe('说过「稍后」就别再骚扰', () => {
+  const newer = async () => ({ version: '9.9.9', url: 'https://example.com/r' });
+
+  function makeSnooze(overrides = {}) {
+    const dialog = overrides.dialog || fakeDialog(1); // 1 = 点「稍后」
+    let saved = overrides.saved ?? null;
+    const writeSnooze = vi.fn((version, at) => { saved = { version, at }; });
+    const controller = createUpdateController({
+      currentVersion: '0.1.0',
+      fetchLatest: newer,
+      dialog,
+      openExternal: vi.fn(),
+      isEnabled: true,
+      readSnooze: () => saved,
+      writeSnooze,
+      nowFn: overrides.nowFn || (() => 1_000_000),
+    });
+    return { controller, dialog, writeSnooze, getSaved: () => saved };
+  }
+
+  it('点「稍后」会记下这个版本', async () => {
+    const { controller, writeSnooze } = makeSnooze();
+    await controller.check();
+    expect(writeSnooze).toHaveBeenCalledWith('9.9.9', 1_000_000);
+  });
+
+  it('记下之后，自动检查不再弹同一个版本', async () => {
+    const { controller, dialog } = makeSnooze();
+    await controller.check();          // 第一次弹，用户点稍后
+    await controller.check();          // 6 小时后又查
+    expect(dialog.showMessageBox).toHaveBeenCalledTimes(1); // 只弹过一次
+  });
+
+  it('但用户自己点「检查更新」时照常回应', async () => {
+    const { controller, dialog } = makeSnooze();
+    await controller.check();
+    await controller.check({ userInitiated: true });
+    expect(dialog.showMessageBox).toHaveBeenCalledTimes(2);
+  });
+
+  it('超过 24 小时后会重新提醒', async () => {
+    let now = 1_000_000;
+    const { controller, dialog } = makeSnooze({ nowFn: () => now });
+    await controller.check();
+    now += 25 * 60 * 60 * 1000;
+    await controller.check();
+    expect(dialog.showMessageBox).toHaveBeenCalledTimes(2);
+  });
+
+  it('换了更新的版本，即使之前说过稍后也要提醒', async () => {
+    const { controller, dialog } = makeSnooze({ saved: { version: '0.5.0', at: 1_000_000 } });
+    await controller.check();
+    expect(dialog.showMessageBox).toHaveBeenCalledTimes(1); // 记的是别的版本，不该拦
+  });
+
+  it('点「去下载」不记 snooze（都去下载了没必要）', async () => {
+    const { controller, writeSnooze } = makeSnooze({ dialog: fakeDialog(0) });
+    await controller.check();
+    expect(writeSnooze).not.toHaveBeenCalled();
+  });
+});
