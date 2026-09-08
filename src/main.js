@@ -31,6 +31,7 @@ let collapsed = false;
 let activeSince = 0;
 let prevIdleMs = Infinity;
 let sessionMinutesNow = 0;
+let achCtx = null; // 成就面板显示进度用
 const mem = { greetDate: state.greetDate || null, restSession: 0, nightSession: 0, lastBubbleAt: 0 };
 // 逗它的台词按羁绊等级变暖：越亲越黏人。双语，按当前语言取。
 const INTERACT_LINES = {
@@ -127,6 +128,7 @@ function deriveVm() {
     collection: state.collection || {},
     ownedCount: Object.keys(state.collection || {}).length,
     achievements: state.achievements || {},
+    achCtx,
     achDone: Object.keys(state.achievements || {}).length,
     activePetSpecies: state.activePetSpecies,
     bond: bondView(state, growth),
@@ -261,7 +263,8 @@ async function sync() {
   const streakDays = computeStreak(state.activeDates, today);
 
   // 成就结算发券
-  const ctx = { growthTotal: growth, breakdown: usage.breakdown || [], todayTokens: usage.todayTokens || 0, streakDays, nightDays: (state.nightDates || []).length, ownedCount: Object.keys(state.collection || {}).length };
+  achCtx = { growthTotal: growth, breakdown: usage.breakdown || [], todayTokens: usage.todayTokens || 0, streakDays, nightDays: (state.nightDates || []).length, ownedCount: Object.keys(state.collection || {}).length };
+  const ctx = achCtx;
   const ach = evaluateAchievements(ctx, state.achievements);
   for (const a of ach.newly) {
     state.achievements[a.id] = { at: now };

@@ -232,12 +232,30 @@ export function collectionHTML(vm) {
     <div class="source-note" id="dexNote" style="margin-top:8px">${L({ zh: '点已获得的品种，让它陪你。', en: 'Tap one you own to make it your companion.' })}</div>`;
 }
 
+// 未达成时显示「还差多少」。用户反馈过「我明明用了 1B 为什么没解锁」——
+// 因为判定的是装上小精灵之后新增的量，不是历史总量。看得见进度就不用猜了。
+function progressText(p) {
+  if (!p || !p.need) return '';
+  const cur = Math.min(p.cur || 0, p.need);
+  const pct = Math.min(100, Math.round((cur / p.need) * 100));
+  const label = p.unit === 'token'
+    ? `${formatTokens(cur)} / ${formatTokens(p.need)}`
+    : p.unit === 'day'
+      ? L({ zh: `${cur} / ${p.need} 天`, en: `${cur} / ${p.need} days` })
+      : `${cur} / ${p.need}`;
+  return `<div class="ach-pg"><div class="ach-pg-bar"><i style="width:${pct}%"></i></div><span>${esc(label)}</span></div>`;
+}
+
 export function achievementsHTML(vm) {
   const rows = ACHIEVEMENTS.map((a) => {
     const done = !!vm.achievements[a.id];
+    let pg = '';
+    if (!done && a.progress && vm.achCtx) {
+      try { pg = progressText(a.progress(vm.achCtx)); } catch { pg = ''; }
+    }
     return `<div class="ach-row ${done ? 'done' : ''}">
       <span class="ach-ck">${done ? '✅' : '⬜'}</span>
-      <div class="ach-info"><div class="an">${esc(a.name)}</div><div class="ad">${esc(a.desc)}</div></div>
+      <div class="ach-info"><div class="an">${esc(a.name)}</div><div class="ad">${esc(a.desc)}</div>${pg}</div>
       <span class="ach-tk" style="color:${RARITY[a.ticket].color}">${RARITY[a.ticket].name}${tk()}</span>
     </div>`;
   }).join('');
