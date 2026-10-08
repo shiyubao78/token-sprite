@@ -23,7 +23,8 @@ export function summarize({ raw, history }) {
   const last7 = recentDays(days, 7);
   const prev7 = recentDays(days, 14).slice(0, Math.max(0, recentDays(days, 14).length - 7));
 
-  const assets = raw.releases.flatMap((r) => (r.assets || []).map((a) => ({
+  const isInstaller = (n) => (n.endsWith('.dmg') || n.endsWith('.zip')) && !n.endsWith('.blockmap');
+  const assets = raw.releases.flatMap((r) => (r.assets || []).filter((a) => isInstaller(a.name)).map((a) => ({
     tag: r.tag_name, published: r.published_at, name: a.name, count: a.download_count || 0,
   })));
   const totalDownloads = sum(assets, 'count');

@@ -74,8 +74,13 @@ function merge(history, raw) {
     h.days[k] = { ...h.days[k], views: d.count, viewUniques: d.uniques };
   }
 
+  // 只算真正的安装包。latest-mac.yml 是客户端每 6 小时拉一次的更新检查、
+  // blockmap 是增量更新用的，把它们算进"下载量"会让数字虚高十几倍
+  // （实测 256 里只有 19 次是真下载）。
+  const isInstaller = (n) => (n.endsWith('.dmg') || n.endsWith('.zip')) && !n.endsWith('.blockmap');
   const totalDownloads = raw.releases.reduce(
-    (s, r) => s + (r.assets || []).reduce((a, x) => a + (x.download_count || 0), 0), 0);
+    (s, r) => s + (r.assets || []).filter((x) => isInstaller(x.name))
+      .reduce((a, x) => a + (x.download_count || 0), 0), 0);
 
   // latest-mac.yml 的下载次数 = 客户端检查更新的次数。
   // 装了正式版的 app 每 6 小时拉一次这个文件，所以它的日增反映「有多少人还在用」——
